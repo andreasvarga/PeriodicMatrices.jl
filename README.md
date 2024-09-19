@@ -1,10 +1,11 @@
 # PeriodicMatrices.jl
 
 <!-- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4568159.svg)](https://doi.org/10.5281/zenodo.4568159) -->
-<!-- [![DocBuild](https://github.com/andreasvarga/PeriodicMatrices.jl/workflows/CI/badge.svg)](https://github.com/andreasvarga/PeriodicMatrices.jl/actions)
+[![DocBuild](https://github.com/andreasvarga/PeriodicMatrices.jl/workflows/CI/badge.svg)](https://github.com/andreasvarga/PeriodicMatrices.jl/actions)
 [![codecov.io](https://codecov.io/gh/andreasvarga/PeriodicMatrices.jl/coverage.svg?branch=master)](https://codecov.io/gh/andreasvarga/PeriodicMatrices.jl?branch=master)
-[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://andreasvarga.github.io/PeriodicMatrices.jl/dev/) -->
+[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://andreasvarga.github.io/PeriodicMatrices.jl/dev/)
 [![The MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](https://github.com/andreasvarga/PeriodicMatrices.jl/blob/master/LICENSE.md)
+[![CI](https://github.com/andreasvarga/PeriodicMatrices/actions/workflows/CI.yml/badge.svg)](https://github.com/andreasvarga/PeriodicMatrices/actions/workflows/CI.yml)
 
 ## Handling of periodic time-varying matrices
 
