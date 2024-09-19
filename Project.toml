@@ -1,0 +1,47 @@
+name = "PeriodicMatrices"
+uuid = "7a052949-c101-4ca3-9a7e-43a2532b2fa8"
+authors = ["Andreas Varga <varga.andreas@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+ApproxFun = "28f2ccd6-bb30-5033-b560-165f7b14dc2f"
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+IRKGaussLegendre = "58bc7355-f626-4c51-96f2-1f8a038f95a2"
+Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+PeriodicSchurDecompositions = "e5aedecb-f6c0-4c91-b6ff-fbae4296f459"
+Primes = "27ebfcd6-29c5-5fa9-bf4b-fb8fc14df3ae"
+QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SLICOT_jll = "545525a2-e20e-568b-b87f-b40a06098995"
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
+
+[extras]
+Bessels = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
+LinearMaps = "7a12625a-238d-50fd-b39a-03d52299707e"
+MatrixPencils = "48965c70-4690-11ea-1f13-43a2532b2fa8"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+ApproxFun = "0.13"
+Bessels = "0.2.8"
+FFTW = "1"
+IRKGaussLegendre = "0.2"
+Interpolations = "0.15"
+LinearAlgebra = "1"
+MatrixPencils = "1.7"
+Optim = "1.7"
+OrdinaryDiffEq = "v5.72.2, 6"
+PeriodicSchurDecompositions = "0.1.1, 0.1.5"
+Primes = "0.5"
+QuadGK = "2.11"
+Random = "1"
+SLICOT_jll = "5.8, 5.9"
+Symbolics = "4, 5"
+julia = "1.10"
+
+
+[targets]
+test = ["Bessels","MatrixPencils","Test"]
