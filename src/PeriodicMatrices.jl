@@ -6,7 +6,6 @@ using FFTW
 using Random
 using Interpolations
 using Optim
-using LineSearches
 using OrdinaryDiffEq
 using IRKGaussLegendre
 using Primes
