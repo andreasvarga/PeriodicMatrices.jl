@@ -3,7 +3,6 @@ module PeriodicMatrices
 using ApproxFun
 using LinearAlgebra
 using FFTW
-using Random
 using Interpolations
 using Optim
 using OrdinaryDiffEq

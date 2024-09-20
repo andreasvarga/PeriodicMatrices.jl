@@ -27,5 +27,5 @@ makedocs(warnonly = true,
 deploydocs(
   repo = "github.com/andreasvarga/PeriodicMatrices.jl.git",
   target = "build",
-  devbranch = "master"
+  devbranch = "main"
 )
