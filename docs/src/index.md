@@ -47,7 +47,6 @@ or structure exploitung fast algorithms.
 These functions are instrumental to apply [Floquet theory](https://en.wikipedia.org/wiki/Floquet_theory) to study the properties of solutions of 
 various classes of differential equations (Mathieu, Hill, Meissner) and the stability of linear periodic systems (see [PeriodicSystems](https://github.com/andreasvarga/PeriodicSystems.jl) package). 
 
-
 The following categories of functions are currently implemented:
 
 **Constructors for periodic matrices**
