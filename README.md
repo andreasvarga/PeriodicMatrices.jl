@@ -36,14 +36,21 @@ A continuous-time periodic matrix can be specified in the following forms:
 A discrete-time periodic matrix can be specified in the following forms:
 
 - periodic matrix time series with time-varying dimensions with uniform time grid
-- periodic matrix time series with time-varying dimesnions with non-uniform time grid
+- periodic matrix time series with time-varying dimensions with non-uniform time grid
 - periodic matrix time series with constant dimensions with uniform time grid
 - periodic matrix time series with constant dimensions with non-uniform time grid
 
-For a periodic matrix `A(t)` of period `T` it is not assumed that `T` is the minimum value
+For a periodic matrix `A(t)` of period `T` it is _not_ assumed that `T` is the minimum value
 which satisfies the periodicity condition `A(t) = A(t+T)` for all values of `t`. To describe 
 matrices having multiple periods, a subperiod `Tsub := T/n` can be defined, such that `A(t) = A(t+Tsub)`,
 for all `t`. This allows a substantial memory saving for some classes of periodic representations. 
-Moreover, all operations with periodic matrices allow different, but commensurate, periods/subperiods.  
 
+Several operations on periodic matrices are implemented, such as, inversion, transposing, norms, derivative/shifting, trace.
+All operations with two periodic matrices such as addition/substraction, multiplication, horizontal/vertical concatenation, block-diagonal appending,
+allow different, but commensurate, periods/subperiods.  
+
+Functions are provided to compute the characteristic multipliers and characteristic exponents of periodic matrices, using methods based on the periodic Schur decomposition of matrix products 
+or structure exploitung fast algorithms. 
+These functions are instrumental to apply [Floquet theory](https://en.wikipedia.org/wiki/Floquet_theory) to study the properties of solutions of 
+various classes of differential equations (Mathieu, Hill, Meissner) and the stability of linear periodic systems (see [PeriodicSystems](https://github.com/andreasvarga/PeriodicSystems.jl) package). 
  
