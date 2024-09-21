@@ -74,6 +74,8 @@ The following categories of functions are currently implemented:
 * **[`hr2bt`](@ref)**   Building a block Toeplitz matrix approximation of a harmonic (Fourier) array representation. 
 * **[`hr2btupd`](@ref)**  Building an updated block Toeplitz matrix approximation of a harmonic (Fourier) array representation. 
 
+A comprehensive set of conversions between discrete-time models and between continuous-time models is implemented via the `convert` function.
+
 **Periodic matrix utilities**
 
 * **[`pseig`](@ref)**   Characteristic multipliers of a periodic matrix.
