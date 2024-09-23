@@ -67,7 +67,7 @@ isconstant(A::PeriodicSymbolicMatrix) = all(length.(Symbolics.get_variables.(A.F
 # end
 #isperiodic(A::PeriodicSymbolicMatrix) = isconstant(A) ? true : isperiodic(A.F,A.period)
 Base.size(A::PeriodicSymbolicMatrix) = size(A.F)
-Base.size(A::AbstractPeriodicArray, d::Integer) = d <= 2 ? size(A)[d] : 1
+Base.size(A::PeriodicSymbolicMatrix, d::Integer) = d <= 2 ? size(A)[d] : 1
 Base.eltype(A::PeriodicSymbolicMatrix{:c,T}) where T = T
 
 function Base.getindex(A::PM, inds...) where PM <: PeriodicSymbolicMatrix

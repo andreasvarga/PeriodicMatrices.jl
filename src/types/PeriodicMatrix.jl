@@ -93,25 +93,81 @@ Constancy check of a periodic matrix.
 function isconstant(A::PeriodicMatrix)
     (A.dperiod == 1) || all([A.M[1] == A.M[i] for i in 2:A.dperiod])
 end
-Base.size(A::PeriodicMatrix) = (size.(A.M,1),size.(A.M,2))
-Base.size(A::PeriodicMatrix, d::Integer) = size.(A.M,d)
-Base.length(A::PeriodicMatrix) = A.dperiod
-Base.eltype(A::PeriodicMatrix{:d,T}) where T = T
+"""
+    size(A::PeriodicMatrix)
+    size(A::SwitchingPeriodicMatrix)
+    size(A::PeriodicMatrix[, dim])
+    size(A::SwitchingPeriodicMatrix[, dim])
 
+Return a tuple of two vectors containing the dimensions of the components of the discrete-time periodic matrix `A`. 
+Optionally you can specify a dimension `dim` to just get the vector of lengths of that dimension.
+"""
+function Base.size(A::PeriodicMatrix)
+    (size.(A.M,1),size.(A.M,2))
+end
+Base.size(A::PeriodicMatrix, d::Integer) = size.(A.M,d)
+"""
+    length(A::PeriodicMatrix)
+    length(A::SwitchingPeriodicMatrix)
+
+Return the number of component matrices (also called the discrete period) of the discrete-time periodic matrix `A`.  
+"""
+function Base.length(A::PeriodicMatrix)
+    A.dperiod
+end
+"""
+    eltype(A::PeriodicMatrix)
+    eltype(A::SwitchingPeriodicMatrix)
+    
+Determine the type of the elements of component matrices of the discrete-time periodic matrix `A`. 
+"""
+function Base.eltype(A::PeriodicMatrix) 
+    eltype(eltype(A.M))
+end
+# function Base.eltype(A::PeriodicMatrix{:d,T}) where {T}
+#    T
+# end
+
+"""
+    getindex(A::PeriodicMatrix, i)
+    getindex(A::SwitchingPeriodicMatrix, i)
+
+Return the `i`-th component matrix of the discrete-time periodic matrix `A`. Equivalent to the syntax `A[i]`. 
+"""
 function Base.getindex(A::PM, ind::Int) where PM <: PeriodicMatrix
    A.M[mod(ind-1,A.dperiod)+1]
 end
-function Base.lastindex(A::PM) where PM <: PeriodicMatrix
-   return A.dperiod
-end
+"""
+    getindex(A::PeriodicMatrix, ind1, ind2)
+    getindex(A::SwitchingPeriodicMatrix, ind1, ind2)
+
+Return the discrete-time periodic matrix built from the selected ranges `[ind1,ind2]` of elements of the component matrices. 
+`ind1` and `ind2` may be integers, integer ranges or colons.  
+"""
 function Base.getindex(A::PM, inds...) where PM <: PeriodicMatrix
    size(inds, 1) != 2 &&
        error("Must specify 2 indices to index a periodic matrix")
    rows, cols = index2range(inds...) 
    PeriodicMatrix{:d,eltype(A)}([A.M[i][rows,cols] for i in 1:length(A)], A.period; nperiod = A.nperiod)
 end
+"""
+    lastindex(A::PeriodicMatrix)
+    lastindex(A::SwitchingPeriodicMatrix)
+
+Return the last index of the component matrices of the discrete-time periodic matrix `A`. 
+The syntax `A[end]` is equivalent to `A[lastindex(A)]`. 
+"""
+function Base.lastindex(A::PM) where PM <: PeriodicMatrix
+   return A.dperiod
+end
+"""
+    lastindex(A::PeriodicMatrix,dim)
+    lastindex(A::SwitchingPeriodicMatrix,dim)
+
+Return the vector of last indices along dimension `dim` of the component matrices of the discrete-time periodic matrix `A`. 
+"""
 function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicMatrix
-   return length(A) > 0 ? minimum(lastindex.(A.M,dim)) : 0
+   return length(A) > 0 ? lastindex.(A.M,dim) : [0]
 end
 
 
@@ -203,7 +259,7 @@ isconstant(A::SwitchingPeriodicMatrix) = (length(A.ns) == 1) || all([A.M[1] == A
 Base.size(A::SwitchingPeriodicMatrix) = (size.(A.M,1),size.(A.M,2))
 Base.size(A::SwitchingPeriodicMatrix, d::Integer) = size.(A.M,d)
 Base.length(A::SwitchingPeriodicMatrix) = length(A.ns)
-Base.eltype(A::SwitchingPeriodicMatrix{:d,T}) where T = T
+Base.eltype(A::SwitchingPeriodicMatrix) = eltype(eltype(A.M))
 
 function Base.getindex(A::SPM, ind::Int) where SPM <: SwitchingPeriodicMatrix
    A.M[findfirst(A.ns .>= mod(ind-1,A.dperiod)+1)]
@@ -218,7 +274,7 @@ function Base.getindex(A::PM, inds...) where PM <: SwitchingPeriodicMatrix
    SwitchingPeriodicMatrix{:d,eltype(A)}([A.M[i][rows,cols] for i in 1:length(A.M)], A.ns, A.period, A.nperiod)
 end
 function Base.lastindex(A::PM, dim::Int) where PM <: SwitchingPeriodicMatrix
-   return length(A) > 0 ? minimum(lastindex.(A.M,dim)) : 0
+   return length(A) > 0 ? lastindex.(A.M,dim) : [0]
 end
 
 
@@ -278,23 +334,68 @@ function Base.getproperty(A::PeriodicArray, d::Symbol)
 end
 Base.propertynames(A::PeriodicArray) = (:dperiod, :Ts, fieldnames(typeof(A))...)
 isconstant(A::PeriodicArray) = (A.dperiod == 1) || all([view(A.M,:,:,1) == view(A.M,:,:,i) for i in 2:A.dperiod])
-Base.size(A::PeriodicArray) = (size(A.M,1),size(A.M,2))
-Base.size(A::PeriodicArray, d::Integer) = size(A.M,d)
-Base.length(A::PeriodicArray) = A.dperiod
-Base.eltype(A::PeriodicArray{:d,T}) where T = T
+"""
+    size(A::PeriodicArray)
+    size(A::SwitchingPeriodicArray)
+    size(A::PeriodicArray[, dim])
+    size(A::SwitchingPeriodicArray[, dim])
 
+Return a tuple of two integers containing the common row and column dimensions of the components of the discrete-time periodic matrix `A`. 
+Optionally you can specify a dimension `dim` to just get length of that dimension.
+"""
+function Base.size(A::PeriodicArray)
+    (size(A.M,1),size(A.M,2))
+end
+Base.size(A::PeriodicArray, d::Integer) = size(A.M,d)
+"""
+    eltype(A::PeriodicArray)
+    eltype(A::SwitchingPeriodicArray)
+
+Determine the type of the elements of component matrices of the discrete-time periodic matrix `A`. 
+"""
+function Base.length(A::PeriodicArray)
+    A.dperiod
+end
+Base.eltype(A::PeriodicArray) = eltype(A.M)
+
+"""
+    getindex(A::PeriodicArray, i)
+    getindex(A::SwitchingPeriodicArray, i)
+
+Return the `i`-th component matrix of the discrete-time periodic matrix `A`. Equivalent to the syntax `A[i]`. 
+"""
 function Base.getindex(A::PM, ind::Int) where PM <: PeriodicArray
    A.M[:,:,mod(ind-1,A.dperiod)+1]
 end
-function Base.lastindex(A::PM) where PM <: PeriodicArray
-   return A.dperiod
-end
+"""
+    getindex(A::PeriodicArray, ind1, ind2)
+    getindex(A::SwitchingPeriodicArray, ind1, ind2)
+
+Return the discrete-time periodic matrix built from the selected ranges `[ind1,ind2]` of elements of the component matrices. 
+`ind1` and `ind2` may be integers, integer ranges or colons.  
+"""
 function Base.getindex(A::PM, inds...) where PM <: PeriodicArray
    size(inds, 1) != 2 &&
        error("Must specify 2 indices to index a periodic matrix")
    rows, cols = index2range(inds...) 
    PeriodicArray{:d,eltype(A)}(A.M[rows,cols,:], A.period; nperiod = A.nperiod)
 end
+"""
+    lastindex(A::PeriodicArray)
+    lastindex(A::SwitchingPeriodicArray)
+
+Return the last index of the component matrices of the discrete-time periodic matrix `A`. 
+The syntax `A[end]` is equivalent to `A[lastindex(A)]`. 
+"""
+function Base.lastindex(A::PM) where PM <: PeriodicArray
+   return A.dperiod
+end
+"""
+    lastindex(A::PeriodicArray,dim)
+    lastindex(A::SwitchingPeriodicArray,dim)
+
+Return the last index along dimension `dim` of the component matrices of the discrete-time periodic matrix `A`. 
+"""
 function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicArray
    return lastindex(A.M,dim) 
 end
@@ -379,7 +480,7 @@ isconstant(A::SwitchingPeriodicArray) = (length(A.ns) == 1) || all([view(A.M,:,:
 Base.size(A::SwitchingPeriodicArray) = (size(A.M,1),size(A.M,2))
 Base.size(A::SwitchingPeriodicArray, d::Integer) = size(A.M,d)
 Base.length(A::SwitchingPeriodicArray) = length(A.ns)
-Base.eltype(A::SwitchingPeriodicArray{:d,T}) where {T} = T
+Base.eltype(A::SwitchingPeriodicArray) = eltype(A.M)
 
 function Base.getindex(A::SPM, ind::Int) where SPM <: SwitchingPeriodicArray
    A.M[:,:,findfirst(A.ns .>= mod(ind-1,A.dperiod)+1)]
@@ -506,15 +607,50 @@ function PeriodicMatrices.isconstant(f::Function, period::Real; rtol::Float64 = 
 end
 
 #isperiodic(A::PeriodicFunctionMatrix) = isconstant(A) ? true : isperiodic(A.f,A.period/A.nperiod)
-Base.size(A::PeriodicFunctionMatrix) = A.dims
+"""
+    size(A::PM)
+    size(A::PM[, dim])
+
+Return a tuple of two integers containing the dimensions of the continuous-time periodic matrix `A` of type `PM`,
+where `PM` is one of the types `PeriodicFunctionMatrix`, `HarmonicArray`, `PeriodicTimeSeriesMatrix`, `PeriodicSwitchingMatrix`, 
+`PeriodicSymbolicMatrix` or `PeriodicFunctionMatrix`. 
+Optionally you can specify a dimension `dim` to just get the length of that dimension.
+"""
+function Base.size(A::PeriodicFunctionMatrix)
+    A.dims
+end
 Base.size(A::PeriodicFunctionMatrix, d::Integer) = d <= 2 ? size(A)[d] : 1
-Base.eltype(A::PeriodicFunctionMatrix{:c,T}) where T = T
+"""
+    eltype(A::PM)
+    
+Determine the type of the elements of the continuous-time periodic matrix `A` of type `PM`,
+where `PM` is one of the types `PeriodicFunctionMatrix`, `HarmonicArray`, `PeriodicTimeSeriesMatrix`, `PeriodicSwitchingMatrix`, 
+`PeriodicSymbolicMatrix` or `PeriodicFunctionMatrix`.  
+"""
+function Base.eltype(A::PeriodicFunctionMatrix{:c,T}) where T
+    T
+end
+"""
+    getindex(A::PM, ind1, ind2)
+
+Return the continuous-time periodic matrix built from the selected ranges `[ind1,ind2]` of the elements of the continuous-time periodic matrix `A`of type `PM`,
+where `PM` is one of the types `PeriodicFunctionMatrix`, `HarmonicArray`, `PeriodicTimeSeriesMatrix`, `PeriodicSwitchingMatrix`, 
+`PeriodicSymbolicMatrix` or `PeriodicFunctionMatrix`.   
+`ind1` and `ind2` may be integers, integer ranges or colons.  
+"""
 function Base.getindex(A::PM, inds...) where PM <: PeriodicFunctionMatrix
    size(inds, 1) != 2 &&
        error("Must specify 2 indices to index a periodic matrix")
    rows, cols = index2range(inds...) 
    PeriodicFunctionMatrix{:c,eltype(A)}(t->A.f(t)[rows,cols], A.period; isconst = A._isconstant, nperiod = A.nperiod)
 end
+"""
+    lastindex(A::PM,dim)
+
+Return the last index along dimension `dim` of the continuous-time periodic matrix `A` of type `PM`,
+where `PM` is one of the types `PeriodicFunctionMatrix`, `HarmonicArray`, `PeriodicTimeSeriesMatrix`, `PeriodicSwitchingMatrix`, 
+`PeriodicSymbolicMatrix` or `PeriodicFunctionMatrix`.   
+"""
 function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicFunctionMatrix
    lastindex(A.f(0),dim)
 end
@@ -703,8 +839,9 @@ end
 # properties
 isconstant(At::PeriodicSwitchingMatrix) = length(At.values) <= 1
 #isperiodic(At::PeriodicSwitchingMatrix) = true
-Base.length(At::PeriodicSwitchingMatrix) = length(At.values) 
+Base.length(At::PeriodicSwitchingMatrix) = length(At.ts) 
 Base.size(At::PeriodicSwitchingMatrix) = length(At) > 0 ? size(At.values[1]) : (0,0)
+Base.size(At::PeriodicSwitchingMatrix, d::Integer) = length(At) > 0 ? size(At.values[1],d) : 0
 Base.eltype(At::PeriodicSwitchingMatrix{:c,T}) where {T} = T
 
 function Base.getindex(A::PM, inds...) where PM <: PeriodicSwitchingMatrix
@@ -807,8 +944,17 @@ end
 
 
 # conversions to discrete-time PeriodicMatrix
-Base.convert(::Type{<:PeriodicMatrix}, A::PeriodicArray{:d,T}) where T = 
-             PeriodicMatrix{:d,T}([A.M[:,:,i] for i in 1:size(A.M,3)],A.period; nperiod = A.nperiod)
+
+"""
+    convert(PM1,A::PM2) -> B::PM1
+
+Convert the discrete-time periodic matrix `A` of type `PM2` to the discrete-time periodic matrix `B` of type `PM1`, 
+where `PM1` and `PM2` are of types
+`PeriodicMatrix`, `SwitchingPeriodicMatrix`, `PeriodicArray` or `SwitchingPeriodicArray`.
+"""
+function Base.convert(::Type{<:PeriodicMatrix}, A::PeriodicArray{:d,T}) where T
+    PeriodicMatrix{:d,T}([A.M[:,:,i] for i in 1:size(A.M,3)],A.period; nperiod = A.nperiod)
+end
 Base.convert(::Type{<:PeriodicMatrix}, A::SwitchingPeriodicMatrix{:d,T}) where {T} = 
              PeriodicMatrix{:d,T}([A[i] for i in 1:A.dperiod],A.period; nperiod = A.nperiod)
 Base.convert(::Type{<:PeriodicMatrix}, A::SwitchingPeriodicArray{:d,T}) where {T} = 
@@ -881,12 +1027,19 @@ end
 
 
 # conversions to continuous-time PeriodicFunctionMatrix
+"""
+    convert(PM1,A::PM2) -> B::PM1
+
+Convert the continuous-time periodic matrix `A` of type `PM2` to the continuous-time periodic matrix `B` of type `PM1`, 
+where `PM1` and `PM2` are of types `PeriodicFunctionMatrix`, `HarmonicArray`, `PeriodicTimeSeriesMatrix`, `PeriodicSwitchingMatrix`, 
+`PeriodicSymbolicMatrix` or `PeriodicFunctionMatrix`. 
+"""
+function Base.convert(::Type{PeriodicFunctionMatrix}, ahr::HarmonicArray)
+    PeriodicFunctionMatrix{:c,real(eltype(ahr.values))}(t::Real -> hreval(ahr,t), ahr.period, size(ahr), ahr.nperiod, isconstant(ahr))
+end
 function Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, A::PeriodicFunctionMatrix) where T
    return eltype(A) == T ? A : PeriodicFunctionMatrix{:c,T}(x -> T.(A.f(T(x))), A.period, A.dims, A.nperiod, A._isconstant)
 end
-
-Base.convert(::Type{PeriodicFunctionMatrix}, ahr::HarmonicArray)  = 
-         PeriodicFunctionMatrix{:c,real(eltype(ahr.values))}(t::Real -> hreval(ahr,t), ahr.period, size(ahr), ahr.nperiod, isconstant(ahr))
 Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, ahr::HarmonicArray)  where T = 
          PeriodicFunctionMatrix{:c,T}(t::Real -> hreval(ahr,T(t)), ahr.period, size(ahr), ahr.nperiod, isconstant(ahr))
 #Base.convert(::Type{PeriodicFunctionMatrix}, At::PeriodicTimeSeriesMatrix) = ts2pfm(At; method = "cubic")

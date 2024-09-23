@@ -79,6 +79,7 @@ function isconstant(A::FourierFunctionMatrix)
 end
 #isperiodic(A::FourierFunctionMatrix) = true
 Base.size(A::FourierFunctionMatrix) = (size(A.M,1),size(A.M,2))
+Base.size(A::FourierFunctionMatrix, d::Integer) = d <= 2 ? size(A)[d] : 1
 Base.eltype(A::FourierFunctionMatrix{:c,T}) where T = T
 
 function Base.getindex(A::PM, inds...) where PM <: FourierFunctionMatrix

@@ -1,5 +1,6 @@
 # Periodic matrix conversions
 
+* **[`convert`](@ref)**   Conversion between discrete-time and between continuous-time periodic matrix representations.
 * **[`ts2hr`](@ref)**   Conversion of  a periodic time series matrix to a harmonic array approximation.
 * **[`pfm2hr`](@ref)**  Conversion of  a periodic function matrix to a harmonic array representation. 
 * **[`ts2pfm`](@ref)**  Conversion of  an interpolated periodic time series matrix to a periodic function matrix.
@@ -12,6 +13,8 @@
 
 
 ```@docs
+convert(::Type{<:PeriodicMatrix}, A::PeriodicArray{:d, T}) where T
+convert(::Type{PeriodicFunctionMatrix}, ahr::HarmonicArray)
 ts2hr
 pfm2hr
 ts2pfm

@@ -385,7 +385,7 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 #Xr1 = prdlyap(Ad1, Qdr1);
 @test Ad'*pmshift(Xd1)*Ad + Qdr ≈ Xd1 
 
-@test Ad[1:2,1:1].M == [Ad.M[i][1:2,1:1] for i in 1:length(Ad)] && lastindex(Ad,1) == n && lastindex(Ad,2) == n
+@test Ad[1:2,1:1].M == [Ad.M[i][1:2,1:1] for i in 1:length(Ad)] && lastindex(Ad,1) == [n;n;n] && lastindex(Ad,2) == [n;n;n]
 
 
 @test [[Ad Ad]; [Ad Ad]] == [[Ad;Ad] [Ad;Ad]]
@@ -428,7 +428,7 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 # Xr1 = prdlyap(Ad1, Qdr1);
 @test Ad'*pmshift(Xd1)*Ad + Qdr ≈ Xd1 
 
-@test Ad[1:1,1:1].M == [Ad.M[i][1:1,1:1] for i in 1:length(Ad)] && lastindex(Ad,1) == 1 && lastindex(Ad,2) == 1
+@test Ad[1:1,1:1].M == [Ad.M[i][1:1,1:1] for i in 1:length(Ad)] && lastindex(Ad,1) == size(Ad,1) && lastindex(Ad,2) == size(Ad,2)
 
 @test blockdiag(Ad1,Xd1)[10] ≈ bldiag(Ad1[10],Xd1[10]) 
 
@@ -472,7 +472,7 @@ D = rand(n,n)
       SwitchingPeriodicMatrix(D,2*pi) ≈ SwitchingPeriodicMatrix(D,4*pi)
 
 
-@test Ad[1:2,1:1].M == [Ad.M[i][1:2,1:1] for i in 1:length(Ad.M)] && lastindex(Ad,1) == n && lastindex(Ad,2) == n
+@test Ad[1:2,1:1].M == [Ad.M[i][1:2,1:1] for i in 1:length(Ad.M)] && lastindex(Ad,1) == size(Ad,1) && lastindex(Ad,2) == size(Ad,2)
 
 @test [[Ad Xd]; [Xd Ad]] == [[Ad;Xd] [Xd;Ad]]
 
