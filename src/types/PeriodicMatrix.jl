@@ -353,10 +353,16 @@ Base.size(A::PeriodicArray, d::Integer) = size(A.M,d)
 
 Determine the type of the elements of component matrices of the discrete-time periodic matrix `A`. 
 """
-function Base.length(A::PeriodicArray)
-    A.dperiod
-end
 Base.eltype(A::PeriodicArray) = eltype(A.M)
+"""
+    length(A::PeriodicArray)
+    length(A::SwitchingPeriodicArray)
+
+Return the number of component matrices (also called the discrete period) of the discrete-time periodic matrix `A`.  
+"""
+function Base.length(A::PeriodicArray)
+   A.dperiod
+end
 
 """
     getindex(A::PeriodicArray, i)
