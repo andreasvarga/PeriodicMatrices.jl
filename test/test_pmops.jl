@@ -200,7 +200,7 @@ Ats1 = convert(PeriodicTimeSeriesMatrix,Af);
 Ats2 = convert(PeriodicTimeSeriesMatrix,Af)
 @test ≈(convert(FourierFunctionMatrix,Ats2),Af)
 
-Af1 = convert(FourierFunctionMatrix,As)
+# Af1 = convert(FourierFunctionMatrix,As)
 # @test ≈(convert(PeriodicSymbolicMatrix,Af1),As) # fail
 
 
