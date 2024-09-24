@@ -180,6 +180,30 @@ Cf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(C,2*pi));
 Cdf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Cd,2*pi));
 Xf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(X,2*pi));
 Xderf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Xder,2*pi));
+
+@test set_period(set_period(Af,4pi),2pi) == Af
+@test FourierFunctionMatrix(Af.M) == Af
+a = rand(2,2);
+Af1=FourierFunctionMatrix(a,3)
+@test a == pmaverage(Af1)
+@test isconstant(FourierFunctionMatrix(rand(1,1),3))
+
+At1=convert(PeriodicFunctionMatrix,Af)
+@test ≈(convert(FourierFunctionMatrix,At1),Af)
+
+Ah1 = convert(HarmonicArray,Af)
+@test ≈(convert(FourierFunctionMatrix,Ah1),Af)
+
+Ats1 = convert(PeriodicTimeSeriesMatrix,Af);
+@test ≈(convert(FourierFunctionMatrix,Ats1),Af)
+
+Ats2 = convert(PeriodicTimeSeriesMatrix,Af)
+@test ≈(convert(FourierFunctionMatrix,Ats2),Af)
+
+Af1 = convert(FourierFunctionMatrix,As)
+# @test ≈(convert(PeriodicSymbolicMatrix,Af1),As) # fail
+
+
 @test issymmetric(Cf) && issymmetric(Cdf) && issymmetric(Xf) && issymmetric(Xderf)
 @test Af*Xf+Xf*Af'+Cf ≈  pmderiv(Xf) ≈ Xderf
 @test Af'*Xf+Xf*Af+Cdf ≈ -pmderiv(Xf) 

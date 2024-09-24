@@ -53,31 +53,41 @@ function FourierFunctionMatrix{:c,T}(A::FourierFunctionMatrix, period::Real) whe
    elseif period < Aperiod
       nperiod = div(A.nperiod,n)
       nperiod < 1 && error("new period is incommensurate with the old period")
-      FourierFunctionMatrix{:c,T,Fun}(A.M, Aperiod/n, A.nperiod)
+      FourierFunctionMatrix{:c,T,Fun}(A.M, Aperiod/n, nperiod)
    end
 end
-FourierFunctionMatrix(A0::VecOrMat{T}, period::Real) where {T <: Real}  = 
-    FourierFunctionMatrix{:c,float(T)}(Fun(t->float(T).(A0),Fourier(0..period)), period) 
+set_period(A::FourierFunctionMatrix, period::Real) = FourierFunctionMatrix{:c,eltype(A)}(A,period)
+
 FourierFunctionMatrix{:c,T}(A0::VecOrMat, period::Real) where {T <: Real}  = 
     FourierFunctionMatrix{:c,float(T)}(Fun(t->float(T).(A0),Fourier(0..period)), period) 
+FourierFunctionMatrix(A0::VecOrMat{T}, period::Real) where {T <: Real}  = 
+    FourierFunctionMatrix{:c,float(T)}(A0, period) 
 function isconstant(A::FourierFunctionMatrix)
-   k = length(size(A.M))
-   if  k > 1
-     for i = 1:size(A,1)
-          for j = 1: size(A,2)
-              ncoefficients(chop(A.M[i,j])) <= 1 || (return false)
-          end
-      end
-   elseif k == 1
-      for i = 1:size(A,1)
-          ncoefficients(chop(A.M[i])) <= 1 || (return false)
-      end
-   else
-      ncoefficients(chop(A.M)) <= 1 || (return false)      
+   for i = 1:size(A,1)
+       for j = 1: size(A,2)
+           ncoefficients(chop(A.M[i,j])) <= 1 || (return false)
+       end
    end
    return true
 end
-#isperiodic(A::FourierFunctionMatrix) = true
+# function isconstant(A::FourierFunctionMatrix)
+#    k = length(size(A.M))
+#    if  k > 1
+#      for i = 1:size(A,1)
+#           for j = 1: size(A,2)
+#               ncoefficients(chop(A.M[i,j])) <= 1 || (return false)
+#           end
+#       end
+#    elseif k == 1
+#       for i = 1:size(A,1)
+#           ncoefficients(chop(A.M[i])) <= 1 || (return false)
+#       end
+#    else
+#       ncoefficients(chop(A.M)) <= 1 || (return false)      
+#    end
+#    return true
+# end
+
 Base.size(A::FourierFunctionMatrix) = (size(A.M,1),size(A.M,2))
 Base.size(A::FourierFunctionMatrix, d::Integer) = d <= 2 ? size(A)[d] : 1
 Base.eltype(A::FourierFunctionMatrix{:c,T}) where T = T
@@ -94,11 +104,13 @@ end
 
 # conversion to periodic function matrix
 function Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, A::FourierFunctionMatrix) where T
-   return eltype(A) == T ? A : PeriodicFunctionMatrix{:c,T}(x -> T.(A.M(T(x))), A.period, size(A), A.nperiod, isconstant(A))
+   return PeriodicFunctionMatrix{:c,T}(x -> T.(A.M(T(x))), A.period, size(A), A.nperiod, isconstant(A))
 end
-function Base.convert(::Type{PeriodicFunctionMatrix}, A::FourierFunctionMatrix)
-   return PeriodicFunctionMatrix{:c,eltype(A)}(x -> A.M(x), A.period, size(A.M), A.nperiod, isconstant(A))
-end
+Base.convert(::Type{PeriodicFunctionMatrix}, A::FourierFunctionMatrix) = convert(PeriodicFunctionMatrix{:c,eltype(A)}, A)
+
+# function Base.convert(::Type{PeriodicFunctionMatrix}, A::FourierFunctionMatrix)
+#    return PeriodicFunctionMatrix{:c,eltype(A)}(x -> A.M(x), A.period, size(A.M), A.nperiod, isconstant(A))
+# end
 
 # conversions to continuous-time Fourier function matrix
 function Base.convert(::Type{FourierFunctionMatrix}, A::PeriodicFunctionMatrix) 
@@ -119,5 +131,8 @@ Base.convert(::Type{HarmonicArray}, A::FourierFunctionMatrix) = ffm2hr(A)
 
 # conversions to PeriodicTimeSeriesMatrix
 function Base.convert(::Type{PeriodicTimeSeriesMatrix}, A::FourierFunctionMatrix; ns::Int = 128)
-    convert(PeriodicTimeSeriesMatrix,convert(PeriodicFunctionMatrix,A);ns)
+   ns > 0 || throw(ArgumentError("number of samples must be positive, got $ns"))
+   ts = (0:ns-1)*A.period/ns/A.nperiod
+   PeriodicTimeSeriesMatrix(tpmeval.(Ref(A),ts), A.period; nperiod = A.nperiod)
+   #convert(PeriodicTimeSeriesMatrix,convert(PeriodicFunctionMatrix,A);ns)
 end
