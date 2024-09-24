@@ -119,6 +119,23 @@ Cds = PeriodicSymbolicMatrix(-(A11'*X1+X1*A11+X1der),2*pi)
 Xs = PeriodicSymbolicMatrix(X1,2*pi)
 Xders = PeriodicSymbolicMatrix(X1der,2*pi)
 
+@test set_period(set_period(As,4pi),2pi) == As
+
+At=convert(PeriodicFunctionMatrix,As)
+@test ≈(convert(PeriodicSymbolicMatrix,At),As)
+
+Ats = convert(PeriodicTimeSeriesMatrix,At);
+@test ≈(convert(PeriodicSymbolicMatrix,Ats),As)
+
+Ah = convert(HarmonicArray,As)
+@test ≈(convert(PeriodicSymbolicMatrix,Ah),As)
+
+Ats2 = convert(PeriodicTimeSeriesMatrix,As)
+@test ≈(convert(PeriodicSymbolicMatrix,Ats2),As)
+
+At1=PeriodicFunctionMatrix(A11,2pi)
+@test ≈(convert(PeriodicSymbolicMatrix,At1),As)
+
 @test issymmetric(Cs) && issymmetric(Cds) && issymmetric(Xs) && issymmetric(Xders)
 @test As*Xs+Xs*As'+Cs ==  pmderiv(Xs) == Xders
 @test As'*Xs+Xs*As+Cds == -pmderiv(Xs) 
@@ -145,7 +162,7 @@ Xders = PeriodicSymbolicMatrix(X1der,16*pi,nperiod = 8)
 @test (Symbolics.simplify(inv(As)*As) ≈ I) && (I ≈ Symbolics.simplify(As*inv(As))) 
 @test inv(As)*As == I == As*inv(As) 
 
-@test iszero(As[1:2,1:1].F - As.F[1:2,1:1]) && lastindex(As,1) == 2 && lastindex(As,2) == 2
+@test iszero(As[1:2,1:1].F - As.F[1:2,1:1]) && lastindex(As,1) == size(As,1) && lastindex(As,2) == size(As,2)
 
 t = rand(); 
 @test [As Cs](t) ≈ [As(t) Cs(t)]

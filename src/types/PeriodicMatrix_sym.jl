@@ -48,14 +48,14 @@ function PeriodicSymbolicMatrix{:c,T}(A::PeriodicSymbolicMatrix, period::Real) w
    n, d = numerator(r), denominator(r)
    min(n,d) == 1 || error("new period is incommensurate with the old period")
    if period >= Aperiod
-      PeriodicSymbolicMatrix{:c,T,Matrix{Fun}}(A.F, Aperiod*d, A.nperiod*d)
+      PeriodicSymbolicMatrix{:c,T,Matrix{Num}}(A.F, Aperiod*d, A.nperiod*d)
    elseif period < Aperiod
       nperiod = div(A.nperiod,n)
       nperiod < 1 && error("new period is incommensurate with the old period")
-      PeriodicSymbolicMatrix{:c,T,Matrix{Fun}}(A.F, Aperiod/n, A.nperiod)
+      PeriodicSymbolicMatrix{:c,T,Matrix{Num}}(A.F, Aperiod/n, nperiod)
    end
 end
-set_period(A::PM, period::Real) where {T, PM <: AbstractPeriodicArray{:c,T}} = PM(A,period)
+set_period(A::PeriodicSymbolicMatrix, period::Real) = PeriodicSymbolicMatrix{:c,eltype(A)}(A,period)
 
 # properties 
 isconstant(A::PeriodicSymbolicMatrix) = all(length.(Symbolics.get_variables.(A.F)) .== 0)
@@ -86,24 +86,26 @@ function Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, A::PeriodicSymbolicM
    f = eval(build_function(A.F, t, expression=Val{false}, nanmath=false)[1])
    PeriodicFunctionMatrix{:c,T}(x -> f(T(x)), A.period, size(A), A.nperiod, isconstant(A))
 end
-function Base.convert(::Type{PeriodicFunctionMatrix}, A::PeriodicSymbolicMatrix) 
-   @variables t
-   f = eval(build_function(A.F, t, expression=Val{false}, nanmath=false)[1])
-   return PeriodicFunctionMatrix{:c,Float64}(x -> f(x), A.period, size(A), A.nperiod, isconstant(A))
-end
+# function Base.convert(::Type{PeriodicFunctionMatrix}, A::PeriodicSymbolicMatrix) 
+#    @variables t
+#    f = eval(build_function(A.F, t, expression=Val{false}, nanmath=false)[1])
+#    return PeriodicFunctionMatrix{:c,Float64}(x -> f(x), A.period, size(A), A.nperiod, isconstant(A))
+# end
+Base.convert(::Type{PeriodicFunctionMatrix}, A::PeriodicSymbolicMatrix) = convert(PeriodicFunctionMatrix{:c,Float64}, A)
+
 
 
 # conversions to continuous-time PeriodicSymbolicMatrix
-function Base.convert(::Type{PeriodicSymbolicMatrix}, A::PeriodicFunctionMatrix) 
-   @variables t
-   # PeriodicSymbolicMatrix(Num.(A.f(t)), A.period; nperiod = A.nperiod)
-   M = try 
-      Num.(A.f(t))
-   catch 
-      return convert(PeriodicSymbolicMatrix,convert(HarmonicArray,A))
-   end
-   PeriodicSymbolicMatrix(M, A.period; nperiod = A.nperiod)
-end
+# function Base.convert(::Type{PeriodicSymbolicMatrix}, A::PeriodicFunctionMatrix) 
+#    @variables t
+#    # PeriodicSymbolicMatrix(Num.(A.f(t)), A.period; nperiod = A.nperiod)
+#    M = try 
+#       Num.(A.f(t))
+#    catch 
+#       return convert(PeriodicSymbolicMatrix,convert(HarmonicArray,A))
+#    end
+#    PeriodicSymbolicMatrix(M, A.period; nperiod = A.nperiod)
+# end
 function Base.convert(::Type{PeriodicSymbolicMatrix{:c,T}}, A::PeriodicFunctionMatrix) where {T}
    try 
       @variables t
@@ -112,6 +114,7 @@ function Base.convert(::Type{PeriodicSymbolicMatrix{:c,T}}, A::PeriodicFunctionM
       convert(PeriodicSymbolicMatrix,convert(HarmonicArray,A))
    end
 end
+Base.convert(::Type{PeriodicSymbolicMatrix}, A::PeriodicFunctionMatrix) = convert(PeriodicSymbolicMatrix{:c,eltype(A)}, A)
 Base.convert(::Type{PeriodicSymbolicMatrix}, ahr::HarmonicArray) = 
    PeriodicSymbolicMatrix(hr2psm(ahr), ahr.period; nperiod = ahr.nperiod)
 Base.convert(::Type{PeriodicSymbolicMatrix}, A::PeriodicTimeSeriesMatrix) = 
@@ -122,11 +125,18 @@ Base.convert(::Type{PeriodicSymbolicMatrix}, A::PeriodicTimeSeriesMatrix) =
 Base.convert(::Type{HarmonicArray}, A::PeriodicSymbolicMatrix) = psm2hr(A)
 
 # conversions to PeriodicTimeSeriesMatrix
+# function Base.convert(::Type{PeriodicTimeSeriesMatrix}, A::PeriodicSymbolicMatrix; ns::Int = 128)
+#    ns > 0 || throw(ArgumentError("number of samples must be positive, got $ns"))
+#    tA = convert(PeriodicFunctionMatrix,A)
+#    PeriodicTimeSeriesMatrix(tA.f.((0:ns-1)*tA.period/ns/tA.nperiod), tA.period; nperiod = tA.nperiod)
+# end
+
 function Base.convert(::Type{PeriodicTimeSeriesMatrix}, A::PeriodicSymbolicMatrix; ns::Int = 128)
    ns > 0 || throw(ArgumentError("number of samples must be positive, got $ns"))
-   tA = convert(PeriodicFunctionMatrix,A)
-   PeriodicTimeSeriesMatrix(tA.f.((0:ns-1)*tA.period/ns/tA.nperiod), tA.period; nperiod = tA.nperiod)
+   ts = (0:ns-1)*A.period/ns/A.nperiod
+   PeriodicTimeSeriesMatrix(tpmeval.(Ref(A),ts), A.period; nperiod = A.nperiod)
 end
+
 
 function PeriodicFunctionMatrix(A::VecOrMat{Num}, period::Real) 
    @variables t

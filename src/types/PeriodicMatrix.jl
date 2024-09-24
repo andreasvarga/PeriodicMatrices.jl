@@ -64,6 +64,9 @@ function set_period(A::AbstractPeriodicArray{:d,T}, period::Real) where T
       PeriodicMatrix{:d,T}(A.M, Aperiod/n, nperiod)
    end
 end
+# function set_period(A::PM, period::Real) where {T, PM <: AbstractPeriodicArray{:c,T}}
+#    PM{:c,T}(A,period)
+# end
 
 
 # function PeriodicMatrix{:d,T}(A::Vector{Matrix{T1}}, period::Real) where {T,T1}
@@ -593,7 +596,7 @@ function PeriodicFunctionMatrix{:c,T}(at::PeriodicFunctionMatrix, period::Real) 
    end
 end
 PeriodicFunctionMatrix(at::PeriodicFunctionMatrix, period::Real) = PeriodicFunctionMatrix{:c,eltype(at)}(at, period) 
-#set_period(A::PeriodicFunctionMatrix, period::Real) = PeriodicFunctionMatrix{:c,eltype(A)}(A,period)
+set_period(A::PeriodicFunctionMatrix, period::Real) = PeriodicFunctionMatrix{:c,eltype(A)}(A,period)
 
 # function PeriodicFunctionMatrix(at::PeriodicFunctionMatrix, period::Real = at.period; isconst::Bool = isconstant(at))
 #    # at.period = period

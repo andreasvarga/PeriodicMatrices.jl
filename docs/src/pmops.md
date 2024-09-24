@@ -25,7 +25,7 @@ issymmetric
 
 ```@docs
 
-LinearAlgebra.norm(A::PeriodicFunctionMatrix, p::Real; rtol)
+norm(A::Union{HarmonicArray, PeriodicFunctionMatrix}, p::Real; rtol)
 trace(A::Union{HarmonicArray, PeriodicFunctionMatrix}; rtol)
 pmderiv
 ```
@@ -36,7 +36,7 @@ pmderiv
 
 ```@docs
 Base.reverse
-LinearAlgebra.norm(A::PeriodicArray, p::Real)
+norm(A::PeriodicArray)
 trace(A::PeriodicArray)
 pmshift
 pmsymadd!
