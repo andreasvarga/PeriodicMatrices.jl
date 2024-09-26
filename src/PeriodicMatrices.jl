@@ -37,7 +37,7 @@ export pmmulsym, pmtrmulsym, pmmultrsym, pmmuladdsym, pmmultraddsym, pmmuladdtrs
 export AbstractPeriodicArray
 
 export PeriodicSymbolicMatrix, psm2hr, hr2psm
-export FourierFunctionMatrix, psceigfr, ffm2hr
+export FourierFunctionMatrix, psceigfr, ffm2hr, ffm2psm
 
 abstract type AbstractPeriodicArray{Domain,T} end
 

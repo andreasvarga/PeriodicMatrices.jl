@@ -169,24 +169,22 @@ t = rand();
 @test [As; Cs](t) ≈ [As(t); Cs(t)]
 @test blockdiag(As,Cs)(t) ≈ bldiag(As(t),Cs(t))
 
-
-
-
-
 # FourierFunctionMatrix
-Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,2*pi));
-Af1 = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A1,2*pi));
-Cf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(C,2*pi));
-Cdf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Cd,2*pi));
-Xf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(X,2*pi));
-Xderf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Xder,2*pi));
+@time Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,2*pi));
+@time Af1 = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A1,2*pi));
+@time Cf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(C,2*pi));
+@time Cdf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Cd,2*pi));
+@time Xf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(X,2*pi));
+@time Xderf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Xder,2*pi));
 
 @test set_period(set_period(Af,4pi),2pi) == Af
 @test FourierFunctionMatrix(Af.M) == Af
 a = rand(2,2);
-Af1=FourierFunctionMatrix(a,3)
-@test a == pmaverage(Af1)
+Af11=FourierFunctionMatrix(a,3)
+@test a == pmaverage(Af11)
 @test isconstant(FourierFunctionMatrix(rand(1,1),3))
+
+As = PeriodicSymbolicMatrix(A11,2*pi)
 
 At1=convert(PeriodicFunctionMatrix,Af)
 @test ≈(convert(FourierFunctionMatrix,At1),Af)
@@ -200,8 +198,11 @@ Ats1 = convert(PeriodicTimeSeriesMatrix,Af);
 Ats2 = convert(PeriodicTimeSeriesMatrix,Af)
 @test ≈(convert(FourierFunctionMatrix,Ats2),Af)
 
-# Af1 = convert(FourierFunctionMatrix,As)
-# @test ≈(convert(PeriodicSymbolicMatrix,Af1),As) # fail
+Af11 = convert(FourierFunctionMatrix,As)
+As1 = convert(PeriodicSymbolicMatrix,Af11)
+@test ≈(As1,As) 
+@test ≈(Af11,Af)
+@test ≈(As,PeriodicSymbolicMatrix(ffm2psm(Af,0:0)+ffm2psm(Af,1:1),As.period))
 
 
 @test issymmetric(Cf) && issymmetric(Cdf) && issymmetric(Xf) && issymmetric(Xderf)
@@ -223,11 +224,11 @@ D = rand(2,2)
 @test blockdiag(Af,Cf)(t) ≈ bldiag(Af(t),Cf(t))
 
 
-Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,4*pi,nperiod=2));
-Cf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(C,2*pi));
-Cdf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Cd,2*pi));
-Xf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(X,8*pi,nperiod=4));
-Xderf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Xder,16*pi,nperiod=8));
+@time Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,4*pi,nperiod=2));
+@time Cf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(C,2*pi));
+@time Cdf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Cd,2*pi));
+@time Xf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(X,8*pi,nperiod=4));
+@time Xderf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Xder,16*pi,nperiod=8));
 @test Af*Xf+Xf*Af'+Cf ≈  pmderiv(Xf) ≈ Xderf
 @test Af'*Xf+Xf*Af+Cdf ≈ -pmderiv(Xf) 
 @test norm(Af*Xf+Xf*Af'+Cf-pmderiv(Xf),Inf) < 1.e-7 && norm(pmderiv(Xf)- Xderf) < 1.e-7
