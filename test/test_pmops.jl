@@ -33,6 +33,7 @@ Cdt = PeriodicFunctionMatrix(Cd,2*pi)
 Xt = PeriodicFunctionMatrix(X,2*pi)
 Xdert = PeriodicFunctionMatrix(Xder,2*pi)
 
+@test eltype(At) == Float64
 @test convert(PeriodicFunctionMatrix{:c,BigFloat},At)(1) ≈ At(1)
 @test convert(HarmonicArray{:c,Float64},At) == convert(HarmonicArray,At)
 @test convert(PeriodicSwitchingMatrix,At)(0) ≈ At(0)
@@ -85,7 +86,7 @@ A0 = rand(2,2); Acos = [rand(2,2)]; Asin = [rand(2,2),rand(2,2)]
 HarmonicArray(A0,Acos,Asin,pi)
 @test iszero(imag(HarmonicArray(A0,Acos,pi).values))
 @test iszero(real(HarmonicArray(zeros(2,2),nothing,Asin,pi).values))
-@test HarmonicArray(A0,pi) == HarmonicArray(A0,nothing,nothing,pi)
+@test HarmonicArray(A0,pi) == HarmonicArray(A0,nothing,nothing,pi) == HarmonicArray{:c,Float64}(A0,pi)
 
 At = PeriodicFunctionMatrix(A,2*pi); 
 Ah = convert(HarmonicArray,At);
@@ -409,7 +410,7 @@ Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 @test !iscontinuous(Ad) 
 
 @test convert(PeriodicTimeSeriesMatrix,Ad) == convert(PeriodicTimeSeriesMatrix,convert(PeriodicMatrix,Ad))
-
+@test convert(PeriodicArray,convert(SwitchingPeriodicMatrix,Ad)) == Ad
 
 
 
