@@ -49,21 +49,23 @@ function PeriodicMatrix{:d,T}(A::PeriodicMatrix{:d,T1}, period::Real) where {T,T
       PeriodicMatrix{:d,T}([T.(A.M[i]) for i in 1:length(A)], Aperiod/n, nperiod)
    end
 end
-set_period(A::AbstractVecOrMat,period::Real) = A
-function set_period(A::AbstractPeriodicArray{:d,T}, period::Real) where T
-   period > 0 || error("period must be positive") 
-   Aperiod = A.period
-   r = rationalize(Aperiod/period)
-   n, d = numerator(r), denominator(r)
-   min(n,d) == 1 || error("new period is incommensurate with the old period")
-   if period >= Aperiod
-      PeriodicMatrix{:d,T}(A.M, Aperiod*d, A.nperiod*d)
-   elseif period < Aperiod
-      nperiod = div(A.nperiod,n)
-      nperiod < 1 && error("new period is incommensurate with the old period")
-      PeriodicMatrix{:d,T}(A.M, Aperiod/n, nperiod)
-   end
-end
+set_period(A::PeriodicMatrix, period::Real) = PeriodicMatrix{:d,eltype(A)}(A,period)
+
+# set_period(A::AbstractVecOrMat,period::Real) = A
+# function set_period(A::AbstractPeriodicArray{:d,T}, period::Real) where T
+#    period > 0 || error("period must be positive") 
+#    Aperiod = A.period
+#    r = rationalize(Aperiod/period)
+#    n, d = numerator(r), denominator(r)
+#    min(n,d) == 1 || error("new period is incommensurate with the old period")
+#    if period >= Aperiod
+#       PeriodicMatrix{:d,T}(A.M, Aperiod*d, A.nperiod*d)
+#    elseif period < Aperiod
+#       nperiod = div(A.nperiod,n)
+#       nperiod < 1 && error("new period is incommensurate with the old period")
+#       PeriodicMatrix{:d,T}(A.M, Aperiod/n, nperiod)
+#    end
+# end
 # function set_period(A::PM, period::Real) where {T, PM <: AbstractPeriodicArray{:c,T}}
 #    PM{:c,T}(A,period)
 # end
@@ -246,6 +248,7 @@ function SwitchingPeriodicMatrix{:d,T}(A::SwitchingPeriodicMatrix{:d,T1}, period
       SwitchingPeriodicMatrix{:d,T}([T.(A.M[i]) for i in 1:length(A.M)], A.ns, Aperiod/n, nperiod)
    end
 end
+set_period(A::SwitchingPeriodicMatrix, period::Real) = SwitchingPeriodicMatrix{:d,eltype(A)}(A,period)
 
 
 function Base.getproperty(A::SwitchingPeriodicMatrix, d::Symbol)  
@@ -322,6 +325,8 @@ function PeriodicArray{:d,T}(A::PeriodicArray{:d,T1}, period::Real) where {T,T1}
       PeriodicArray{:d,T}(convert(Array{T,3},A.M), Aperiod/n; nperiod)
    end
 end
+set_period(A::PeriodicArray, period::Real) = PeriodicArray{:d,eltype(A)}(A,period)
+
 
 #PeriodicArray{:d,T}(M::Array{T1,3}, period::Real; nperiod::Int = 1) where {T,T1} = PeriodicArray(T.(M), period; nperiod)
 PeriodicArray(M::AbstractArray{T,3}, period::Real; nperiod::Int = 1) where {T <: Real} = PeriodicArray{:d,T}(M, period, nperiod)
@@ -411,7 +416,7 @@ end
 
 iscontinuous(A::AbstractPeriodicArray) = typeof(A).parameters[1] == :c 
 #iscontinuous(A) = typeof(A).parameters[1] == :c 
-iscontinuous(A::Type) = A.parameters[1] == :c 
+#iscontinuous(A::Type) = A.parameters[1] == :c 
 
 
 """
@@ -471,6 +476,8 @@ function SwitchingPeriodicArray{:d,T}(A::SwitchingPeriodicArray{:d,T1}, period::
       SwitchingPeriodicArray{:d,T}(convert(Array{T,3},A.M), A.ns, Aperiod/n; nperiod)
    end
 end
+set_period(A::SwitchingPeriodicArray, period::Real) = SwitchingPeriodicArray{:d,eltype(A)}(A,period)
+
 
 SwitchingPeriodicArray(M::Array{T,3}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {T <: Real} = SwitchingPeriodicArray{:d,T}(M, ns, period; nperiod)
 SwitchingPeriodicArray(M::VecOrMat{T}, period::Real; nperiod::Int = 1) where T = SwitchingPeriodicArray(reshape(M,size(M,1),size(M,2),1), [1], period; nperiod)
@@ -592,7 +599,7 @@ function PeriodicFunctionMatrix{:c,T}(at::PeriodicFunctionMatrix, period::Real) 
    elseif period < Aperiod
       nperiod = div(at.nperiod,n)
       nperiod < 1 && error("new period is incommensurate with the old period")
-      PeriodicFunctionMatrix{:c,T}(at.f, Aperiod/n, at.dims, at.nperiod, false)
+      PeriodicFunctionMatrix{:c,T}(at.f, Aperiod/n, at.dims, nperiod, false)
    end
 end
 PeriodicFunctionMatrix(at::PeriodicFunctionMatrix, period::Real) = PeriodicFunctionMatrix{:c,eltype(at)}(at, period) 
@@ -718,6 +725,8 @@ function HarmonicArray{:c,T}(A::HA, period::Real) where {HA <: HarmonicArray} wh
       HarmonicArray{:c,T}(convert(Array{Complex{T},3},A.values), Aperiod/n; nperiod)
    end
 end
+set_period(A::HarmonicArray, period::Real) = HarmonicArray{:c,eltype(A)}(A,period)
+
 """
      HarmonicArray(A0, Ac, As, T) -> A::HarmonicArray
 
@@ -832,6 +841,7 @@ function PeriodicSwitchingMatrix{:c,T}(A::PeriodicSwitchingMatrix{:c,T1}, period
       PeriodicSwitchingMatrix{:c,T}([T.(A.values[i]) for i in 1:length(A)], A.ts, Aperiod/n; nperiod)
    end
 end
+set_period(A::PeriodicSwitchingMatrix, period::Real) = PeriodicSwitchingMatrix{:c,eltype(A)}(A,period)
 function  PeriodicSwitchingMatrix(M::AbstractArray{T,3}, ts::Vector{T1}, period::Real; nperiod::Int = 1) where {T <: Real, T1 <: Real} 
    period > 0 || error("period must be positive")       
    nperiod > 0 || error("number of subperiods must be positive") 
@@ -917,12 +927,13 @@ function PeriodicTimeSeriesMatrix{:c,T}(A::PeriodicTimeSeriesMatrix{:c,T1}, peri
       PeriodicTimeSeriesMatrix{:c,T}([T.(A.values[i]) for i in 1:length(A)], Aperiod/n; nperiod)
    end
 end
+set_period(A::PeriodicTimeSeriesMatrix, period::Real) = PeriodicTimeSeriesMatrix{:c,eltype(A)}(A,period)
 
 # properties
 isconstant(At::PeriodicTimeSeriesMatrix) = length(At.values) <= 1
-#isperiodic(At::PeriodicTimeSeriesMatrix) = true
 Base.length(At::PeriodicTimeSeriesMatrix) = length(At.values) 
 Base.size(At::PeriodicTimeSeriesMatrix) = length(At) > 0 ? size(At.values[1]) : (0,0)
+Base.size(At::PeriodicTimeSeriesMatrix, d::Integer) = length(At) > 0 ? size(At.values[1],d) : 0
 Base.eltype(At::PeriodicTimeSeriesMatrix{:c,T}) where T = T
 
 function Base.getproperty(A::PeriodicTimeSeriesMatrix, d::Symbol)  
@@ -1010,7 +1021,10 @@ end
 Base.convert(::Type{PeriodicArray}, A::SwitchingPeriodicMatrix) = convert(PeriodicArray,convert(PeriodicMatrix,A))
 #Base.convert(::Type{PeriodicArray}, A::SwitchingPeriodicArray) = convert(PeriodicArray,convert(PeriodicMatrix,A))
 function Base.convert(::Type{SwitchingPeriodicMatrix}, A::SwitchingPeriodicArray{:d,T}) where {T}
-   SwitchingPeriodicMatrix{:d,T}([A.M[:,:,A.ns[i]] for i in 1:length(A.ns)], A.ns, A.period; nperiod = A.nperiod)
+   SwitchingPeriodicMatrix{:d,T}([A.M[:,:,i] for i in 1:length(A.ns)], A.ns, A.period; nperiod = A.nperiod)
+end
+function Base.convert(::Type{SwitchingPeriodicArray}, A::SwitchingPeriodicMatrix{:d,T}) where {T}
+   convert(SwitchingPeriodicArray,convert(PeriodicArray,A))
 end
 function Base.convert(::Type{SwitchingPeriodicArray}, A::PeriodicArray{:d,T}) where {T}
    ns = Int[]
