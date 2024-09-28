@@ -27,7 +27,7 @@ b(t) = [cos(t)]
 @test PeriodicFunctionMatrix{:c,BigFloat}(b,2pi)(1) ≈ PeriodicFunctionMatrix(b,2pi)(1)
 
 # PeriodicFunctionMatrix
-A(t) = [0  1; -10*cos(t)-1 -24-19*sin(t)]
+At = PeriodicFunctionMatrix(A,2*pi)
 Ct = PeriodicFunctionMatrix(C,2*pi)
 Cdt = PeriodicFunctionMatrix(Cd,2*pi)
 Xt = PeriodicFunctionMatrix(X,2*pi)
