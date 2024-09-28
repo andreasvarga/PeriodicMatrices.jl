@@ -27,7 +27,7 @@ b(t) = [cos(t)]
 @test PeriodicFunctionMatrix{:c,BigFloat}(b,2pi)(1) ≈ PeriodicFunctionMatrix(b,2pi)(1)
 
 # PeriodicFunctionMatrix
-At = PeriodicFunctionMatrix(A,2*pi)
+A(t) = [0  1; -10*cos(t)-1 -24-19*sin(t)]
 Ct = PeriodicFunctionMatrix(C,2*pi)
 Cdt = PeriodicFunctionMatrix(Cd,2*pi)
 Xt = PeriodicFunctionMatrix(X,2*pi)
@@ -227,8 +227,8 @@ As = PeriodicSymbolicMatrix(A11,2*pi)
 At1=convert(PeriodicFunctionMatrix,Af)
 @test ≈(convert(FourierFunctionMatrix,At1),Af)
 
-Ah1 = convert(HarmonicArray,Af)
-@test ≈(convert(FourierFunctionMatrix,Ah1),Af)
+Ah1 = convert(HarmonicArray,Af*Af)
+@test ≈(convert(FourierFunctionMatrix,Ah1),Af*Af)
 
 Ats1 = convert(PeriodicTimeSeriesMatrix,Af);
 @test ≈(convert(FourierFunctionMatrix,Ats1),Af)
@@ -260,6 +260,9 @@ D = rand(2,2)
 @test trace(Af-Af) == 0 && iszero(tr(Af-Af))
 
 @test blockdiag(Af,Cf)(t) ≈ bldiag(Af(t),Cf(t))
+
+ts = sort(rand(10))
+@test  tvmeval(Af,ts) ≈ tpmeval.(Ref(Af),ts)
 
 
 @time Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,4*pi,nperiod=2));

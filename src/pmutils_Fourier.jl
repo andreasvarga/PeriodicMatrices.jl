@@ -192,6 +192,7 @@ function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", 
              t = tf
          end
          ev = -eigvals(si,ti)
+         @show ev
       end
       sorteigvals!(ev)
    else
@@ -201,6 +202,16 @@ function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", 
    end
    return nperiod == 1 ? ev : ev.^nperiod
 end
+function psceig(at::PM, K::Int = 1; kwargs...) where {T, PM <:FourierFunctionMatrix{:c,T}} 
+   @show kwargs
+   if isconstant(at)
+      ce = eigvals(at(0))
+   else
+      ce = log.(complex(pseig(at, K; kwargs...)))/at.period
+   end
+   return isreal(ce) ? real(ce) : ce
+end
+
 """
     psceigfr(A::FourierFunctionMatrix[, N]; P, atol) -> ce
 
@@ -243,6 +254,14 @@ function psceigfr(Afun::FourierFunctionMatrix{:c,T}, N::Int = max(10,maximum(nco
    nv < n && @warn "number of eigenvalues is less than the order of matrix, try again with increased number of harmonics"
    ce = nv > n ? σ[sortperm(imag(σ),rev=true)][1:n] : σ[1:nv]
    return isreal(ce) ? real(ce) : ce
+end
+function DiagDerOp(D::Union{ApproxFunBase.DerivativeWrapper,ApproxFunBase.ConstantTimesOperator}, n::Int) 
+   Z = tuple(D,ntuple(n->0I,n-1)...)
+   for i = 2:n
+       Z1 = tuple(ntuple(n->0I,i-1)...,D,ntuple(n->0I,n-i)...)
+       Z = tuple(Z...,Z1...)
+   end
+   return hvcat(n,Z...)
 end
 
 # conversions

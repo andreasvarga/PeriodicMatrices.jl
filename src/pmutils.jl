@@ -364,7 +364,8 @@ the characteristic exponents `ce` are computed as `log.(ev)/T`,
 where  `ev` are the characteristic
 multipliers (i.e., the eigenvalues of the monodromy matrix of `A(t)`).  
 For available options see [`pseig(::PeriodicFunctionMatrix)`](@ref). 
-`A` may be given as a [`PeriodicFunctionMatrix`](@ref), or a [`HarmonicArray`](@ref). 
+`A` may be given as a [`PeriodicFunctionMatrix`](@ref), a [`HarmonicArray`](@ref)
+or a  [`FourierFunctionMatrix`](@ref). 
 For a given square discrete-time periodic matrix `A(t)` of discrete period `N`,  
 the characteristic exponents `ce` are computed as `ev.^-N`. 
 """

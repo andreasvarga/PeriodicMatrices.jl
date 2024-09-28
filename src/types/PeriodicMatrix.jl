@@ -129,9 +129,6 @@ Determine the type of the elements of component matrices of the discrete-time pe
 function Base.eltype(A::PeriodicMatrix) 
     eltype(eltype(A.M))
 end
-# function Base.eltype(A::PeriodicMatrix{:d,T}) where {T}
-#    T
-# end
 
 """
     getindex(A::PeriodicMatrix, i)
@@ -644,7 +641,7 @@ where `PM` is one of the types `PeriodicFunctionMatrix`, `HarmonicArray`, `Perio
 `PeriodicSymbolicMatrix` or `PeriodicFunctionMatrix`.  
 """
 function Base.eltype(A::PeriodicFunctionMatrix{:c,T}) where T
-    T
+    return T
 end
 """
     getindex(A::PM, ind1, ind2)

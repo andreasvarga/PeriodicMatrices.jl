@@ -122,14 +122,17 @@ println("cvals = $cvals  -- No one digit accuracy!!!")
 
 # using ApproxFun
 s = Fourier(0..2π)
-At = FourierFunctionMatrix(Fun(t -> [0 1; -10*cos(t) -24-10*sin(t)],s), 2pi)
-Atfun = convert(PeriodicFunctionMatrix,At)
+Af = FourierFunctionMatrix(Fun(t -> [0 1; -10*cos(t) -24-10*sin(t)],s), 2pi)
+Atfun = convert(PeriodicFunctionMatrix,Af)
 Ahrfun = convert(PeriodicFunctionMatrix,pfm2hr(Afun))
 
+
+@time cvals0 = psceig(Af, 500; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 @time cvals = psceig(Afun, 500; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 @time cvals1 = psceig(Atfun, 500; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 @time cvals2 = psceig(Ahrfun, 500; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
-@test cvals ≈ cvals1 ≈ cvals2
+@time cvals4 = psceigfr(Af,40)
+@test sort(cvals0) ≈ sort(cvals) ≈ sort(cvals1) ≈ sort(cvals2) ≈ sort(cvals4)
 # Tt = Fun(t -> [12+5*sin(t) 1/2; 1 0],s)
 # Tinvt=inv(Tt)
 # Atilde=Tt*At.M*Tinvt+Tt'*Tinvt
@@ -142,6 +145,12 @@ at1(t) = -[0 -1 0 0; (2+a*cos(2t)) 0 -1 0; 0 0 0 -1; -1 0 (2+a*cos(2t)) 0]
 Afun1=PeriodicFunctionMatrix(at1,pi);
 ev1 = pseig(Afun1; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 cvals1 = log.(complex(ev1))/pi
+
+Af = FourierFunctionMatrix(Fun(at1,s), pi)
+ev2 = pseig(Af,200,lifting = false)
+ev3 = pseig(Af,200,lifting = true)
+@test sort(real(ev1)) ≈ sort(real(ev2)) ≈ sort(real(ev3))
+@test sort(imag(ev1)) ≈ sort(imag(ev2)) ≈ sort(imag(ev3))
 
 a=0.15
 at2(t) = -[0 -1 0 0; (2+a*cos(2t)) 0 -1 0; 0 0 0 -1; -1 0 (2+a*cos(2t)) 0]
