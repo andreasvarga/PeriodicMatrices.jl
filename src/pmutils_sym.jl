@@ -33,13 +33,14 @@ The following solvers from the [OrdinaryDiffEq.jl](https://github.com/SciML/Ordi
 `solver = ""` - use the default solver, which automatically detects stiff problems (`AutoTsit5(Rosenbrock23())` or `AutoVern9(Rodas5())`). 
 """
 function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol = 1e-7, dt = (tf-t0)/10) where 
-         {T, PM <: PeriodicSymbolicMatrix{:c,T}}
+         {PM <: PeriodicSymbolicMatrix}
    n = size(A,1)
    n == size(A,2) || error("the function matrix must be square")
 
    isconstant(A) && ( return exp(tpmeval(A,t0)*(tf-t0)) )
    
    T1 = promote_type(typeof(t0), typeof(tf))
+   T = Float64
 
    # using OrdinaryDiffEq
    u0 = Matrix{Float64}(I,n,n)
@@ -117,11 +118,12 @@ The number of execution threads is controlled either by using the `-t/--threads`
 or by using the `JULIA_NUM_THREADS` environment variable.  
 """
 function monodromy(A::PM, K::Int = 1; solver = "non-stiff", reltol = 1e-3, abstol = 1e-7, dt = A.period/max(K,100)) where
-         {T, PM <: PeriodicSymbolicMatrix{:c,T}} 
+         {PM <: PeriodicSymbolicMatrix} 
    n = size(A,1)
    n == size(A,2) || error("the periodic matrix must be square")
    nperiod = A.nperiod
    Ts = A.period/K/nperiod
+   T = Float64
 
    M = Array{float(T),3}(undef, n, n, K) 
 
@@ -169,9 +171,43 @@ _References_
     Systems and Control Letters, 50:371-381, 2003.
 
 """
-function pseig(at::PeriodicSymbolicMatrix, K::Int = 1; kwargs...) 
-    pseig(convert(PeriodicFunctionMatrix,at),K; kwargs...)
+function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", reltol = 1e-3, abstol = 1e-7, dt = at.period/100/at.nperiod) where 
+   {PM <: PeriodicSymbolicMatrix}
+   n = size(at,1)
+   n == size(at,2) || error("the periodic matrix must be square")
+   nperiod = at.nperiod
+   t = 0  
+   Ts = at.period/K/nperiod
+   T = Float64
+   if lifting 
+      if K == 1
+         ev = eigvals(tvstm(at, at.period, 0; solver, reltol, abstol, dt)) 
+      else   
+         Z = zeros(T,n,n)
+         ZI = [ Z; -I]
+         si = tvstm(at, Ts, 0; solver, reltol, abstol); ti = -I
+         t = Ts
+         for i = 1:K-1
+             tf = t+Ts
+             F = qr([ ti; tvstm(at, tf, t; solver, reltol, abstol, dt) ])     
+             si = F.Q'*[si; Z];  si = si[n+1:end,:]
+             ti = F.Q'*ZI; ti = ti[n+1:end,:]
+             t = tf
+         end
+         ev = -eigvals(si,ti)
+         @show ev
+      end
+      sorteigvals!(ev)
+   else
+      M = monodromy(at, K; solver, reltol, abstol, dt) 
+      ev = K == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
+      isreal(ev) && (ev = real(ev))
+   end
+   return nperiod == 1 ? ev : ev.^nperiod
 end
+# function pseig(at::PeriodicSymbolicMatrix, K::Int = 1; kwargs...) 
+#     pseig(convert(PeriodicFunctionMatrix,at),K; kwargs...)
+# end
 """
      psceig(A::PeriodicSymbolicMatrix[, K = 1]; lifting = false, solver, reltol, abstol, dt) -> ce
 
@@ -183,8 +219,8 @@ where  `ev` are the characteristic
 multipliers (i.e., the eigenvalues of the monodromy matrix of `A(t)`).  
 For available options see [`pseig(::PeriodicFunctionMatrix)`](@ref). 
 """
-function psceig(at::PeriodicSymbolicMatrix, K::Int = 1; kwargs...) 
-   ce = log.(complex(pseig(convert(PeriodicFunctionMatrix,at), K; kwargs...)))/at.period
+function psceig(at::PeriodicSymbolicMatrix, K::Int = 1; fast = true, kwargs...) 
+   ce = log.(complex(pseig(fast ? convert(PeriodicFunctionMatrix,at) : at, K; kwargs...)))/at.period
    return isreal(ce) ? real(ce) : ce
 end
 
@@ -232,9 +268,14 @@ end
 Compute for the continuous-time periodic matrix `A(t)` 
 the corresponding time averaged matrix `Am` over one period.  
 """
-function pmaverage(A::PeriodicSymbolicMatrix) 
-   return real(convert(HarmonicArray,A).values[:,:,1])
+function pmaverage(A::PM; rtol = sqrt(eps())) where {PM <: PeriodicSymbolicMatrix} 
+   tsub = A.period/A.nperiod
+   tt, = quadgk(t -> tpmeval(A,t), 0., tsub; rtol)
+   return tt/tsub
 end
+# function pmaverage(A::PeriodicSymbolicMatrix) 
+#    return real(convert(HarmonicArray,A).values[:,:,1])
+# end
 
 """
      hreval(Ahr::HarmonicArray, t; ntrunc, exact = true) -> A::Matrix

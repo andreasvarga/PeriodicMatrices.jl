@@ -187,7 +187,7 @@ cvals2 = log.(complex(ev2))/(2pi)
 solver = "non-stiff"
 #for solver in ("non-stiff", "stiff", "linear", "symplectic", "noidea")
 for solver in ("non-stiff", "stiff", "linear", "noidea")
-      println("solver = $solver")
+    println("solver = $solver")
     @time cvals = psceig(Afun, 500; solver, reltol = 1.e-10, abstol = 1.e-10)
     @test isapprox(cvals, [0; -24], atol = 1.e-7)
 end
@@ -202,10 +202,34 @@ end
 T = pi/3;
 Afun=PeriodicFunctionMatrix(at,T);
 #for solver in ("non-stiff", "stiff", "linear", "symplectic", "noidea")
+solver = "linear"
 for solver in ("non-stiff", "stiff", "linear", "noidea")
+      println("solver = $solver")
       @time cvals = psceig(Afun, 500; solver, reltol = 1.e-10)
       @test cvals ≈ [2; -13]
 end  
+
+@variables t
+A11 =  [-1-9*(cos(6*t))^2+12*sin(6*t)*cos(6*t) 12*(cos(6*t))^2+9*sin(6*t)*cos(6*t);
+      -12*(sin(6*t))^2+9*sin(6*t)*cos(6*t) -1-9*(sin(6*t))^2-12*sin(6*t)*cos(6*t)]
+
+As = PeriodicSymbolicMatrix(A11,pi/3)      
+
+@test eigvals(As(rand())) ≈ [-10,-1]
+@test pmaverage(As) ≈ pmaverage(Afun)
+
+  #for solver in ("non-stiff", "stiff", "linear", "symplectic", "noidea")
+solver = "linear"
+for solver in ("non-stiff", "stiff", "linear", "noidea")
+        println("solver = $solver")
+        @time cvals = psceig(As, 500; solver, reltol = 1.e-10)
+        @test cvals ≈ [2; -13]
+        @time cvals = psceig(As, 500; fast = false, solver, reltol = 1.e-10)
+        @test cvals ≈ [2; -13]
+end 
+
+
+  
 
 # Examples from Richards's Book
 a = 1; q = .1; τ = pi/3;
