@@ -8,6 +8,7 @@ function promote_period(PM1,args...; ndigits = 4)
        period = PM1.period
        isconst = isconstant(PM1)
     end
+    # determine period
     for a in args
         typeof(a) <: AbstractVecOrMat && continue
         if isconstant(a)
@@ -35,7 +36,22 @@ function promote_period(PM1,args...; ndigits = 4)
         period = period*den
     end
     return period
- end
+end
+function promote_period2(PM1,args...; ndigits = 4)
+    #determine period
+    period = promote_period(PM1,args...; ndigits)   
+    # determine nperiod
+    nperiod = nothing
+    for a in args
+        typeof(a) <: AbstractVecOrMat && continue
+        if isnothing(nperiod) 
+           nperiod = a.nperiod*rationalize(period/a.period).num
+        else
+           nperiod = gcd(nperiod,a.nperiod*rationalize(period/a.period).num)
+        end
+    end
+    return period, nperiod
+end
  
 # Operations with periodic arrays
 function pmzeros(::Type{T},m::Vector{Int},n::Vector{Int}) where {T}
@@ -1799,10 +1815,12 @@ end
     #     end
     # end
 function +(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix)
-    period = promote_period(A, B)
     A.dims == B.dims || throw(DimensionMismatch("A and B must have the same dimensions"))
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    # nta = numerator(rationalize(period/A.period))
+    # ntb = numerator(rationalize(period/B.period))
+    # nperiod = gcd(nta*A.nperiod,ntb*B.nperiod)
     T = promote_type(eltype(A),eltype(B))
+    period, nperiod = promote_period2(A, B)
     if isconstant(A) && isconstant(B)
        return PeriodicFunctionMatrix{:c,T}(t -> A.f(0)+B.f(0), period, A.dims, nperiod, true)
     else
@@ -1824,10 +1842,12 @@ end
 (-)(J::UniformScaling{<:Real}, A::PeriodicFunctionMatrix) = +(-A,J)
 
 function *(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix)
-    period = promote_period(A, B)
     A.dims[2] == B.dims[1] || throw(DimensionMismatch("A and B have incompatible dimensions"))
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    # nta = numerator(rationalize(period/A.period))
+    # ntb = numerator(rationalize(period/B.period))
+    # nperiod = gcd(nta*A.nperiod,ntb*B.nperiod)
     T = promote_type(eltype(A),eltype(B))
+    period, nperiod = promote_period2(A, B)
     if isconstant(A) && isconstant(B)
        return PeriodicFunctionMatrix{:c,T}(t -> A.f(0)*B.f(0), period, (A.dims[1],B.dims[2]), nperiod, true)
     else
@@ -1858,9 +1878,9 @@ for (PMF, MF) in ((:pmmuladdsym, :muladdsym!), (:pmmultraddsym, :multraddsym!), 
                 A.dims[1] == C.dims[1] || throw(ArgumentError("the number of columns of A must be equal with the number of rows of C"))
                 B.dims[2] == C.dims[2] || throw(ArgumentError("B and C must have the same number of columns"))
             end
-            period = promote_period(A, B, C)
-            nperiod = gcd(A.nperiod,B.nperiod,C.nperiod)
+            # nperiod = gcd(A.nperiod,B.nperiod,C.nperiod)
             T = promote_type(eltype(A),eltype(B),eltype(C))
+            period, nperiod = promote_period2(A, B, C)
             if isconstant(A) && isconstant(B) && isconstant(C)
                return PeriodicFunctionMatrix{:c,T}(t -> $MF(T.(copy(A.f(0))),B.f(0),C.f(0),(α,β)), period, (A.dims[1],A.dims[2]), nperiod, true)
             else
@@ -1966,9 +1986,10 @@ for (PMF, MF) in ((:pmmulsym, :mulsym), (:pmtrmulsym, :trmulsym), (:pmmultrsym,:
     @eval begin
         function $PMF(B::PeriodicFunctionMatrix,C::PeriodicFunctionMatrix, β = true)
             # compute the symmetric results βB*C, βB'*C, and βB*C'. 
-            period = promote_period(B, C)
-            nperiod = gcd(B.nperiod,C.nperiod)
+            # period = promote_period(B, C)
+            # nperiod = gcd(B.nperiod,C.nperiod)
             T = promote_type(eltype(B),eltype(C))
+            period, nperiod = promote_period2(B, C)
             n = $PMF == pmtrmulsym ? size(B,2) : size(B,1)
             if isconstant(B) && isconstant(C)
                return PeriodicFunctionMatrix{:c,T}(t -> $MF(B.f(0),C.f(0),β), period, (n,n), nperiod, true)
@@ -2016,10 +2037,10 @@ end
 
 
 function horzcat(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix)
-    period = promote_period(A, B)
     A.dims[1] == B.dims[1] || throw(DimensionMismatch("A and B have incompatible row dimensions"))
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    # nperiod = numerator(rationalize(period/A.period))*A.nperiod
     T = promote_type(eltype(A),eltype(B))
+    period, nperiod = promote_period2(A, B)
     if isconstant(A) && isconstant(B)
        return PeriodicFunctionMatrix{:c,T}(t -> [A.f(0) B.f(0)], period, (A.dims[1],A.dims[2]+B.dims[2]), nperiod, true)
     else
@@ -2033,10 +2054,11 @@ Base.hcat(A::PeriodicFunctionMatrix, B::AbstractMatrix) = horzcat(A,B)
 Base.hcat(A::AbstractMatrix, B::PeriodicFunctionMatrix) = horzcat(A,B)
 
 function vertcat(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix)
-    period = promote_period(A, B)
+    #period = promote_period(A, B)
     A.dims[2] == B.dims[2] || throw(DimensionMismatch("A and B have incompatible column dimensions"))
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    #nperiod = numerator(rationalize(period/A.period))*A.nperiod
     T = promote_type(eltype(A),eltype(B))
+    period, nperiod = promote_period2(A, B)
     if isconstant(A) && isconstant(B)
        return PeriodicFunctionMatrix{:c,T}(t -> [A.f(0); B.f(0)], period, (A.dims[1]+B.dims[1],A.dims[2]), nperiod, true)
     else
@@ -2050,9 +2072,10 @@ Base.vcat(A::PeriodicFunctionMatrix, B::AbstractMatrix) = vertcat(A,B)
 Base.vcat(A::AbstractMatrix, B::PeriodicFunctionMatrix) = vertcat(A,B)
 
 function blockdiag(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix)
-    period = promote_period(A, B)
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    #period = promote_period(A, B)
+    #nperiod = numerator(rationalize(period/A.period))*A.nperiod
     T = promote_type(eltype(A),eltype(B))
+    period, nperiod = promote_period2(A, B)
     if isconstant(A) && isconstant(B)
        return PeriodicFunctionMatrix{:c,T}(t -> bldiag(A.f(0), B.f(0)), period, (A.dims[1]+B.dims[1],A.dims[2]+B.dims[2]), nperiod, true)
     else

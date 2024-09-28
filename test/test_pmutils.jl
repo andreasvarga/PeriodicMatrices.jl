@@ -133,6 +133,21 @@ Ahrfun = convert(PeriodicFunctionMatrix,pfm2hr(Afun))
 @time cvals2 = psceig(Ahrfun, 500; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 @time cvals4 = psceigfr(Af,40)
 @test sort(cvals0) ≈ sort(cvals) ≈ sort(cvals1) ≈ sort(cvals2) && norm(sort(cvals4)-sort(cvals0)) < 1.e-6
+
+solver = "non-stiff"
+#for solver in ("non-stiff", "stiff", "linear", "symplectic", "noidea")
+for solver in ("non-stiff", "stiff", "linear", "noidea")
+      println("solver = $solver")
+    @time cvals = psceig(Af, 500; solver, reltol = 1.e-10, abstol = 1.e-10)
+    @test isapprox(cvals, [0; -24], atol = 1.e-7)
+end
+
+Af = FourierFunctionMatrix(Fun(t -> [0 1; 0. -24],s), 2pi)
+cvals = psceig(Af)
+@test isapprox(sort(cvals), [-24.; 0.0], atol = 1.e-7)
+evals = pseig(Af)
+@test isapprox(sort(evals), sort(eigvals(exp(Af(0)*2*pi))), atol = 1.e-60)
+
 # Tt = Fun(t -> [12+5*sin(t) 1/2; 1 0],s)
 # Tinvt=inv(Tt)
 # Atilde=Tt*At.M*Tinvt+Tt'*Tinvt
@@ -146,7 +161,7 @@ Afun1=PeriodicFunctionMatrix(at1,pi);
 ev1 = pseig(Afun1; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 cvals1 = log.(complex(ev1))/pi
 
-Af = FourierFunctionMatrix(Fun(at1,s), pi)
+Af = FourierFunctionMatrix(Fun(at1,Fourier(0..π)), pi)
 ev2 = pseig(Af,200,lifting = false)
 ev3 = pseig(Af,200,lifting = true)
 @test sort(real(ev1)) ≈ sort(real(ev2)) ≈ sort(real(ev3))

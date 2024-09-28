@@ -1,6 +1,6 @@
 #FourierFunctionMatrices
 pmderiv(A::FourierFunctionMatrix{:c,T}) where {T} = FourierFunctionMatrix{:c,T,Fun}(differentiate(A.M), A.period, A.nperiod)
-LinearAlgebra.inv(A::FourierFunctionMatrix) = FourierFunctionMatrix(inv(A.M), A.period; nperiod = A.nperiod)
+LinearAlgebra.inv(A::FourierFunctionMatrix) = FourierFunctionMatrix(inv(A.M), A.period)
 LinearAlgebra.transpose(A::FourierFunctionMatrix{:c,T}) where {T}  = FourierFunctionMatrix{:c,T,Fun}(transpose(A.M), A.period, A.nperiod)
 LinearAlgebra.adjoint(A::FourierFunctionMatrix) = transpose(A)
 function LinearAlgebra.tr(V::Fun)
@@ -16,7 +16,7 @@ function LinearAlgebra.tr(V::Fun)
     end
     return temp
 end
-LinearAlgebra.tr(A::FourierFunctionMatrix) = FourierFunctionMatrix(tr(A.M), A.period; nperiod = A.nperiod)
+LinearAlgebra.tr(A::FourierFunctionMatrix) = FourierFunctionMatrix([tr(A.M);], A.period)
 function trace(A::FourierFunctionMatrix; rtol = sqrt(eps())) 
     isconstant(A) && (return tr(tpmeval(A, 0)))
     tsub = A.period/A.nperiod
@@ -70,15 +70,15 @@ end
 # end
 function +(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
     period = promote_period(A, B)
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
-    domain(A.M) == domain(B.M) && (return FourierFunctionMatrix(A.M+B.M, period; nperiod))
-    FourierFunctionMatrix(Fun(t-> A.M(t),Fourier(0..period)),period)+FourierFunctionMatrix(Fun(t-> B.M(t),Fourier(0..period)),period; nperiod)
+    #nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    domain(A.M) == domain(B.M) && (return FourierFunctionMatrix(A.M+B.M, period))
+    FourierFunctionMatrix(Fun(t-> A.M(t),Fourier(0..period)),period)+FourierFunctionMatrix(Fun(t-> B.M(t),Fourier(0..period)),period)
 end
 +(A::FourierFunctionMatrix, C::AbstractMatrix) = +(A, FourierFunctionMatrix(C, A.period))
 +(A::AbstractMatrix, C::FourierFunctionMatrix) = +(FourierFunctionMatrix(A, C.period), C)
 +(A::FourierFunctionMatrix, C::PeriodicFunctionMatrix) = +(convert(PeriodicFunctionMatrix,A), C)
 +(A::PeriodicFunctionMatrix, C::FourierFunctionMatrix) = +(A, convert(PeriodicFunctionMatrix,C))
--(A::FourierFunctionMatrix) = FourierFunctionMatrix(-A.M, A.period;nperiod = A.nperiod)
+-(A::FourierFunctionMatrix) = FourierFunctionMatrix(-A.M, A.period)
 -(A::FourierFunctionMatrix, B::FourierFunctionMatrix) = +(A,-B)
 -(A::FourierFunctionMatrix, C::AbstractMatrix) = +(A,-C)
 -(A::AbstractMatrix, C::FourierFunctionMatrix) = +(A, -C)
@@ -95,7 +95,8 @@ end
 
 
 function *(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
-    A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(A.M*B.M, A.period; nperiod = A.nperiod))
+    period = promote_period(A, B)
+    domain(A.M) == domain(B.M)  && (return FourierFunctionMatrix(A.M*B.M, period))
     convert(FourierFunctionMatrix,convert(PeriodicFunctionMatrix,A) * convert(PeriodicFunctionMatrix,B))
 end
 *(A::FourierFunctionMatrix, C::AbstractMatrix) = *(A, FourierFunctionMatrix(C, A.period))
@@ -110,7 +111,7 @@ end
 
 
 function horzcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
-    A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->[A.M(t) B.M(t)],Fourier(0..A.period)), A.period; nperiod = A.nperiod))
+    A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->[A.M(t) B.M(t)],Fourier(0..A.period)), A.period))
     convert(FourierFunctionMatrix,[convert(PeriodicFunctionMatrix,A) convert(PeriodicFunctionMatrix,B)])
 end
 hcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix) = horzcat(A,B)
@@ -121,7 +122,7 @@ horzcat(A::AbstractMatrix, C::FourierFunctionMatrix) = horzcat(FourierFunctionMa
 
 
 function vertcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
-    A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->[A.M(t); B.M(t)],Fourier(0..A.period)), A.period; nperiod = A.nperiod))
+    A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->[A.M(t); B.M(t)],Fourier(0..A.period)), A.period))
     convert(FourierFunctionMatrix,[convert(PeriodicFunctionMatrix,A); convert(PeriodicFunctionMatrix,B)])
 end
 vcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix) = vertcat(A,B)
@@ -132,7 +133,7 @@ vertcat(A::AbstractMatrix, C::FourierFunctionMatrix) = vertcat(FourierFunctionMa
 
 
 function blockdiag(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
-    A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->bldiag(A.M(t), B.M(t)),Fourier(0..A.period)), A.period; nperiod = A.nperiod))
+    A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->bldiag(A.M(t), B.M(t)),Fourier(0..A.period)), A.period))
     convert(FourierFunctionMatrix,blockdiag(convert(PeriodicFunctionMatrix,A), convert(PeriodicFunctionMatrix,B)))
 end
 

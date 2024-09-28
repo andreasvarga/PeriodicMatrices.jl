@@ -227,6 +227,9 @@ As = PeriodicSymbolicMatrix(A11,2*pi)
 At1=convert(PeriodicFunctionMatrix,Af)
 @test ≈(convert(FourierFunctionMatrix,At1),Af)
 
+Ah1 = convert(HarmonicArray,Af)
+@test ≈(convert(FourierFunctionMatrix,Ah1),Af)
+
 Ah1 = convert(HarmonicArray,Af*Af)
 @test ≈(convert(FourierFunctionMatrix,Ah1),Af*Af)
 

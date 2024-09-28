@@ -27,7 +27,7 @@ export ts2hr, ts2pfm, tsw2pfm, ts2ffm, pfm2hr, pm2pa, ffm2hr, pmaverage, hrtrunc
 export monodromy, psceig, psceighr, psceigfr
 export PeriodicArray, PeriodicMatrix, SwitchingPeriodicArray, SwitchingPeriodicMatrix
 export PeriodicTimeSeriesMatrix, PeriodicSwitchingMatrix, HarmonicArray, PeriodicFunctionMatrix
-export isconstant, iscontinuous, isdiscrete, set_period, promote_period
+export isconstant, iscontinuous, isdiscrete, set_period, promote_period, promote_period2
 export mb03vd!, mb03vy!, mb03bd!, mb03wd!, mb03kd! 
 export ps2fls, hr2bt, hr2btupd, phasemat, ps2frls, DiagDerOp, ps2ls, ps2spls
 export pmshift, trace
