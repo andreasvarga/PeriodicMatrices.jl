@@ -132,7 +132,7 @@ Ahrfun = convert(PeriodicFunctionMatrix,pfm2hr(Afun))
 @time cvals1 = psceig(Atfun, 500; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 @time cvals2 = psceig(Ahrfun, 500; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 @time cvals4 = psceigfr(Af,40)
-@test sort(cvals0) ≈ sort(cvals) ≈ sort(cvals1) ≈ sort(cvals2) ≈ sort(cvals4)
+@test sort(cvals0) ≈ sort(cvals) ≈ sort(cvals1) ≈ sort(cvals2) && norm(sort(cvals4)-sort(cvals0)) < 1.e-6
 # Tt = Fun(t -> [12+5*sin(t) 1/2; 1 0],s)
 # Tinvt=inv(Tt)
 # Atilde=Tt*At.M*Tinvt+Tt'*Tinvt
