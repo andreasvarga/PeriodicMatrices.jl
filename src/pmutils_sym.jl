@@ -112,14 +112,15 @@ function pseigsm(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff"
    {PM <: PeriodicSymbolicMatrix}
    n = size(at,1)
    n == size(at,2) || error("the periodic matrix must be square")
+   K > 0 || ArgumentError(throw("K must be positive: got K = $K"))
    nperiod = at.nperiod
    t = 0  
    Ts = at.period/K/nperiod
    T = Float64
-   if lifting 
-      if K == 1
-         ev = eigvals(tvstm(at, at.period, 0; solver, reltol, abstol, dt)) 
-      else   
+   if K == 1
+      ev = eigvals(tvstm(at, at.period, 0; solver, reltol, abstol, dt)) 
+   else
+      if lifting 
          Z = zeros(T,n,n)
          ZI = [ Z; -I]
          si = tvstm(at, Ts, 0; solver, reltol, abstol); ti = -I
@@ -132,17 +133,17 @@ function pseigsm(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff"
              t = tf
          end
          ev = -eigvals(si,ti)
+         sorteigvals!(ev)
+      else
+         M = monodromy(at, K; solver, reltol, abstol, dt) 
+         ev = K == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
+         isreal(ev) && (ev = real(ev))
       end
-      sorteigvals!(ev)
-   else
-      M = monodromy(at, K; solver, reltol, abstol, dt) 
-      ev = K == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
-      isreal(ev) && (ev = real(ev))
    end
    return nperiod == 1 ? ev : ev.^nperiod
 end
 function pseig(at::PeriodicSymbolicMatrix, K::Int = 1; kwargs...) 
-    pseig(convert(PeriodicFunctionMatrix,at),K; kwargs...)
+   pseig(convert(PeriodicFunctionMatrix,at),K; kwargs...)
 end
 """
      psceigsm(A::PeriodicSymbolicMatrix[, K = 1]; lifting = false, solver, reltol, abstol, dt) -> ce
@@ -160,7 +161,7 @@ function psceigsm(at::PeriodicSymbolicMatrix, K::Int = 1; kwargs...)
    return isreal(ce) ? real(ce) : ce
 end
 function psceig(at::PeriodicSymbolicMatrix, K::Int = 1; kwargs...) 
-   ce = log.(complex(pseig(convert(PeriodicFunctionMatrix,at), K; kwargs...)))/at.period
+   ce = log.(complex(pseig(at, K; kwargs...)))/at.period
    return isreal(ce) ? real(ce) : ce
 end
 
