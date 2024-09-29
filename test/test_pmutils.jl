@@ -223,10 +223,14 @@ solver = "linear"
 for solver in ("non-stiff", "stiff", "linear", "noidea")
         println("solver = $solver")
         @time cvals = psceig(As, 500; solver, reltol = 1.e-10)
-        @test cvals ≈ [2; -13]
+        @test sort(cvals) ≈ sort([2; -13])
         @time cvals = psceigsm(As, 500; solver, reltol = 1.e-10)
-        @test cvals ≈ [2; -13]
+        @test sort(cvals) ≈ sort([2; -13])
+        @time cvals = psceigsm(As, 500; lifting = true, solver, reltol = 1.e-10)
+        @test sort(cvals) ≈ sort([2; -13])
 end 
+@time cvals = psceigsm(As, 1; solver, reltol = 1.e-10)
+@test ≈(sort(cvals),sort([2; -13]),atol=1.e-6)
 
 
   

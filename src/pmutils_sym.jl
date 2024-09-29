@@ -121,6 +121,7 @@ function pseigsm(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff"
       ev = eigvals(tvstm(at, at.period, 0; solver, reltol, abstol, dt)) 
    else
       if lifting 
+         @show K, lifting
          Z = zeros(T,n,n)
          ZI = [ Z; -I]
          si = tvstm(at, Ts, 0; solver, reltol, abstol); ti = -I
