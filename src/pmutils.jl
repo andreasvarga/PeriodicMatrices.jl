@@ -1,7 +1,7 @@
-# eye(n) = Matrix{Bool}(I, n, n)
-# eye(m,n) = Matrix{Bool}(I, m, n)
-# eye(::Type{T}, n) where {T} = Matrix{T}(I, n, n)
-# eye(::Type{T}, m, n) where {T} = Matrix{T}(I, m, n)
+eye(n) = Matrix{Bool}(I, n, n)
+eye(m,n) = Matrix{Bool}(I, m, n)
+eye(::Type{T}, n) where {T} = Matrix{T}(I, n, n)
+eye(::Type{T}, m, n) where {T} = Matrix{T}(I, m, n)
 """
      tvstm(A, tf, t0; solver, reltol, abstol, dt) -> Φ 
 
