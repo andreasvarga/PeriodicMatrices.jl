@@ -21,10 +21,10 @@ import LinearAlgebra: BlasInt, BlasFloat, BlasReal, BlasComplex, copy_oftype, tr
 import Base: +, -, *, /, \, (==), (!=), ^, isapprox, iszero, isequal, convert, promote_op, size, length, ndims, reverse,
              hcat, vcat, hvcat, inv, show, lastindex, require_one_based_indexing, print, show, one, zero, eltype
 
-export PeriodicMatrix, pschur, pschur!, pschur1, pschur2, pgschur, pgschur!, phess, phess!, phess1, psreduc_reg, psreduc_fast, check_psim, mshift, pseig, 
+export PeriodicMatrix, pschur, pschur!, pschur1, pschur2, pgschur, pgschur!, phess, phess!, phess1, psreduc_reg, psreduc_fast, check_psim, mshift,  
        tvmeval, tpmeval, hreval, tvstm, psordschur!, psordschur1!, pgordschur!
 export ts2hr, ts2pfm, tsw2pfm, ts2ffm, pfm2hr, pm2pa, ffm2hr, pmaverage, hrtrunc, hrchop
-export monodromy, psceig, psceighr, psceigfr
+export monodromy, pseig, psceig, psceighr, psceigfr
 export PeriodicArray, PeriodicMatrix, SwitchingPeriodicArray, SwitchingPeriodicMatrix
 export PeriodicTimeSeriesMatrix, PeriodicSwitchingMatrix, HarmonicArray, PeriodicFunctionMatrix
 export isconstant, iscontinuous, isdiscrete, set_period, promote_period, promote_period2
@@ -36,7 +36,7 @@ export bldiag, blockdiag
 export pmmulsym, pmtrmulsym, pmmultrsym, pmmuladdsym, pmmultraddsym, pmmuladdtrsym
 export AbstractPeriodicArray
 
-export PeriodicSymbolicMatrix, psm2hr, hr2psm
+export PeriodicSymbolicMatrix, pseigsm, psceigsm, psm2hr, hr2psm
 export FourierFunctionMatrix, psceigfr, ffm2hr, ffm2psm
 
 abstract type AbstractPeriodicArray{Domain,T} end

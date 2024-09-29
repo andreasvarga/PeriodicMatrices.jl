@@ -224,7 +224,7 @@ for solver in ("non-stiff", "stiff", "linear", "noidea")
         println("solver = $solver")
         @time cvals = psceig(As, 500; solver, reltol = 1.e-10)
         @test cvals ≈ [2; -13]
-        @time cvals = psceig(As, 500; fast = false, solver, reltol = 1.e-10)
+        @time cvals = psceigsm(As, 500; solver, reltol = 1.e-10)
         @test cvals ≈ [2; -13]
 end 
 

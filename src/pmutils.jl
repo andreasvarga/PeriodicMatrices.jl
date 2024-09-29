@@ -6,13 +6,15 @@ eye(::Type{T}, m, n) where {T} = Matrix{T}(I, m, n)
      tvstm(A, tf, t0; solver, reltol, abstol, dt) -> Φ 
 
 Compute the state transition matrix for a linear ODE with periodic time-varying coefficients. 
-For the given periodic square matrix `A(t)`, initial time `t0` and 
+For the given square periodic continuous-time matrix `A(t)`, initial time `t0` and 
 final time `tf`, the state transition matrix `Φ(tf,t0)`
 is computed by integrating numerically the homogeneous linear ODE 
 
       dΦ(t,t0)/dt = A(t)Φ(t,t0),  Φ(t0,t0) = I
 
-on the time interval `[t0,tf]`. `A(t)` can be specified as a `PeriodicFunctionMatrix` or `HarmonicArray`. 
+on the time interval `[t0,tf]`.  
+`A` may be given as a [`PeriodicFunctionMatrix`](@ref), a [`HarmonicArray`](@ref), a [`PeriodicSymbolicMatrix`](@ref)
+or a  [`FourierFunctionMatrix`](@ref). 
 
 The ODE solver to be employed can be 
 specified using the keyword argument `solver` (see below), together with
@@ -101,7 +103,8 @@ the monodromy matrix `Ψ = Φ(T′,0)` is computed, where `Φ(t,τ)` is the stat
 
     dΦ(t,τ)/dt = A(t)Φ(t,τ),  Φ(τ,τ) = I. 
 
-`A(t)` can be specified as a `PeriodicFunctionMatrix` or `HarmonicArray`. 
+`A` may be given as a [`PeriodicFunctionMatrix`](@ref), a [`HarmonicArray`](@ref), a [`PeriodicSymbolicMatrix`](@ref)
+or a  [`FourierFunctionMatrix`](@ref). 
 
 If `K > 1`, then `Ψ = Φ(T′,0)` is determined as a product of `K` matrices 
 `Ψ = Ψ_K*...*Ψ_1`, where for `Δ := T′/K`, `Ψ_i = Φ(iΔ,(i-1)Δ)` is the 
@@ -180,6 +183,8 @@ the monodromy matrix `Ψ = Φ(T,0)`, where `Φ(t,τ)` is the state transition ma
 If `lifting = false`, `Ψ` is computed as a product of `K` state transition matrices 
 `Ψ = Ψ_K*...*Ψ_1` (see [`monodromy`](@ref) with the associated keyword arguments). 
 The eigenvalues are computed using the periodic Schur decomposition method of [1].
+`A` may be given as a [`PeriodicFunctionMatrix`](@ref), a [`HarmonicArray`](@ref), a [`PeriodicSymbolicMatrix`](@ref)
+or a  [`FourierFunctionMatrix`](@ref). 
 
 If `lifting = true`, `Ψ` is (implicitly) expressed as `Ψ = inv(N)*M`, where `M-λN` is a regular
 pencil with `N` invertible and  
@@ -188,9 +193,8 @@ the eigenvalues of `M-λN` are the same as those of the matrix product
 An efficient version of the structure exploiting fast reduction method of [2] is employed, 
 which embeds the determination of transition matrices into the reduction algorithm. 
 This option may occasionally lead to inaccurate results for large values of `K`. 
-`A` may be a [`PeriodicFunctionMatrix`](@ref), or a [`HarmonicArray`](@ref).
 
-_References_
+   _References_
 
 [1] A. Bojanczyk, G. Golub, and P. Van Dooren, 
     The periodic Schur decomposition. Algorithms and applications, Proc. SPIE 1996.
@@ -357,14 +361,14 @@ end
 """
      psceig(A[, K = 1]; lifting = false, solver, reltol, abstol, dt) -> ce
 
-Compute the characteristic exponents of a periodic matrix.
+Compute the characteristic exponents of a continuous-time periodic matrix.
 
 For a given square continuous-time periodic matrix `A(t)` of period `T`, 
 the characteristic exponents `ce` are computed as `log.(ev)/T`, 
 where  `ev` are the characteristic
 multipliers (i.e., the eigenvalues of the monodromy matrix of `A(t)`).  
 For available options see [`pseig(::PeriodicFunctionMatrix)`](@ref). 
-`A` may be given as a [`PeriodicFunctionMatrix`](@ref), a [`HarmonicArray`](@ref)
+`A` may be given as a [`PeriodicFunctionMatrix`](@ref), a [`HarmonicArray`](@ref), a [`PeriodicSymbolicMatrix`](@ref)
 or a  [`FourierFunctionMatrix`](@ref). 
 For a given square discrete-time periodic matrix `A(t)` of discrete period `N`,  
 the characteristic exponents `ce` are computed as `ev.^-N`. 

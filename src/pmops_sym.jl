@@ -88,8 +88,8 @@ end
 #     end
 # end 
 function +(A::PeriodicSymbolicMatrix, B::PeriodicSymbolicMatrix)
-    period = promote_period(A, B)
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    period, nperiod = promote_period2(A, B)
+    # nperiod = numerator(rationalize(period/A.period))*A.nperiod
     #nperiod = gcd(A.nperiod,B.nperiod)
     #return PeriodicSymbolicMatrix{:c,Num}(Symbolics.simplify.(A.F + B.F), period; nperiod)
     return PeriodicSymbolicMatrix{:c,Num}(A.F + B.F, period; nperiod)
@@ -115,8 +115,8 @@ end
 (-)(J::UniformScaling{<:Real}, A::PeriodicSymbolicMatrix) = +(-A,J)
 
 function *(A::PeriodicSymbolicMatrix, B::PeriodicSymbolicMatrix)
-    period = promote_period(A, B)
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    period, nperiod = promote_period2(A, B)
+    # nperiod = numerator(rationalize(period/A.period))*A.nperiod
     return PeriodicSymbolicMatrix{:c,Num}(A.F * B.F, period; nperiod)
  end
 *(A::PeriodicSymbolicMatrix, C::AbstractMatrix) = *(A, PeriodicSymbolicMatrix(C, A.period))
@@ -130,8 +130,8 @@ function *(A::PeriodicSymbolicMatrix, B::PeriodicSymbolicMatrix)
 *(A::PeriodicSymbolicMatrix, J::UniformScaling{<:Real}) = A*J.λ
 
 function horzcat(A::PeriodicSymbolicMatrix, B::PeriodicSymbolicMatrix)
-    period = promote_period(A, B)
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    period, nperiod = promote_period2(A, B)
+    # nperiod = numerator(rationalize(period/A.period))*A.nperiod
     return PeriodicSymbolicMatrix{:c,Num}([A.F B.F], period; nperiod)
 end
 hcat(A::PeriodicSymbolicMatrix, B::PeriodicSymbolicMatrix) = horzcat(A,B)
@@ -142,8 +142,8 @@ horzcat(A::AbstractMatrix, C::PeriodicSymbolicMatrix) = horzcat(PeriodicSymbolic
 
 
 function vertcat(A::PeriodicSymbolicMatrix, B::PeriodicSymbolicMatrix)
-    period = promote_period(A, B)
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    period, nperiod = promote_period2(A, B)
+    # nperiod = numerator(rationalize(period/A.period))*A.nperiod
     return PeriodicSymbolicMatrix{:c,Num}([A.F; B.F], period; nperiod)
 end
 vcat(A::PeriodicSymbolicMatrix, B::PeriodicSymbolicMatrix) = vertcat(A,B)
@@ -154,8 +154,8 @@ vertcat(A::AbstractMatrix, C::PeriodicSymbolicMatrix) = vertcat(PeriodicSymbolic
 
 
 function blockdiag(A::PeriodicSymbolicMatrix, B::PeriodicSymbolicMatrix)
-    period = promote_period(A, B)
-    nperiod = numerator(rationalize(period/A.period))*A.nperiod
+    period, nperiod = promote_period2(A, B)
+    # nperiod = numerator(rationalize(period/A.period))*A.nperiod
     return PeriodicSymbolicMatrix{:c,Num}(bldiag(A.F, B.F), period; nperiod)
 end
 
