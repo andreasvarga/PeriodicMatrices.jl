@@ -19,41 +19,50 @@ println("Test_pmutils")
 A = [cos(t) 1; 1 1-sin(t)];
 B = [cos(t)+sin(t); 1-sin(t)];
 C = [sin(t)+cos(2*t) 1];
-Ap = PeriodicSymbolicMatrix(A,2*pi);
-Bp = PeriodicSymbolicMatrix(B,2*pi);
-Cp = PeriodicSymbolicMatrix(C,2*pi);
+As = PeriodicSymbolicMatrix(A,2*pi);
+Bs = PeriodicSymbolicMatrix(B,2*pi);
+Cs = PeriodicSymbolicMatrix(C,2*pi);
 
 # functional expressions
 tA(t::Real) = [cos(t) 1; 1 1-sin(t)];
 tB(t::Real) = [cos(t)+sin(t); 1-sin(t)];
 tC(t::Real) = [sin(t)+cos(2*t) 1];
+
+At = PeriodicFunctionMatrix(tA,2pi)
+Bt = PeriodicFunctionMatrix(tB,2pi)
+Ct = PeriodicFunctionMatrix(tC,2pi)
+
+s = Fourier(0..2π)
+Af = FourierFunctionMatrix(Fun(tA,s), 2pi)
+
+
 # store snapshots as 3d arrays
 N = 200; 
 tg = collect((0:N-1)*2*pi/N);
-time = (0:N-1)*2*pi/N;
+ts = (0:N-1)*2*pi/N;
 # At = reshape(hcat(A.(t)...),2,2,N);  
-# Bt = reshape(hcat(B.(t)...),2,1,N);  
+# Bts = reshape(hcat(B.(t)...),2,1,N);  
 # Ct = reshape(hcat(C.(t)...),1,2,N);
 
 # time series expressions
-At = PeriodicTimeSeriesMatrix(tA.(time),2*pi);
-Bt = PeriodicTimeSeriesMatrix(tB.(time),2*pi);
-Ct = PeriodicTimeSeriesMatrix(tC.(time),2*pi);
+Ats = PeriodicTimeSeriesMatrix(tA.(ts),2*pi);
+Bts = PeriodicTimeSeriesMatrix(tB.(ts),2*pi);
+Cts = PeriodicTimeSeriesMatrix(tC.(ts),2*pi);
 
 # harmonic expressions
-@time Ahr = ts2hr(At);
+@time Ahr = ts2hr(Ats);
 @test Ahr.values[:,:,1] ≈ [0. 1; 1 1] && Ahr.values[:,:,2] ≈ [1. 0; 0 -im] 
-@time Bhr = ts2hr(Bt);
+@time Bhr = ts2hr(Bts);
 @test Bhr.values[:,:,1] ≈ [0.; 1] && Bhr.values[:,:,2] ≈ [1.0+im; -im]
-@time Chr = ts2hr(Ct);
+@time Chr = ts2hr(Cts);
 @test Chr.values[:,:,1] ≈ [0. 1] && Chr.values[:,:,2] ≈ [im 0] && Chr.values[:,:,3] ≈ [1 0]
 
-#@time Affm = ts2ffm(At);
+#@time Affm = ts2ffm(Ats);
 
 nperiod = 24
 time1 = (0:N-1)*2*pi*nperiod/N;
-At1 = PeriodicTimeSeriesMatrix(tA.(time1),2*pi*nperiod);
-Ahr1 = ts2hr(At1);
+Ats1 = PeriodicTimeSeriesMatrix(tA.(time1),2*pi*nperiod);
+Ahr1 = ts2hr(Ats1);
 @test convert(PeriodicFunctionMatrix,Ahr1).f(1) ≈ convert(PeriodicFunctionMatrix,Ahr).f(1) 
 
 @test iszero(hr2psm(Ahr,1:1) + hr2psm(Ahr,0:0) - hr2psm(Ahr))
@@ -65,51 +74,60 @@ Ahr1 = ts2hr(At1);
 @test norm(substitute.(convert(PeriodicSymbolicMatrix,Chr).F - C, (Dict(t => rand()),))) < 1e-15
 
 # harmonic vs. time series
-@test all(norm.(tvmeval(Ahr,tg).-At.values) .< 1.e-7)
-@test all(norm.(tvmeval(Bhr,tg).-Bt.values) .< 1.e-7)
-@test all(norm.(tvmeval(Chr,tg).-Ct.values) .< 1.e-7)
+@test all(norm.(tvmeval(Ahr,tg).-Ats.values) .< 1.e-7)
+@test all(norm.(tvmeval(Bhr,tg).-Bts.values) .< 1.e-7)
+@test all(norm.(tvmeval(Chr,tg).-Cts.values) .< 1.e-7)
 
 # check time values on the grid
 for method in ("constant", "linear", "quadratic", "cubic")
-      @test all(norm.(tvmeval(At,tg; method).-At.values) .< 1.e-7)
-      @test all(norm.(tvmeval(Bt,tg; method).-Bt.values) .< 1.e-7)
-      @test all(norm.(tvmeval(Ct,tg; method).-Ct.values) .< 1.e-7)
+      @test all(norm.(tvmeval(Ats,tg; method).-Ats.values) .< 1.e-7)
+      @test all(norm.(tvmeval(Bts,tg; method).-Bts.values) .< 1.e-7)
+      @test all(norm.(tvmeval(Cts,tg; method).-Cts.values) .< 1.e-7)
 end      
 # check interpolated values: time series vs. harmonic
 tt = rand(10)*2pi;
 for method in ("linear", "quadratic", "cubic")
-    @test all(norm.(tvmeval(At,tt; method).-tvmeval(Ahr,tt; exact = true)) .< 1.e-3)
-    @test all(norm.(tvmeval(Bt,tt; method).-tvmeval(Bhr,tt; exact = false)) .< 1.e-3)
-    @test all(norm.(tvmeval(Ct,tt; method).-tvmeval(Chr,tt; exact = true)) .< 1.e-3)
+    @test all(norm.(tvmeval(Ats,tt; method).-tvmeval(Ahr,tt; exact = true)) .< 1.e-3)
+    @test all(norm.(tvmeval(Bts,tt; method).-tvmeval(Bhr,tt; exact = false)) .< 1.e-3)
+    @test all(norm.(tvmeval(Cts,tt; method).-tvmeval(Chr,tt; exact = true)) .< 1.e-3)
 end
 
 # check conversion to function form
 Amat = convert(PeriodicFunctionMatrix,Ahr); 
-@test all(norm.(tvmeval(At,tt; method = "linear").-tvmeval(Ahr,tt)) .< 1.e-3)
-@test iszero(convert(PeriodicSymbolicMatrix,Amat).F-Ap.F)
+@test all(norm.(tvmeval(Ats,tt; method = "linear").-tvmeval(Ahr,tt)) .< 1.e-3)
+@test iszero(convert(PeriodicSymbolicMatrix,Amat).F-As.F)
 
-Amat =  convert(PeriodicFunctionMatrix,At);
-@test all(norm.(tvmeval(At,tt; method = "linear").-Amat.f.(tt)) .< 1.e-3)
-#@test iszero(convert(PeriodicSymbolicMatrix,Amat).F-Ap.F)
+Amat =  convert(PeriodicFunctionMatrix,Ats);
+@test all(norm.(tvmeval(Ats,tt; method = "linear").-Amat.f.(tt)) .< 1.e-3)
+#@test iszero(convert(PeriodicSymbolicMatrix,Amat).F-As.F)
 
 Amat = PeriodicFunctionMatrix(tA,2pi);
-@test all(norm.(tvmeval(At,tt; method = "linear").-tvmeval(Amat,tt)) .< 1.e-3)
-@test iszero(convert(PeriodicSymbolicMatrix,Amat).F-Ap.F)
+@test all(norm.(tvmeval(Ats,tt; method = "linear").-tvmeval(Amat,tt)) .< 1.e-3)
+@test iszero(convert(PeriodicSymbolicMatrix,Amat).F-As.F)
 
-Amat =  convert(PeriodicFunctionMatrix,Ap);
-@test all(norm.(tvmeval(At,tt; method = "linear").-tvmeval(Ap,tt)) .< 1.e-3)
-@test iszero(convert(PeriodicSymbolicMatrix,Amat).F-Ap.F)
-@test size(Amat) == size(Ap)
+Amat =  convert(PeriodicFunctionMatrix,As);
+@test all(norm.(tvmeval(Ats,tt; method = "linear").-tvmeval(As,tt)) .< 1.e-3)
+@test iszero(convert(PeriodicSymbolicMatrix,Amat).F-As.F)
+@test size(Amat) == size(As)
 
 
 for method in ("constant", "linear", "quadratic", "cubic")
-      Amat = ts2pfm(At; method);
-      @test all(norm.(At.values.-Amat.f.(tg)) .< 1.e-10)
-      Bmat = ts2pfm(Bt; method);
-      @test all(norm.(Bt.values.-Bmat.f.(tg)) .< 1.e-10)
-      Cmat = ts2pfm(Ct; method);
-      @test all(norm.(Ct.values.-Cmat.f.(tg)) .< 1.e-10)
+      Amat = ts2pfm(Ats; method);
+      @test all(norm.(Ats.values.-Amat.f.(tg)) .< 1.e-10)
+      Bmat = ts2pfm(Bts; method);
+      @test all(norm.(Bts.values.-Bmat.f.(tg)) .< 1.e-10)
+      Cmat = ts2pfm(Cts; method);
+      @test all(norm.(Cts.values.-Cmat.f.(tg)) .< 1.e-10)
 end
+
+# test pseig
+@test sort(pseig(At,200)) ≈ sort(pseig(As,200)) ≈ sort(pseig(Ahr,200)) ≈ sort(pseig(Af,200))
+@test sort(pseig(At,1)) ≈ sort(pseig(As,1)) ≈ sort(pseig(Ahr,1)) ≈ sort(pseig(Af,1))
+@test sort(pseig(At,200,lifting = true)) ≈ sort(pseig(As,200,lifting = true)) ≈ sort(pseig(Ahr,200,lifting = true)) ≈ sort(pseig(Af,200,lifting = true))
+@test norm(pseig(convert(PeriodicFunctionMatrix,Ats;method="constant"),length(Ats); abstol = 1.e-14,reltol=1.e-14)-pseig(Ats)) < 1.e-7
+
+@test sort(psceig(At,200)) ≈ sort(psceig(As,200)) ≈ sort(psceig(Ahr,200)) ≈ sort(psceig(Af,200))
+
 
 # example of Colaneri
 at(t) = [0 1; -10*cos(t) -24-10*sin(t)];
@@ -172,7 +190,7 @@ at2(t) = -[0 -1 0 0; (2+a*cos(2t)) 0 -1 0; 0 0 0 -1; -1 0 (2+a*cos(2t)) 0]
 Afun2=PeriodicFunctionMatrix(at2,2*pi;nperiod=2);
 ev2 = pseig(Afun2; solver = "non-stiff", reltol = 1.e-10, abstol = 1.e-10)
 cvals2 = log.(complex(ev2))/(2pi)
-@test ev1.^2 ≈ ev2 && real(cvals1) ≈ real(cvals2)
+@test ev1.^2 ≈ ev2 && real(cvals1) ≈ real(cvals2) && Afun1 !== Afun2
 
 
 # full accuracy characteristic exponents

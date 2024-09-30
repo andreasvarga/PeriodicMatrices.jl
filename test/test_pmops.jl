@@ -57,7 +57,7 @@ At = PeriodicFunctionMatrix(A,4*pi,nperiod=2)
 Ct = PeriodicFunctionMatrix(C,2*pi)
 Cdt = PeriodicFunctionMatrix(Cd,2*pi)
 Xt = PeriodicFunctionMatrix(X,8*pi,nperiod=4)
-Xdert = PeriodicFunctionMatrix(Xder,16*pi,nperiod=8)
+Xdert = PeriodicFunctionMatrix(Xder,8*pi,nperiod=4)
 @test At*Xt+Xt*At'+Ct ≈  pmderiv(Xt) ≈ Xdert
 @test At'*Xt+Xt*At+Cdt ≈ -pmderiv(Xt)
 @test norm(At*Xt+Xt*At'+Ct-pmderiv(Xt)) < 1.e-7
@@ -76,8 +76,8 @@ D = rand(2,2)
 @test iszero(opnorm(At-At,1)) && iszero(opnorm(At-At,2)) && iszero(opnorm(At-At,Inf)) && iszero(opnorm(At-At))
 @test trace(At-At) == 0 && iszero(tr(At-At))
 
-@test PeriodicFunctionMatrix(D,2*pi) == PeriodicFunctionMatrix(D,4*pi) && 
-      PeriodicFunctionMatrix(D,2*pi) ≈ PeriodicFunctionMatrix(D,4*pi)
+@test PeriodicFunctionMatrix(D,2*pi) !== PeriodicFunctionMatrix(D,4*pi) && 
+      !(PeriodicFunctionMatrix(D,2*pi) ≈ PeriodicFunctionMatrix(D,4*pi))
 
 @test tpmeval(At,1)[1:2,1:1] == tpmeval(At[1:2,1],1) && lastindex(At,1) == 2 && lastindex(At,2) == 2
 
@@ -115,8 +115,8 @@ Xderh = convert(HarmonicArray,PeriodicFunctionMatrix(Xder,2*pi));
 
 D = rand(2,2)
 @test Ah+I == I+Ah && Ah*5 == 5*Ah && Ah*D ≈ -Ah*(-D) && iszero(Ah-Ah) && !iszero(Ah)
-@test HarmonicArray(D,2*pi) == HarmonicArray(D,4*pi) && 
-      HarmonicArray(D,2*pi) ≈ HarmonicArray(D,4*pi)
+@test HarmonicArray(D,2*pi) !== HarmonicArray(D,4*pi) && 
+      !(HarmonicArray(D,2*pi) ≈ HarmonicArray(D,4*pi))
 Ah1i = inv(Ah1)
 @test norm(Ah-Ah,1) == norm(Ah-Ah,2) == norm(Ah-Ah,Inf) == 0
 @test iszero(opnorm(Ah-Ah,1)) && iszero(opnorm(Ah-Ah,2)) && iszero(opnorm(Ah-Ah,Inf)) && iszero(opnorm(Ah-Ah))
@@ -132,7 +132,7 @@ Ah = convert(HarmonicArray,PeriodicFunctionMatrix(A,4*pi));
 Ch = convert(HarmonicArray,PeriodicFunctionMatrix(C,2*pi));
 Cdh = convert(HarmonicArray,PeriodicFunctionMatrix(Cd,2*pi));
 Xh = convert(HarmonicArray,PeriodicFunctionMatrix(X,8*pi));
-Xderh = convert(HarmonicArray,PeriodicFunctionMatrix(Xder,16*pi));
+Xderh = convert(HarmonicArray,PeriodicFunctionMatrix(Xder,8*pi));
 @test Ah*Xh+Xh*Ah'+Ch ≈  pmderiv(Xh) ≈ Xderh
 @test Ah'*Xh+Xh*Ah+Cdh ≈ -pmderiv(Xh) 
 @test norm(Ah*Xh+Xh*Ah'+Ch-pmderiv(Xh),Inf) < 1.e-7 && norm(pmderiv(Xh)- Xderh) < 1.e-7
@@ -308,8 +308,8 @@ Xderts = convert(PeriodicTimeSeriesMatrix,PeriodicFunctionMatrix(Xder,2*pi));
 
 D = rand(2,2)
 @test Ats+I == I+Ats && Ats*5 == 5*Ats && Ats*D ≈ -Ats*(-D)  && iszero(Ats-Ats) && !iszero(Ats)
-@test PeriodicTimeSeriesMatrix(D,2*pi) == PeriodicTimeSeriesMatrix(D,4*pi) && 
-      PeriodicTimeSeriesMatrix(D,2*pi) ≈ PeriodicTimeSeriesMatrix(D,4*pi)
+@test PeriodicTimeSeriesMatrix(D,2*pi) !== PeriodicTimeSeriesMatrix(D,4*pi) && 
+      !(PeriodicTimeSeriesMatrix(D,2*pi) ≈ PeriodicTimeSeriesMatrix(D,4*pi))
 @test inv(Ats)*Ats ≈ I ≈ Ats*inv(Ats) 
 @test norm(Ats-Ats,1) == norm(Ats-Ats,2) == norm(Ats-Ats,Inf) == 0
 @test iszero(opnorm(Ats-Ats,1)) && iszero(opnorm(Ats-Ats,2)) && iszero(opnorm(Ats-Ats,Inf)) && 
@@ -387,8 +387,8 @@ t = 2*rand();
 @test norm(Asw-2*Asw+Asw) == 0
 D = rand(2,2)
 @test Asw+I == I+Asw && Asw*5 == 5*Asw && Asw*D ≈ -Asw*(-D)  && iszero(Asw-Asw) && !iszero(Asw)
-@test PeriodicSwitchingMatrix(D,2) == PeriodicSwitchingMatrix(D,4) && 
-      PeriodicSwitchingMatrix(D,2) ≈ PeriodicSwitchingMatrix(D,4)
+@test PeriodicSwitchingMatrix(D,2) !== PeriodicSwitchingMatrix(D,4) && 
+      !(PeriodicSwitchingMatrix(D,2) ≈ PeriodicSwitchingMatrix(D,4))
 @test issymmetric(Csw*Csw')
 @test inv(Asw)*Asw ≈ I ≈ Asw*inv(Asw) 
 @test norm(Asw-Asw,1) == norm(Asw-Asw,2) == norm(Asw-Asw,Inf) == 0
@@ -437,18 +437,19 @@ Qds = pmshift(Qdf);
 
 D = rand(n,n)
 @test Ad*5 == 5*Ad && Ad*D ≈ -Ad*(-D)  && iszero(Ad-Ad) && !iszero(Ad)
-@test PeriodicArray(D,2*pi) == PeriodicArray(D,4*pi) && 
-      PeriodicArray(D,2*pi) ≈ PeriodicArray(D,4*pi)
+@test PeriodicArray(D,2*pi) !== PeriodicArray(D,4*pi) && 
+      !(PeriodicArray(D,2*pi) ≈ PeriodicArray(D,4*pi))
 
 @test blockdiag(Ad,Xd)[10] ≈ bldiag(Ad[10],Xd[10])      
 
 
 Ad1 = PeriodicArray(Ad.M,2*pa;nperiod=2);
+Ad2 = set_period(Ad,2*pa)
 Xd1 = PeriodicArray(x,3*px; nperiod = 3);
 Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); Qdf1 = (Qdf1+transpose(Qdf1))/2
 Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 
-@test Ad1 == Ad && (Ad1+Ad)/3 ≈ 2*Ad/3 && issymmetric(Qdf1+Qdr1)
+@test Ad1 == Ad2 && (Ad1+Ad)/3 ≈ 2*Ad2/3 && issymmetric(Qdf1+Qdr1)
 # Xf1 = pfdlyap(Ad1, Qdf1);
 @test Ad*Xd*Ad' + Qdf ≈ pmshift(Xd) 
 # Xr1 = prdlyap(Ad1, Qdr1);
@@ -491,8 +492,8 @@ Qds = pmshift(Qdf);
 
 D = rand(n,n)
 @test Ad*5 == 5*Ad  && Ad*D ≈ -Ad*(-D) && iszero(Ad-Ad) && !iszero(Ad)
-@test PeriodicMatrix(D,2*pi) == PeriodicMatrix(D,4*pi) && 
-      PeriodicMatrix(D,2*pi) ≈ PeriodicMatrix(D,4*pi)
+@test PeriodicMatrix(D,2*pi) !== PeriodicMatrix(D,4*pi) && 
+      !(PeriodicMatrix(D,2*pi) ≈ PeriodicMatrix(D,4*pi))
      
 @test blockdiag(Ad,Xd)[10] ≈ bldiag(Ad[10],Xd[10])      
       
@@ -503,7 +504,7 @@ Xd1 = PeriodicMatrix(Xd.M,3*px; nperiod = 3);
 Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); Qdf1 = (Qdf1+transpose(Qdf1))/2
 Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 
-@test Ad1 == Ad && (Ad1+Ad)/3 ≈ 2*Ad/3 && issymmetric(Qdf1+Qdr1)
+@test Ad1 !== Ad && (Ad1+Ad)/3 ≈ 2*Ad1/3 && issymmetric(Qdf1+Qdr1)
 # Xf1 = pfdlyap(Ad1, Qdf1);
 @test Ad*Xd1*Ad' + Qdf ≈ pmshift(Xd1) 
 #Xr1 = prdlyap(Ad1, Qdr1);
@@ -546,7 +547,7 @@ Xd1 = PeriodicMatrix(Xd.M,3*px; nperiod = 3);
 Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); Qdf1 = (Qdf1+transpose(Qdf1))/2
 Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 
-@test Ad1 == Ad && (Ad1+Ad)/3 ≈ 2*Ad/3 && issymmetric(Qdf1)&& issymmetric(Qdr1)
+@test Ad1 !== Ad && (Ad1+Ad)/3 ≈ 2*Ad1/3 && issymmetric(Qdf1)&& issymmetric(Qdr1)
 # Xf1 = pfdlyap(Ad1, Qdf1);
 @test Ad*Xd1*Ad' + Qdf ≈ pmshift(Xd1) 
 # Xr1 = prdlyap(Ad1, Qdr1);
@@ -576,9 +577,9 @@ Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
 Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 
 # Xf = pfdlyap(Ad, Qdf);
-@test Ad*Xd*Ad' + Qdf ≈ pmshift(Xd) 
+@test norm(Ad*Xd*Ad' + Qdf - pmshift(Xd)) < 1.e-7 
 # Xr = prdlyap(Ad, Qdr);
-@test Ad'*pmshift(Xd)*Ad + Qdr ≈ Xd 
+@test norm(Ad'*pmshift(Xd)*Ad + Qdr - Xd) < 1.e-7 
 
 
 
@@ -597,8 +598,8 @@ Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 
 D = rand(n,n)
 @test Ad*5 == 5*Ad  && Ad*D ≈ -Ad*(-D) && iszero(Ad-Ad) && !iszero(Ad)
-@test SwitchingPeriodicMatrix(D,2*pi) == SwitchingPeriodicMatrix(D,4*pi) && 
-      SwitchingPeriodicMatrix(D,2*pi) ≈ SwitchingPeriodicMatrix(D,4*pi)
+@test SwitchingPeriodicMatrix(D,2*pi) !== SwitchingPeriodicMatrix(D,4*pi) && 
+      !(SwitchingPeriodicMatrix(D,2*pi) ≈ SwitchingPeriodicMatrix(D,4*pi))
 
 
 @test Ad[1:2,1:1].M == [Ad.M[i][1:2,1:1] for i in 1:length(Ad.M)] && lastindex(Ad,1) == size(Ad,1) && lastindex(Ad,2) == size(Ad,2)
@@ -627,9 +628,9 @@ Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
 Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 
 #Xf = pfdlyap(Ad, Qdf);
-@test Ad*Xd*Ad' + Qdf ≈ pmshift(Xd) 
+@test norm(Ad*Xd*Ad' + Qdf - pmshift(Xd)) < 1.e-7
 # Xr = prdlyap(Ad, Qdr);
-@test Ad'*pmshift(Xd)*Ad + Qdr ≈ Xd 
+@test norm(Ad'*pmshift(Xd)*Ad + Qdr - Xd) < 1.e-7 
 
 
 
@@ -651,8 +652,8 @@ Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 
 D = rand(n,n)
 @test Ad*5 == 5*Ad  && Ad*D ≈ -Ad*(-D) && iszero(Ad-Ad) && !iszero(Ad)
-@test SwitchingPeriodicArray(D,2*pi) == SwitchingPeriodicArray(D,4*pi) && 
-      SwitchingPeriodicArray(D,2*pi) ≈ SwitchingPeriodicArray(D,4*pi)
+@test SwitchingPeriodicArray(D,2*pi) !== SwitchingPeriodicArray(D,4*pi) && 
+      !(SwitchingPeriodicArray(D,2*pi) ≈ SwitchingPeriodicArray(D,4*pi))
 
 
 @test Ad[1:2,1:1].M == Ad.M[1:2,1:1,:] && lastindex(Ad,1) == n && lastindex(Ad,2) == n

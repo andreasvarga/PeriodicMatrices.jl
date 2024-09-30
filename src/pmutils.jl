@@ -1,6 +1,6 @@
-eye(n) = Matrix{Bool}(I, n, n)
-eye(m,n) = Matrix{Bool}(I, m, n)
-eye(::Type{T}, n) where {T} = Matrix{T}(I, n, n)
+# eye(n) = Matrix{Bool}(I, n, n)
+# eye(m,n) = Matrix{Bool}(I, m, n)
+# eye(::Type{T}, n) where {T} = Matrix{T}(I, n, n)
 eye(::Type{T}, m, n) where {T} = Matrix{T}(I, m, n)
 """
      tvstm(A, tf, t0; solver, reltol, abstol, dt) -> Φ 
@@ -141,6 +141,30 @@ function monodromy(A::PM, K::Int = 1; solver = "non-stiff", reltol = 1e-3, absto
    end
    return PeriodicArray(M,A.period; nperiod)
 end
+""" 
+     monodromy(A) -> Ψ::PeriodicArray 
+
+Compute the monodromy matrix for a continuous-time time series matrix. 
+
+For the given square periodic matrix `A(t)` of period `T` and subperiod `T′ = T/k`, where 
+`k` is the number of subperiods,  
+the monodromy matrix `Ψ = Φ(T′,0)` is computed, where `Φ(t,τ)` is the state transition matrix satisfying the homogeneous linear ODE 
+
+    dΦ(t,τ)/dt = A(t)Φ(t,τ),  Φ(τ,τ) = I. 
+
+`A` is a [`PeriodicTimeSeriesMatrix`](@ref) with `K` component matrices.  
+The resulting monodromy matrix `Ψ` is stored as a discrete time periodic array with `K` component matrices, of period `T` and `k` subperiods. 
+
+`Ψ = Φ(T′,0)` is determined as a product of `K` matrices 
+`Ψ = Ψ_K*...*Ψ_1`, where for `Δ := T′/K`, `Ψ_i = Φ(iΔ,(i-1)Δ)` is the 
+state transition matrix on the time interval `[(i-1)Δ,iΔ]`. 
+Each state transition matrix is computed as a matrix exponential  `Φ(iΔ,(i-1)Δ) = exp(A[i]*Δ)`, 
+where `A[i]` is the `i`-th component matrix of the time series representation.  
+For large values of `K`, parallel computation of factors can be alternatively performed 
+by starting Julia with several execution threads. 
+The number of execution threads is controlled either by using the `-t/--threads` command line argument 
+or by using the `JULIA_NUM_THREADS` environment variable.  
+"""
 function monodromy(A::PM) where {T, PM <: PeriodicTimeSeriesMatrix{:c,T}} 
    n = size(A,1)
    n == size(A,2) || error("the periodic matrix must be square")
@@ -210,10 +234,10 @@ function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", 
    nperiod = at.nperiod
    t = 0  
    Ts = at.period/K/nperiod
-   if lifting 
-      if K == 1
-         ev = eigvals(tvstm(at, at.period, 0; solver, reltol, abstol, dt)) 
-      else   
+   if K == 1
+      ev = eigvals(tvstm(at, at.period/nperiod, 0; solver, reltol, abstol, dt)) 
+   else 
+      if lifting  
          Z = zeros(T,n,n)
          ZI = [ Z; -I]
          si = tvstm(at, Ts, 0; solver, reltol, abstol); ti = -I
@@ -226,19 +250,17 @@ function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", 
              t = tf
          end
          ev = -eigvals(si,ti)
+         sorteigvals!(ev)
+      else
+         M = monodromy(at, K; solver, reltol, abstol, dt) 
+         ev = K == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
+         isreal(ev) && (ev = real(ev))
       end
-      sorteigvals!(ev)
-   else
-      M = monodromy(at, K; solver, reltol, abstol, dt) 
-      ev = K == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
-      isreal(ev) && (ev = real(ev))
    end
    return nperiod == 1 ? ev : ev.^nperiod
 end
-pseig(at::PeriodicTimeSeriesMatrix{:c,T}, K::Int = 1; kwargs...) where T = 
-    pseig(convert(PeriodicFunctionMatrix,at),K; kwargs...)
-pseig(at::PeriodicSwitchingMatrix{:c,T}) where T = 
-    pseig(monodromy_sw(at)).^at.nperiod
+pseig(at::PeriodicSwitchingMatrix{:c,T}) where T = pseig(monodromy_sw(at)).^at.nperiod
+pseig(at::PeriodicTimeSeriesMatrix{:c,T}) where T = pseig(monodromy(at)).^at.nperiod
 
 """
      ev = pseig(A::PeriodicArray; rev = true, fast = false) 

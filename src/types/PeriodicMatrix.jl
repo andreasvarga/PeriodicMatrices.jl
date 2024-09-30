@@ -577,8 +577,8 @@ PeriodicFunctionMatrix(f::F, period::Real; isconst::Bool = false, nperiod::Int =
 #       PeriodicFunctionMatrix{:c,T}(t -> reshape(A,size(A,1),size(A,2)), period; isconst = true)
 #    end
 # end
-function PeriodicFunctionMatrix(A::VecOrMat{T}, period::Real) where {T <: Real}
-   PeriodicFunctionMatrix{:c,T}(t -> reshape(A,size(A,1),size(A,2)), period; isconst = true)
+function PeriodicFunctionMatrix(A::VecOrMat{T}, period::Real; nperiod::Int = 1) where {T <: Real}
+   PeriodicFunctionMatrix{:c,T}(t -> reshape(A,size(A,1),size(A,2)), period; nperiod, isconst = true)
 end
 
 PeriodicFunctionMatrix{:c,Float64}(A::VecOrMat{T}, period::Real) where {T <: Real} = PeriodicFunctionMatrix(Float64.(A), period)
@@ -770,6 +770,7 @@ HarmonicArray{:c,Float64}(A::VecOrMat{T}, period::Real; nperiod::Int = 1) where 
 isconstant(A::HarmonicArray) = size(A.values,3) <= 1 || iszero(view(A.values,:,:,2:size(A.values,3)))
 #isperiodic(A::HarmonicArray) = true
 Base.size(A::HarmonicArray) = (size(A.values,1),size(A.values,2))
+Base.size(A::HarmonicArray, d::Integer) = d <= 2 ? size(A)[d] : 1
 Base.eltype(A::HarmonicArray{:c,T}) where T = T
 
 function Base.getindex(A::PM, inds...) where PM <: HarmonicArray

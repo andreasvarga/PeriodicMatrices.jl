@@ -467,12 +467,10 @@ Exact equality check of two periodic matries. `isequal(A,B)` is equivalent to th
 `A` and `B` must have equal subperiods.    
 """
 function isequal(A::PeriodicArray, B::PeriodicArray)
-    isconstant(A) && isconstant(B) && (return isequal(A.M, B.M))
-    isequal(A.M, B.M) &&  (A.period == B.period || A.period*B.nperiod == B.period*A.nperiod)
+    A.period == B.period && A.nperiod == B.nperiod && isequal(A.M, B.M)
 end
 function (==)(A::PeriodicArray, B::PeriodicArray)
-    isconstant(A) && isconstant(B) && (return isequal(A.M, B.M))
-    isequal(A.M, B.M) &&  (A.period == B.period || A.period*B.nperiod == B.period*A.nperiod)
+    A.period == B.period && A.nperiod == B.nperiod && isequal(A.M, B.M)
 end
 
 """
@@ -484,16 +482,7 @@ Inexact equality comparison of two periodic matries. `isaprox(A,B)` is equivalen
 `atol` and `rtol` are the absolute tolerance and relative tolerance, respectively, to be used for comparison.
 """
 function Base.isapprox(A::PeriodicArray, B::PeriodicArray; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
-    isconstant(A) && isconstant(B) && (return isapprox(A.M, B.M; rtol, atol)) 
-    (A.period == B.period || A.period*B.nperiod == B.period*A.nperiod) || (return false)
-    pa = size(A.M,3)
-    pb = size(B.M,3)
-    for i = 1:lcm(pa,pb)
-        ia = mod(i-1,pa)+1
-        ib = mod(i-1,pb)+1
-        isapprox(view(A.M,:,:,ia),view(B.M,:,:,ib); rtol, atol) || (return false)
-    end
-    return true
+    A.period == B.period && A.nperiod == B.nperiod && isapprox(A.M, B.M; rtol, atol)
 end
 function Base.isapprox(A::PeriodicArray, J::UniformScaling{<:Real}; kwargs...)
     all([isapprox(A.M[:,:,i], J; kwargs...) for i in 1:size(A.M,3)])
@@ -963,24 +952,14 @@ end
 LinearAlgebra.issymmetric(A::PeriodicMatrix) = all([issymmetric(A.M[i]) for i in 1:A.dperiod])
 Base.iszero(A::PeriodicMatrix) = iszero(A.M)
 function ==(A::PeriodicMatrix, B::PeriodicMatrix)
-    isconstant(A) && isconstant(B) && (return isequal(A.M, B.M))
-    A.period*B.nperiod ≈ B.period*A.nperiod && isequal(A.M, B.M) 
+    A.period == B.period && A.nperiod == B.nperiod && isequal(A.M, B.M) 
 end
 # function Base.isapprox(A::PeriodicMatrix, B::PeriodicMatrix; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
 #     isconstant(A) && isconstant(B) && (return isapprox(A.M, B.M; rtol, atol))
 #     isapprox(A.M, B.M; rtol, atol) && (A.period == B.period || A.period*B.nperiod == B.period*A.nperiod)
 # end
 function Base.isapprox(A::PeriodicMatrix, B::PeriodicMatrix; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
-    isconstant(A) && isconstant(B) && (return isapprox(A.M, B.M; rtol, atol)) 
-    A.period*B.nperiod == B.period*A.nperiod || (return false)
-    pa = length(A)
-    pb = length(B)
-    for i = 1:lcm(pa,pb)
-        ia = mod(i-1,pa)+1
-        ib = mod(i-1,pb)+1
-        isapprox(view(A.M,ia),view(B.M,ib); rtol, atol) || (return false)
-    end
-    return true
+    A.period == B.period && A.nperiod == B.nperiod && isapprox(A.M, B.M; rtol, atol)
 end
 function Base.isapprox(A::PeriodicMatrix, J::UniformScaling{<:Real}; kwargs...)
     all([isapprox(A.M[i], J; kwargs...) for i in 1:length(A.M)])
@@ -1114,23 +1093,10 @@ end
 Base.iszero(A::SwitchingPeriodicMatrix) = iszero(A.M)
 LinearAlgebra.issymmetric(A::SwitchingPeriodicMatrix) = all([issymmetric(A.M[i]) for i in 1:length(A.ns)])
 function ==(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix)
-    isconstant(A) && isconstant(B) && (return isequal(A.M, B.M))
-    A.period*B.nperiod ≈ B.period*A.nperiod || (return false)
-    na = length(A.ns); nb = length(B.ns)
-    if na == nb
-       isequal(A.M, B.M) 
-    else
-       all([isequal(A[i],B[i]) for i in 1:max(na,nb)])
-    end
+    A.period == B.period && A.nperiod == B.nperiod && A.ns == B.ns && isequal(A.M, B.M) 
 end
 function Base.isapprox(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
-    isconstant(A) && isconstant(B) && (return isapprox(A.M, B.M; rtol, atol))
-    na = length(A.ns); nb = length(B.ns)
-    if na == nb
-       (A.period == B.period || A.period*B.nperiod == B.period*A.nperiod) && isapprox(A.M, B.M; rtol, atol) 
-    else
-       (A.period == B.period || A.period*B.nperiod == B.period*A.nperiod) && all([isapprox(A[i],B[i]; rtol, atol) for i in 1:max(na,nb)])
-    end
+    A.period == B.period && A.nperiod == B.nperiod && A.ns == B.ns && isapprox(A.M, B.M; rtol, atol)
 end
 function Base.isapprox(A::SwitchingPeriodicMatrix, J::UniformScaling{<:Real}; kwargs...)
     all([isapprox(A.M[i], J; kwargs...) for i in 1:length(A.M)])
@@ -1343,23 +1309,10 @@ end
 LinearAlgebra.issymmetric(A::SwitchingPeriodicArray) = all([issymmetric(view(A.M,:,:,i)) for i in 1:length(A.ns)])
 Base.iszero(A::SwitchingPeriodicArray) = iszero(A.M)
 function ==(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
-    isconstant(A) && isconstant(B) && (return isequal(A.M, B.M))
-    A.period*B.nperiod == B.period*A.nperiod || (return false)
-    na = length(A.ns); nb = length(B.ns)
-    if na == nb
-       isequal(A.M, B.M)
-    else
-       all([isequal(A[i],B[i]) for i in 1:max(na,nb)])
-    end
+    A.period == B.period && A.nperiod == B.nperiod && A.ns == B.ns && isequal(A.M, B.M) 
 end
 function Base.isapprox(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
-    isconstant(A) && isconstant(B) && (return isapprox(A.M, B.M; rtol, atol))
-    na = length(A.ns); nb = length(B.ns)
-    if na == nb
-       (A.period == B.period || A.period*B.nperiod == B.period*A.nperiod) && isapprox(A.M, B.M; rtol, atol) 
-    else
-       (A.period == B.period || A.period*B.nperiod == B.period*A.nperiod) && all([isapprox(A[i],B[i]; rtol, atol) for i in 1:max(na,nb)])
-    end
+    A.period == B.period && A.nperiod == B.nperiod && A.ns == B.ns &&  isapprox(A.M, B.M; rtol, atol)
 end
 function Base.isapprox(A::SwitchingPeriodicArray, J::UniformScaling{<:Real}; kwargs...)
     all([isapprox(view(A.M,:,:,i), J; kwargs...) for i in 1:length(A.ns)])
@@ -2098,13 +2051,14 @@ end
  
 LinearAlgebra.issymmetric(A::PeriodicFunctionMatrix) = issymmetric(A.f(rand()*A.period))
 function ==(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix)
+    (A.period == B.period && A.nperiod == B.nperiod) || (return false) 
     isconstant(A) && isconstant(B) && (return isequal(A.f(0), B.f(0)))
     ts = rand()*A.period/A.nperiod
-    A.period*B.nperiod ≈ B.period*A.nperiod && isequal(A.f(ts), B.f(ts)) && iszero(A-B)
+    isequal(A.f(ts), B.f(ts)) && iszero(A-B)
 end
 function Base.isapprox(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix; kwargs...)
+    (A.period == B.period && A.nperiod == B.nperiod) || (return false) 
     isconstant(A) && isconstant(B) && (return isapprox(A.f(0), B.f(0); kwargs...))
-    A.period*B.nperiod ≈ B.period*A.nperiod || (return false)
     tsi = rand(10)*A.period/A.nperiod
     for ts in tsi
         isapprox(A.f(ts), B.f(ts); kwargs...)  || (return false)
@@ -2296,12 +2250,12 @@ end
 Base.iszero(A::HarmonicArray) = all([iszero(A.values[:,:,i]) for i in 1:size(A.values,3)])
 LinearAlgebra.issymmetric(A::HarmonicArray) = all([issymmetric(A.values[:,:,i]) for i in 1:size(A.values,3)])
 function ==(A::HarmonicArray, B::HarmonicArray)
-    isconstant(A) && isconstant(B) && (return isequal(A.values, B.values))
-    A.period*B.nperiod ≈ B.period*A.nperiod && isequal(A.values, B.values) 
+    (A.period == B.period && A.nperiod == B.nperiod) || (return false) 
+    return isequal(A.values, B.values)
 end
 function Base.isapprox(A::HarmonicArray, B::HarmonicArray; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
+    (A.period == B.period && A.nperiod == B.nperiod) || (return false) 
     isconstant(A) && isconstant(B) && (return isapprox(A.values, B.values; rtol, atol) )
-    A.period*B.nperiod ≈ B.period*A.nperiod || (return false)
     na = size(A.values,3)
     nb = size(B.values,3)
     if na == nb
@@ -2528,12 +2482,10 @@ end
 Base.iszero(A::PeriodicTimeSeriesMatrix) = iszero(A.values)
 LinearAlgebra.issymmetric(A::PeriodicTimeSeriesMatrix) = all(issymmetric.(A.values))
 function ==(A::PeriodicTimeSeriesMatrix, B::PeriodicTimeSeriesMatrix)
-    isconstant(A) && isconstant(B) && (return isequal(A.values, B.values))
-A.period*B.nperiod ≈ B.period*A.nperiod && isequal(A.values, B.values)
+    A.period == B.period && A.nperiod == B.nperiod && isequal(A.values, B.values)
 end
 function Base.isapprox(A::PeriodicTimeSeriesMatrix, B::PeriodicTimeSeriesMatrix; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
-    isconstant(A) && isconstant(B) && (return isapprox(A.values, B.values; rtol, atol))
-    A.period*B.nperiod ≈ B.period*A.nperiod && isapprox(A.values, B.values; rtol, atol) 
+    A.period == B.period && A.nperiod == B.nperiod && isapprox(A.values, B.values; rtol, atol)
 end
 function Base.isapprox(A::PeriodicTimeSeriesMatrix, J::UniformScaling{<:Real}; kwargs...)
     all([isapprox(A.values[i], J; kwargs...) for i in 1:length(A.values)])
@@ -2756,12 +2708,10 @@ function *(A::PeriodicSwitchingMatrix, B::PeriodicSwitchingMatrix)
 Base.iszero(A::PeriodicSwitchingMatrix) = iszero(A.values)
 LinearAlgebra.issymmetric(A::PeriodicSwitchingMatrix) = all(issymmetric.(A.values))
 function ==(A::PeriodicSwitchingMatrix, B::PeriodicSwitchingMatrix)
-    isconstant(A) && isconstant(B) && (return isequal(A.values, B.values))
-    A.period*B.nperiod ≈ B.period*A.nperiod && A.ts == B.ts && isequal(A.values, B.values)  
+    A.period == B.period && A.nperiod == B.nperiod && A.ts == B.ts && isequal(A.values, B.values)
 end
 function Base.isapprox(A::PeriodicSwitchingMatrix, B::PeriodicSwitchingMatrix; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
-    isconstant(A) && isconstant(B) && (return isapprox(A.values, B.values; rtol, atol))
-    A.period*B.nperiod ≈ B.period*A.nperiod && A.ts == B.ts && isapprox(A.values, B.values; rtol, atol) 
+    A.period == B.period && A.nperiod == B.nperiod && A.ts == B.ts && isapprox(A.values, B.values; rtol, atol) 
 end
 function Base.isapprox(A::PeriodicSwitchingMatrix, J::UniformScaling{<:Real}; kwargs...)
     all([isapprox(A.values[i], J; kwargs...) for i in 1:length(A.values)])

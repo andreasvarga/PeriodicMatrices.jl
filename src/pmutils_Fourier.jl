@@ -192,7 +192,6 @@ function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", 
              t = tf
          end
          ev = -eigvals(si,ti)
-         @show ev
       end
       sorteigvals!(ev)
    else
@@ -203,7 +202,6 @@ function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", 
    return nperiod == 1 ? ev : ev.^nperiod
 end
 function psceig(at::PM, K::Int = 1; kwargs...) where {T, PM <:FourierFunctionMatrix{:c,T}} 
-   @show kwargs
    if isconstant(at)
       ce = eigvals(at(0))
    else
