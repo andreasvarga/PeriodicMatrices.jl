@@ -28,6 +28,17 @@ na = [5, 3, 3, 4, 1]; ma = [3, 3, 4, 1, 5]; pa = 5; px = 5;
 Ad = PeriodicMatrix([rand(Float64,ma[i],na[i]) for i in 1:pa],pa); 
 @test  pseig(pm2pa(Ad)) ≈ pseig(Ad)
 
+A = [rand(2,2)]; B = [rand(2,2)]
+Ar1, Br1 = PeriodicMatrices.psreduc_fast(A,B)
+Ar2, Br2 = PeriodicMatrices.psreduc_reg(A,B)
+Ar3, Br3 = PeriodicMatrices.psreduc_reg(reshape(hcat(A...),2,2,1),reshape(hcat(B...),2,2,1))
+ev = sort(eigvals(Ar1,Br1),by=abs)[1:2]
+ev2 = eigvals(Ar2,Br2)
+ev3 = eigvals(Ar3,Br3)
+@test sort(real(ev)) ≈ sort(real(ev2)) ≈ sort(real(ev3))
+@test sort(imag(ev)) ≈ sort(imag(ev2)) ≈ sort(imag(ev3))
+
+
 A = [rand(2,2), rand(2,2)]; B = [rand(2,2), rand(2,2)]
 Ar1, Br1 = PeriodicMatrices.psreduc_fast(A,B)
 Ar2, Br2 = PeriodicMatrices.psreduc_reg(A,B)
@@ -38,7 +49,17 @@ ev3 = eigvals(Ar3,Br3)
 @test sort(real(ev)) ≈ sort(real(ev2)) ≈ sort(real(ev3))
 @test sort(imag(ev)) ≈ sort(imag(ev2)) ≈ sort(imag(ev3))
 
-Ad = reshape(vcat(A...),2,2,2); Bd = reshape(vcat(B...),2,2,2); 
+A = [rand(2,2), rand(2,2), rand(2,2)]; B = [rand(2,2), rand(2,2), rand(2,2)]
+Ar1, Br1 = PeriodicMatrices.psreduc_fast(A,B)
+Ar2, Br2 = PeriodicMatrices.psreduc_reg(A,B)
+Ar3, Br3 = PeriodicMatrices.psreduc_reg(reshape(hcat(A...),2,2,3),reshape(hcat(B...),2,2,3))
+ev = sort(eigvals(Ar1,Br1),by=abs)[1:2]
+ev2 = eigvals(Ar2,Br2)
+ev3 = eigvals(Ar3,Br3)
+@test sort(real(ev)) ≈ sort(real(ev2)) ≈ sort(real(ev3))
+@test sort(imag(ev)) ≈ sort(imag(ev2)) ≈ sort(imag(ev3))
+
+
 
 # symbolic periodic 
 @variables t
