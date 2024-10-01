@@ -14,6 +14,20 @@ println("Test_pmutils")
 @testset "test_pmutils" begin
 
 
+# SwitchingPeriodicMatrix      
+n = 2; pa = 3; px = 6; T = 10; 
+Ad = 0.5*SwitchingPeriodicMatrix([rand(Float64,n,n) for i in 1:pa],[10,15,20],T);
+@test pseig(Ad) ≈ pseig(Ad,fast=true)
+@test pseig(convert(PeriodicArray,Ad).M,rev = false) ≈ pseig(convert(PeriodicArray,Ad).M,fast=true, rev = false)
+ad = rand(2,2); A1d = PeriodicArray(ad,2)
+@test psceig(A1d) ≈ eigvals(ad)
+
+# Periodic Matrix with time-varying dimensions 
+na = [5, 3, 3, 4, 1]; ma = [3, 3, 4, 1, 5]; pa = 5; px = 5;   
+#na = 5*na; ma = 5*ma;
+Ad = PeriodicMatrix([rand(Float64,ma[i],na[i]) for i in 1:pa],pa); 
+@test  pseig(pm2pa(Ad)) ≈ pseig(Ad)
+
 # symbolic periodic 
 @variables t
 A = [cos(t) 1; 1 1-sin(t)];
@@ -83,7 +97,8 @@ for method in ("constant", "linear", "quadratic", "cubic")
       @test all(norm.(tvmeval(Ats,tg; method).-Ats.values) .< 1.e-7)
       @test all(norm.(tvmeval(Bts,tg; method).-Bts.values) .< 1.e-7)
       @test all(norm.(tvmeval(Cts,tg; method).-Cts.values) .< 1.e-7)
-end      
+end   
+
 # check interpolated values: time series vs. harmonic
 tt = rand(10)*2pi;
 for method in ("linear", "quadratic", "cubic")
@@ -119,14 +134,31 @@ for method in ("constant", "linear", "quadratic", "cubic")
       Cmat = ts2pfm(Cts; method);
       @test all(norm.(Cts.values.-Cmat.f.(tg)) .< 1.e-10)
 end
+@test_throws ArgumentError ts2pfm(Ats,method = "noidea")
+
+Ats1 = [Ats.values;[Ats.values[1]]]; N = length(Ats1); 
+d = 2pi/(N-1); ts1 = (0:N-1)*d
+At0=PeriodicMatrices.ts2fm(Ats1,2pi,method = "constant");
+@test At0.(ts1) ≈ (PeriodicMatrices.ts2fm(Ats1,2pi,method = "linear")).(ts1);
+@test At0.(ts1) ≈ (PeriodicMatrices.ts2fm(Ats1,2pi,method = "quadratic")).(ts1);
+@test At0.(ts1) ≈ (PeriodicMatrices.ts2fm(Ats1,2pi,method = "cubic")).(ts1);
 
 # test pseig
 @test sort(pseig(At,200)) ≈ sort(pseig(As,200)) ≈ sort(pseig(Ahr,200)) ≈ sort(pseig(Af,200))
 @test sort(pseig(At,1)) ≈ sort(pseig(As,1)) ≈ sort(pseig(Ahr,1)) ≈ sort(pseig(Af,1))
 @test sort(pseig(At,200,lifting = true)) ≈ sort(pseig(As,200,lifting = true)) ≈ sort(pseig(Ahr,200,lifting = true)) ≈ sort(pseig(Af,200,lifting = true))
 @test norm(pseig(convert(PeriodicFunctionMatrix,Ats;method="constant"),length(Ats); abstol = 1.e-14,reltol=1.e-14)-pseig(Ats)) < 1.e-7
+@test norm(sort(psceig(At,200,abstol=1.e-14,reltol = 1.e-14))-sort(psceig(Ats)),Inf) < 1.e-5
 
 @test sort(psceig(At,200)) ≈ sort(psceig(As,200)) ≈ sort(psceig(Ahr,200)) ≈ sort(psceig(Af,200))
+
+aa = rand(2,2); ah = HarmonicArray(aa,2); @test psceig(ah) ≈ eigvals(aa)
+@test norm(sort(psceig(Ahr,200)) - sort(psceighr(Ahr,20),by=real)) < 1.e-7
+
+@test ts2hr(Ats;n=0)(0) ≈ pmaverage(Ats)
+
+@test hr2bt(Ahr,4)[1:10,1:10] == hr2bt(Ahr,2)
+@test hr2btupd(Ahr,4) == hr2btupd(Ahr,4)
 
 
 # example of Colaneri

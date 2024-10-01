@@ -1094,7 +1094,7 @@ Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, A::PeriodicSwitchingMatrix) w
 
 # conversion to continuous-time HarmonicArray
 Base.convert(::Type{HarmonicArray}, A::PeriodicTimeSeriesMatrix) = ts2hr(A)
-Base.convert(::Type{HarmonicArray}, A::PeriodicFunctionMatrix) = pfm2hr(A)
+Base.convert(::Type{HarmonicArray}, A::PeriodicFunctionMatrix; kwargs...) = pfm2hr(A; kwargs...)
 Base.convert(::Type{HarmonicArray{:c, T}}, A::PeriodicFunctionMatrix) where {T} = pfm2hr(A)
 Base.convert(::Type{HarmonicArray}, A::PeriodicSwitchingMatrix) = ts2hr(convert(PeriodicTimeSeriesMatrix,A;ns=128))
 

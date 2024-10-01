@@ -526,6 +526,7 @@ Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
 Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
 Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 
+
 # Xf = pfdlyap(Ad, Qdf);
 @test Ad*Xd*Ad' + Qdf ≈ pmshift(Xd) 
 # Xr = prdlyap(Ad, Qdr);

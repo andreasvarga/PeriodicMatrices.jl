@@ -299,7 +299,7 @@ function pseig(A::Array{T,3}; rev::Bool = true, fast::Bool = false) where T
          ev = eigvals(psreduc_reg(A)...)
       else
          imap = p:-1:1                     
-         ev = eigvals(psreduc_reg(view(A,imap))...)
+         ev = eigvals(psreduc_reg(view(A,:,:,imap))...)
       end
       isreal(ev) && (ev = real(ev))
       sorteigvals!(ev)
@@ -404,14 +404,10 @@ function psceig(at::PM, K::Int = 1; kwargs...) where
    end
    return isreal(ce) ? real(ce) : ce
 end
-function psceig(at::PeriodicTimeSeriesMatrix, K::Int = 1; method = "cubic", kwargs...) 
-   if method == "constant"
-      M = monodromy(at) 
-      ev = length(at) == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
-      ce = log.(complex(ev))/at.period
-  else
-      ce = log.(complex(pseig(convert(PeriodicFunctionMatrix,at; method), K; kwargs...)))/at.period
-   end
+function psceig(at::PeriodicTimeSeriesMatrix) 
+   M = monodromy(at) 
+   ev = length(at) == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
+   ce = log.(complex(ev))/at.period
    return isreal(ce) ? real(ce) : ce
 end
 function psceig(at::PeriodicSwitchingMatrix) 
@@ -496,7 +492,7 @@ while the last components of `ce` are zero.
 """
 function psceig(at::AbstractPeriodicArray{:d,T}, k::Int = 1; kwargs...) where T
    if isconstant(at)
-      ce = eigvals(at(1))
+      ce = eigvals(at[1])
    else
       ce = (complex(pseig(convert(PeriodicMatrix,at), k; kwargs...))).^(1/at.dperiod/at.nperiod) 
    end
@@ -551,11 +547,28 @@ function ts2pfm(A::PeriodicTimeSeriesMatrix; method = "linear")
    elseif method == "cubic"     
       [intparray[i,j] = scale(Interpolations.extrapolate(interpolate(getindex.(A.values,i,j), BSpline(Cubic(Periodic(OnCell())))), Periodic()), ts) for i in 1:n1, j in 1:n2]
    else
-      error("no such option method = $method")
+      throw(ArgumentError("no such option method = $method"))
    end
    return PeriodicFunctionMatrix(t -> [intparray[i,j](t) for i in 1:n1, j in 1:n2 ], A.period; nperiod = A.nperiod, isconst = isconstant(A))
 end
 function ts2fm(A::Vector{<:AbstractMatrix}, T; method = "linear")
+"""
+     ts2fm(A::Vector{<:AbstractMatrix}, period; method = "linear") -> At::Function
+
+Compute the function matrix corresponding to an interpolated time series matrix. 
+For the given time series matrix `A`, a function matrix `A(t)` is defined as the 
+mapping `A(t) = t -> etpf(t)`, where `etpf(t)` is an interpolation object,  
+as provided in the [`Interpolations.jl`](https://github.com/JuliaMath/Interpolations.jl)  package. 
+The keyword parameter `method` specifies the interpolation/extrapolation method to be used as follows:
+
+`method = "constant"` - use periodic B-splines of degree 0 (periodic constant interpolation);
+
+`method = "linear"` - use periodic B-splines of degree 1 (periodic linear interpolation) (default);
+
+`method = "quadratic"` - use periodic B-splines of degree 2 (periodic quadratic interpolation); 
+
+`method = "cubic"` - use periodic B-splines of degree 3 (periodic cubic interpolation). 
+"""
    N = length(A)
    N == 0 && error("empty time array not supported")
    N == 1 && (return t -> A[1])
@@ -572,8 +585,6 @@ function ts2fm(A::Vector{<:AbstractMatrix}, T; method = "linear")
    elseif method == "quadratic" || N == 3     
       [intparray[i,j] = scale(interpolate(getindex.(A,i,j), BSpline(Quadratic())), ts) for i in 1:n1, j in 1:n2]
    elseif method == "cubic"     
-      #[intparray[i,j] = scale(Interpolations.extrapolate(interpolate(getindex.(A,i,j), BSpline(Cubic(OnGrid()))), Interpolations.Flat()), ts) for i in 1:n1, j in 1:n2]
-      #[intparray[i,j] = scale(interpolate(getindex.(A,i,j), BSpline(Cubic(Interpolations.Line(OnGrid())))), ts) for i in 1:n1, j in 1:n2]
       [intparray[i,j] = scale(interpolate(getindex.(A,i,j), BSpline(Cubic())), ts) for i in 1:n1, j in 1:n2]
    else
       error("no such option method = $method")
