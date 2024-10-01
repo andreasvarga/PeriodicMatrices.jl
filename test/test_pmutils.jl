@@ -28,6 +28,18 @@ na = [5, 3, 3, 4, 1]; ma = [3, 3, 4, 1, 5]; pa = 5; px = 5;
 Ad = PeriodicMatrix([rand(Float64,ma[i],na[i]) for i in 1:pa],pa); 
 @test  pseig(pm2pa(Ad)) ≈ pseig(Ad)
 
+A = [rand(2,2), rand(2,2)]; B = [rand(2,2), rand(2,2)]
+Ar1, Br1 = PeriodicMatrices.psreduc_fast(A,B)
+Ar2, Br2 = PeriodicMatrices.psreduc_reg(A,B)
+Ar3, Br3 = PeriodicMatrices.psreduc_reg(reshape(hcat(A...),2,2,2),reshape(hcat(B...),2,2,2))
+ev = sort(eigvals(Ar1,Br1),by=abs)[1:2]
+ev2 = eigvals(Ar2,Br2)
+ev3 = eigvals(Ar3,Br3)
+@test sort(real(ev)) ≈ sort(real(ev2)) ≈ sort(real(ev3))
+@test sort(imag(ev)) ≈ sort(imag(ev2)) ≈ sort(imag(ev3))
+
+Ad = reshape(vcat(A...),2,2,2); Bd = reshape(vcat(B...),2,2,2); 
+
 # symbolic periodic 
 @variables t
 A = [cos(t) 1; 1 1-sin(t)];
@@ -142,6 +154,7 @@ At0=PeriodicMatrices.ts2fm(Ats1,2pi,method = "constant");
 @test At0.(ts1) ≈ (PeriodicMatrices.ts2fm(Ats1,2pi,method = "linear")).(ts1);
 @test At0.(ts1) ≈ (PeriodicMatrices.ts2fm(Ats1,2pi,method = "quadratic")).(ts1);
 @test At0.(ts1) ≈ (PeriodicMatrices.ts2fm(Ats1,2pi,method = "cubic")).(ts1);
+@test_throws ArgumentError PeriodicMatrices.ts2fm(Ats1,2pi,method = "noidea")
 
 # test pseig
 @test sort(pseig(At,200)) ≈ sort(pseig(As,200)) ≈ sort(pseig(Ahr,200)) ≈ sort(pseig(Af,200))
@@ -315,11 +328,13 @@ cm3f = pseig(G3f,1000; reltol = 1.e-14) # characteristic multipliers
 c = sqrt(a-2q); d = sqrt(a+2q)
 Φ = [cos(d*(pi-τ)) 1/d*sin(d*(pi-τ)); -d*sin(d*(pi-τ)) cos(d*(pi-τ)) ]*[cos(c*τ) 1/c*sin(c*τ); -c*sin(c*τ) cos(c*τ)]
 cm3 = eigvals(Φ)  # exact characteristic multipliers
+ce3 = log.(complex(cm3))/pi
 
 # periodic switching matrix based approach
 G3sw = PeriodicSwitchingMatrix([[0 1; -a+2q 0],[0 1; -a-2q 0]],[0,τ],pi)
 cm3sw = pseig(G3sw) # characteristic multipliers 
-@test norm(sort(cm3f)-sort(cm3),Inf) < 1.e-6 && norm(sort(cm3sw)-sort(cm3),Inf) < 1.e-14
+ce3sw = psceig(G3sw) # characteristic exponents 
+@test norm(sort(cm3f)-sort(cm3),Inf) < 1.e-6 && norm(sort(cm3sw)-sort(cm3),Inf) < 1.e-14 && norm(sort(ce3sw,by=real)-sort(ce3,by=real),Inf) < 1.e-14
 
 
 # Floquet analysis for Hill equation with a negative slope sawtooth waveform coefficient of Example Fig 3.3

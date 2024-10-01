@@ -411,8 +411,8 @@ function psceig(at::PeriodicTimeSeriesMatrix)
    return isreal(ce) ? real(ce) : ce
 end
 function psceig(at::PeriodicSwitchingMatrix) 
-   M = monodromy(at) 
-   ev = length(at) == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
+   M = monodromy_sw(at) 
+   ev = length(at) == 1 ? eigvals(view(M,:,:,1)) : pschur(M; withZ = false)[3]
    ce = log.(complex(ev))/at.period
    return isreal(ce) ? real(ce) : ce
 end
@@ -587,7 +587,7 @@ The keyword parameter `method` specifies the interpolation/extrapolation method 
    elseif method == "cubic"     
       [intparray[i,j] = scale(interpolate(getindex.(A,i,j), BSpline(Cubic())), ts) for i in 1:n1, j in 1:n2]
    else
-      error("no such option method = $method")
+      throw(ArgumentError("no such option method = $method"))
    end
    return t -> [intparray[i,j](t) for i in 1:n1, j in 1:n2 ]
 end
