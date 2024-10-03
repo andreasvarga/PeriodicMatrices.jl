@@ -139,6 +139,8 @@ for method in ("linear", "quadratic", "cubic")
     @test all(norm.(tvmeval(Bts,tt; method).-tvmeval(Bhr,tt; exact = false)) .< 1.e-3)
     @test all(norm.(tvmeval(Cts,tt; method).-tvmeval(Chr,tt; exact = true)) .< 1.e-3)
 end
+@test_throws ArgumentError tvmeval(Ats,tt; method = "noidea")
+
 
 # check conversion to function form
 Amat = convert(PeriodicFunctionMatrix,Ahr); 
@@ -356,6 +358,9 @@ G3sw = PeriodicSwitchingMatrix([[0 1; -a+2q 0],[0 1; -a-2q 0]],[0,τ],pi)
 cm3sw = pseig(G3sw) # characteristic multipliers 
 ce3sw = psceig(G3sw) # characteristic exponents 
 @test norm(sort(cm3f)-sort(cm3),Inf) < 1.e-6 && norm(sort(cm3sw)-sort(cm3),Inf) < 1.e-14 && norm(sort(ce3sw,by=real)-sort(ce3,by=real),Inf) < 1.e-14
+tt = rand(10)*pi
+@test tvmeval(G3sw,tt)  ≈ tvmeval(G3sw,tt.+2pi) 
+
 
 
 # Floquet analysis for Hill equation with a negative slope sawtooth waveform coefficient of Example Fig 3.3
@@ -366,7 +371,10 @@ a = 1; q = .1;
 A4(t) = [0. 1.; -a+2*q*ψ4(t) 0]
 G4f = PeriodicFunctionMatrix(A4,pi)
 cm4f = pseig(G4f,1000; reltol = 1.e-14) # characteristic multipliers
-
+Ahr4 = convert(HarmonicArray,G4f,nsample=1024)
+@test hreval(hrtrunc(Ahr4,50),1) ≈  hreval(Ahr4,1,ntrunc = 50)
+@test hreval(hrtrunc(Ahr4,50),1,exact=false) ≈  hreval(Ahr4,1,ntrunc = 50,exact=false)
+@test norm(hreval(Ahr4,1,exact=true) -  hreval(Ahr4,1,exact=false,ntrunc=5),Inf) < 0.01
 
 # analytic approach form Richards's book page 35
 c = sqrt(a-2q); d = sqrt(a+2q); k = pi/6/q

@@ -996,7 +996,7 @@ function tvmeval(A::PeriodicTimeSeriesMatrix{:c,T}, t::Union{Real,Vector{<:Real}
    elseif method == "constant"      
       [intparray[i,j] = scale(Interpolations.extrapolate(interpolate(getindex.(A.values,i,j), BSpline(Constant(Periodic(OnCell())))), Periodic()), ts) for i in 1:n1, j in 1:n2]
    else
-      error("no such option method = $method")
+      throw(ArgumentError("no such option method = $method"))
    end
    return [[intparray[i,j].(te[k]) for i in 1:n1, j in 1:n2 ] for k = 1:nt ]
 end
@@ -1015,25 +1015,32 @@ The keyword argument `ntrunc` specifies the number of harmonics to be used for t
 (default: maximum possible number). 
 """
 function hreval(ahr::HarmonicArray{:c,T}, t::Real; exact::Bool = true, ntrunc::Int = max(size(ahr.values,3)-1,0)) where {T}
-      (ntrunc < 0 || ntrunc >= size(ahr.values,3)) && error("ntrunc out of allowed range")
+   (ntrunc < 0 || ntrunc >= size(ahr.values,3)) && error("ntrunc out of allowed range")
 
    n = ntrunc   
    T1 = float(promote_type(T,typeof(t)))
    ts = mod(T1(t),T1(ahr.period))*2*pi*ahr.nperiod/ahr.period
    
    # determine interpolation coefficients
-   ht = ones(T1,n);
-   if !exact
-      # use linear interpolation
-      for i = 2:n
-           x = pi*(i-1)/n
-           ht[i] = (sin(x)/x)^2
-      end
-   end
    a = T == T1 ? real.(ahr.values[:,:,1]) : T1.(real.(ahr.values[:,:,1]))
-   for i = 1:n
-       ta = view(ahr.values,:,:,i+1)
-       a .+= T1.(real.(ta)).*(cos(i*ts)*ht[i]) .+ T1.(imag.(ta)) .* ((sin(i*ts)*ht[i]))
+   ntrunc == 0 && (return a)
+
+   ht = ones(T1,n);
+   if exact
+      for i = 1:n
+          ta = view(ahr.values,:,:,i+1)
+          a .+= T1.(real.(ta)).*cos(i*ts) .+ (T1.(imag.(ta)) .* sin(i*ts))
+      end
+   else
+      # use linear interpolation
+      dx = 1/n
+      x = zero(T1)
+      for i = 1:n
+          ht = sinc(x)^2 
+          ta = view(ahr.values,:,:,i+1)
+          a .+= T1.(real.(ta)).*(cos(i*ts)*ht) .+ (T1.(imag.(ta)) .* (sin(i*ts)*ht))
+          x += dx
+      end
    end
    return a
 end   
@@ -1051,33 +1058,36 @@ a linear interpolation based approximation is computed
 The keyword argument `ntrunc` specifies the number of harmonics to be used for evaluation 
 (default: maximum possible number of harmonics). 
 """
-function tvmeval(ahr::HarmonicArray{:c,T}, t::Union{Real,Vector{<:Real}}; ntrunc::Int = size(ahr.values,3), 
+function tvmeval(ahr::HarmonicArray{:c,T}, t::Union{Real,Vector{<:Real}}; ntrunc::Int = size(ahr.values,3)-1, 
                 exact::Bool = true) where {T}
+   (ntrunc < 0 || ntrunc >= size(ahr.values,3)) && throw(ArgumentError("ntrunc out of allowed range"))
        
    n = min(size(ahr.values,3)-1,ntrunc);
    
    isa(t,Real) ? te = [t] : te = t
    nt = length(te)
    period = ahr.period
-   
-   tscal = 2*pi*ahr.nperiod/period
-   # determine interpolation coefficients
-   ht = ones(Float64,n);
-   if !exact
-      # use linear interpolation
-      for i = 2:n
-           x = pi*(i-1)/n
-           ht[i] = (sin(x)/x)^2
-      end
-   end
+   psub = period/ahr.nperiod
+   tscal = 2*pi/psub
    T1 = float(T)
    A = similar(Vector{Matrix{T1}}, nt)
    for j = 1:nt
        A[j] = real(ahr.values[:,:,1])
-       tsj = mod(te[j],period)*tscal
-       for i = 1:n
-           ta = view(ahr.values,:,:,i+1)
-           A[j] .+= real.(ta).*(cos(i*tsj)*ht[i]) .+ imag.(ta) .* ((sin(i*tsj)*ht[i]))
+       tsj = mod(te[j],psub)*tscal
+       if exact
+          for i = 1:n
+              ta = view(ahr.values,:,:,i+1)
+              A[j] .+= real.(ta).*cos(i*tsj) .+ (imag.(ta) .* sin(i*tsj))
+          end
+       else
+          dx = 1/n
+          x = zero(T1)
+          for i = 1:n
+              ht = sinc(x)^2 
+              ta = view(ahr.values,:,:,i+1)
+              A[j] .+= real.(ta).*(cos(i*tsj)*ht) .+ (imag.(ta) .* (sin(i*tsj)*ht))
+              x += dx
+          end
        end
    end
    return A
