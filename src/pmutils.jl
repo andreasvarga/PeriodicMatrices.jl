@@ -1142,6 +1142,13 @@ function tpmeval(A::SwitchingPeriodicMatrix, t::Real )
    isnothing(ind) && (ind = nv)
    return A.M[ind]
 end
+function tpmeval(A::SwitchingPeriodicArray, t::Real )
+   nv = length(A.ns)
+   k = Int(floor(mod(t,A.period/A.nperiod) / A.Ts)) 
+   ind = findfirst(view(A.ns,1:nv-1) .> mod(k,A.dperiod))
+   isnothing(ind) && (ind = nv)
+   return A.M[:,:,ind]
+end
 function tpmeval(A::PeriodicMatrix, t::Real )
    nv = length(A.M)
    k = Int(floor(mod(t,A.period/A.nperiod) / A.Ts)) 
@@ -1171,6 +1178,7 @@ end
 (F::SwitchingPeriodicMatrix)(t) = tpmeval(F, t) 
 (F::PeriodicMatrix)(t) = tpmeval(F, t) 
 (F::PeriodicArray)(t) = tpmeval(F, t) 
+(F::SwitchingPeriodicArray)(t) = tpmeval(F, t) 
    
 """
     pmaverage(A; rtol = sqrt(eps())) -> Am 
@@ -1189,32 +1197,32 @@ function pmaverage(A::PM; rtol = sqrt(eps())) where {PM <: Union{PeriodicSwitchi
    return pmaverage(convert(PeriodicFunctionMatrix,A); rtol)
 end
 pmaverage(A::HarmonicArray; rtol = missing) = real(A.values[:,:,1])
-function getpm(A::PeriodicMatrix, k, dperiod::Union{Int,Missing} = missing)
-   i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
-   return A.M[i]
-   #return view(A.M,i)
-end
-function getpm(A::SwitchingPeriodicMatrix, k, dperiod::Union{Int,Missing} = missing)
-   # i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
-   return A[k]
-   #return view(A.M,i)
-end
-function getpm(A::PeriodicArray, k, dperiod::Union{Int,Missing} = missing)
-   i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
-   return A.M[:,:,i]
-   #return view(A.M,:,:,i)
-end
-function copypm!(Dest::AbstractMatrix{T}, A::PeriodicMatrix{:d,T}, k, dperiod::Union{Int,Missing} = missing) where {T}
-   i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
-   return copyto!(Dest,view(A.M[i],:,:))
-   #return copyto!(Dest,A.M[i])
-   #return view(A.M,i)
-end
-function copypm!(Dest::AbstractMatrix, A::PeriodicArray, k, dperiod::Union{Int,Missing} = missing)
-   i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
-   return copyto!(Dest,view(A.M,:,:,i))
-   #return view(A.M,:,:,i)
-end
+# function getpm(A::PeriodicMatrix, k, dperiod::Union{Int,Missing} = missing)
+#    i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
+#    return A.M[i]
+#    #return view(A.M,i)
+# end
+# function getpm(A::SwitchingPeriodicMatrix, k, dperiod::Union{Int,Missing} = missing)
+#    # i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
+#    return A[k]
+#    #return view(A.M,i)
+# end
+# function getpm(A::PeriodicArray, k, dperiod::Union{Int,Missing} = missing)
+#    i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
+#    return A.M[:,:,i]
+#    #return view(A.M,:,:,i)
+# end
+# function copypm!(Dest::AbstractMatrix{T}, A::PeriodicMatrix{:d,T}, k, dperiod::Union{Int,Missing} = missing) where {T}
+#    i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
+#    return copyto!(Dest,view(A.M[i],:,:))
+#    #return copyto!(Dest,A.M[i])
+#    #return view(A.M,i)
+# end
+# function copypm!(Dest::AbstractMatrix, A::PeriodicArray, k, dperiod::Union{Int,Missing} = missing)
+#    i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
+#    return copyto!(Dest,view(A.M,:,:,i))
+#    #return view(A.M,:,:,i)
+# end
 
 """
      hr2bt(Ahr::HarmonicArray, N; P, nperiod]) -> Abt::Matrix 

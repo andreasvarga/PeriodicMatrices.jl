@@ -404,6 +404,7 @@ t = rand();
 # PeriodicArray
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*PeriodicArray(rand(Float64,n,n,pa),pa);
+@test Ad(0) == Ad.M[:,:,1]
 x = rand(n,n,px); [x[:,:,i] = x[:,:,i]'+x[:,:,i] for i in 1:px];
 Xd = PeriodicArray(x,px);
 Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
@@ -463,6 +464,8 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 # PeriodicMatrix
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*PeriodicMatrix([rand(Float64,n,n) for i in 1:pa],pa);
+@test Ad(0) == Ad.M[1]
+
 x = [rand(n,n) for i in 1:px]
 Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
 Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
@@ -562,6 +565,8 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 # SwitchingPeriodicMatrix
 n = 2; pa = 3; px = 6; T = 10; 
 Ad = 0.5*SwitchingPeriodicMatrix([rand(Float64,n,n) for i in 1:pa],[10,15,20],T);
+@test Ad(0) == Ad.M[1]
+
 x = [rand(n,n) for i in 1:px]
 Xd = SwitchingPeriodicMatrix([ x[i]+x[i]' for i in 1:px],[2, 3, 5,7, 9, 10],T;nperiod=2);
 @test Ad.Ts == Xd.Ts
@@ -612,6 +617,8 @@ D = rand(n,n)
 # SwitchingPeriodicArray
 n = 2; pa = 3; px = 6; T = 10; 
 Ad = 0.5*SwitchingPeriodicArray(rand(Float64,n,n,pa),[10,15,20],T);
+@test Ad(0) == Ad.M[:,:,1]
+
 x = pmsymadd!(PeriodicArray(rand(n,n,px),T));
 Xd = SwitchingPeriodicArray(x.M,[2, 3, 5,7, 9, 10],T;nperiod=2);
 @test Ad.Ts == Xd.Ts

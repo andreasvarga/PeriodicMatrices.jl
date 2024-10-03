@@ -28,15 +28,17 @@ na = [5, 3, 3, 4, 1]; ma = [3, 3, 4, 1, 5]; pa = 5; px = 5;
 Ad = PeriodicMatrix([rand(Float64,ma[i],na[i]) for i in 1:pa],pa); 
 @test  pseig(pm2pa(Ad)) ≈ pseig(Ad)
 
+# tests for fast algorithms 
 A = [rand(2,2)]; B = [rand(2,2)]
 Ar1, Br1 = PeriodicMatrices.psreduc_fast(A,B)
 Ar2, Br2 = PeriodicMatrices.psreduc_reg(A,B)
-Ar3, Br3 = PeriodicMatrices.psreduc_reg(reshape(hcat(A...),2,2,1),reshape(hcat(B...),2,2,1))
+Ar3, Br3 = PeriodicMatrices.psreduc_reg(reshape(A[1],2,2,1),reshape(B[1],2,2,1))
 ev = sort(eigvals(Ar1,Br1),by=abs)[1:2]
 ev2 = eigvals(Ar2,Br2)
 ev3 = eigvals(Ar3,Br3)
 @test sort(real(ev)) ≈ sort(real(ev2)) ≈ sort(real(ev3))
 @test sort(imag(ev)) ≈ sort(imag(ev2)) ≈ sort(imag(ev3))
+@test psreduc_reg(reshape(A[1],2,2,1)) == (A[1],I)
 
 
 A = [rand(2,2), rand(2,2)]; B = [rand(2,2), rand(2,2)]
@@ -195,6 +197,8 @@ aa = rand(2,2); ah = HarmonicArray(aa,2); @test psceig(ah) ≈ eigvals(aa)
 
 @test hr2bt(Ahr,4)[1:10,1:10] == hr2bt(Ahr,2)
 @test hr2btupd(Ahr,4) == hr2btupd(Ahr,4)
+
+@test pmaverage(Ahr) == Ahr.values[:,:,1]
 
 
 # example of Colaneri
@@ -375,6 +379,9 @@ Ahr4 = convert(HarmonicArray,G4f,nsample=1024)
 @test hreval(hrtrunc(Ahr4,50),1) ≈  hreval(Ahr4,1,ntrunc = 50)
 @test hreval(hrtrunc(Ahr4,50),1,exact=false) ≈  hreval(Ahr4,1,ntrunc = 50,exact=false)
 @test norm(hreval(Ahr4,1,exact=true) -  hreval(Ahr4,1,exact=false,ntrunc=5),Inf) < 0.01
+tt = rand(10)*pi
+@test all(norm.(tvmeval(G4f,tt).-tvmeval(Ahr4,tt; exact = false)) .< 1.e-3)
+
 
 # analytic approach form Richards's book page 35
 c = sqrt(a-2q); d = sqrt(a+2q); k = pi/6/q
