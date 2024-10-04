@@ -10,6 +10,7 @@ println("Test_pmops")
 
 @testset "pmops" begin
 
+
 # generate periodic function matrices with same period and nperiod = 1
 A(t) = [0  1; -10*cos(t)-1 -24-19*sin(t)]
 X(t) = [1+cos(t) 0; 0 1+sin(t)]  # desired solution
@@ -38,6 +39,13 @@ Xdert = PeriodicFunctionMatrix(Xder,2*pi)
 @test convert(PeriodicFunctionMatrix{:c,BigFloat},At)(1) ≈ At(1)
 @test convert(HarmonicArray{:c,Float64},At) == convert(HarmonicArray,At)
 @test convert(PeriodicSwitchingMatrix,At)(0) ≈ At(0)
+
+ap = rand(2,2); Ap = PeriodicFunctionMatrix(ap,pi)
+@test promote_period(ap,At) == promote_period(At) == At.period
+@test promote_period(ap,Ap,At) == At.period
+@test promote_period2(ap,At) == promote_period2(At) == (At.period, At.nperiod)
+@test promote_period2(ap,Ap,At) == (At.period,At.nperiod)
+
 
 
 @test set_period(set_period(At,4pi),2pi) == At
@@ -285,7 +293,7 @@ As = PeriodicSymbolicMatrix(A11,2*pi)
 @test ≈(As1,As) 
 @test ≈(Af11,Af)
 @test ≈(As,PeriodicSymbolicMatrix(ffm2psm(Af,0:0)+ffm2psm(Af,1:1),As.period))
-@test domain((Af+Af2).M).b ≈ 4pi
+@test domain((Af+Af2).M).b ≈ 4pi && domain((Af*Af2).M).b ≈ 4pi
 
 ac = rand(2,2)
 @test Af+ac ≈ ac+Af
@@ -478,6 +486,8 @@ Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 @test convert(PeriodicTimeSeriesMatrix,Ad) == convert(PeriodicTimeSeriesMatrix,convert(PeriodicMatrix,Ad))
 @test convert(PeriodicArray,convert(SwitchingPeriodicMatrix,Ad)) == Ad
 
+@test reverse(reverse(Ad)) == Ad
+
 
 
 # Xf = pfdlyap(Ad, Qdf);
@@ -587,6 +597,8 @@ x = [rand(na[i],na[i]) for i in 1:px]
 Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
 Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
 Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
+
+@test Ad.M + pmzeros(ma,na) == Ad.M
 
 
 # Xf = pfdlyap(Ad, Qdf);

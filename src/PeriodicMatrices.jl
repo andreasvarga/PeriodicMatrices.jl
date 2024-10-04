@@ -30,7 +30,7 @@ export PeriodicTimeSeriesMatrix, PeriodicSwitchingMatrix, HarmonicArray, Periodi
 export isconstant, iscontinuous, isdiscrete, set_period, promote_period, promote_period2, getpm
 export mb03vd!, mb03vy!, mb03bd!, mb03wd!, mb03kd! 
 export ps2fls, hr2bt, hr2btupd, phasemat, ps2frls, DiagDerOp, ps2ls, ps2spls
-export pmshift, trace
+export pmshift, trace, pmzeros
 export pmderiv, pmrand, horzcat, vertcat, pmsymadd!
 export bldiag, blockdiag
 export pmmulsym, pmtrmulsym, pmmultrsym, pmmuladdsym, pmmultraddsym, pmmuladdtrsym

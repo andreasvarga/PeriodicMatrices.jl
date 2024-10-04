@@ -3,45 +3,36 @@ function promote_period(PM1,args...; ndigits = 4)
     nlim = 2^ndigits
     if typeof(PM1) <: AbstractVecOrMat 
        period = nothing 
-       isconst = true
     else
        period = PM1.period
-       isconst = isconstant(PM1)
     end
     # determine period
     for a in args
         typeof(a) <: AbstractVecOrMat && continue
-        if isconstant(a)
-           if isconst
-              if isnothing(period) 
-                 period = a.period
-              else
-                 #period = max(period,a.period)
-                 peri = a.period
-                 r = rationalize(period/peri)
-                 num = numerator(r)
-                 den = denominator(r)
-                 num <= nlim || den <= nlim || error("incommensurate periods")
-                 period = period*den
-              end
-           end
+        if isnothing(period) 
+            period = a.period
            continue
+        else
+           peri = a.period
+           r = rationalize(period/peri)
+           num = numerator(r)
+           den = denominator(r)
+           num <= nlim || den <= nlim || error("incommensurate periods")
+           period = period*den
         end
-        isconst && (isconst = false; period = a.period; continue)
-        peri = a.period
-        r = rationalize(period/peri)
-        num = numerator(r)
-        den = denominator(r)
-        num <= nlim || den <= nlim || error("incommensurate periods")
-        period = period*den
     end
     return period
 end
 function promote_period2(PM1,args...; ndigits = 4)
     #determine period
     period = promote_period(PM1,args...; ndigits)   
+    isnothing(period) && (return nothing, nothing)
     # determine nperiod
-    nperiod = nothing
+    if typeof(PM1) <: AbstractVecOrMat 
+       nperiod = nothing 
+    else
+       nperiod = PM1.nperiod*rationalize(period/PM1.period).num
+    end
     for a in args
         typeof(a) <: AbstractVecOrMat && continue
         if isnothing(nperiod) 
