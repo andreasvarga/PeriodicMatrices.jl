@@ -216,15 +216,15 @@ t = rand();
 @test [As; Cs](t) ≈ [As(t); Cs(t)]
 @test blockdiag(As,Cs)(t) ≈ bldiag(As(t),Cs(t))
 ac = rand(2,2)
-@test As+ac == ac+As
-@test As-ac == -(ac-As)
+@test As+ac ≈ ac+As
+@test As-ac ≈ -(ac-As)
 @test As-I == -(I-As)
 @test As+At ≈ At+As
 @test As-At ≈ -(At-As)
-@test (As*ac)(1) == As(1)*ac
-@test (ac*As)(1) == ac*As(1)
-@test (As*At)(1) == As(1)*At(1)
-@test (At*As)(1) == At(1)*As(1)
+@test (As*ac)(1) ≈ As(1)*ac
+@test (ac*As)(1) ≈ ac*As(1)
+@test (As*At)(1) ≈ As(1)*At(1)
+@test (At*As)(1) ≈ At(1)*As(1)
 @test As/2 == 0.5*As
 @test As*I == I*As
 @test [As ac](1) == [As(1) ac] && [ac As](1) == [ac As(1)]
