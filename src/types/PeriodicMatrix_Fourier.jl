@@ -119,7 +119,7 @@ Base.convert(::Type{PeriodicFunctionMatrix}, A::FourierFunctionMatrix) = convert
 # conversions to continuous-time Fourier function matrix
 function Base.convert(::Type{FourierFunctionMatrix}, A::PeriodicFunctionMatrix) 
    T = float(eltype(A))
-   return FourierFunctionMatrix{:c,T,Fun}(Fun(x -> T.(A.f(x)), Fourier(0..A.period/A.nperiod)), Float64(A.period), A.nperiod)
+   return FourierFunctionMatrix{:c,T,Fun}(Fun(x -> T.(A(x)), Fourier(0..A.period/A.nperiod)), Float64(A.period), A.nperiod)
 end
 function Base.convert(::Type{FourierFunctionMatrix}, A::HarmonicArray) 
    tA = convert(PeriodicFunctionMatrix,A)

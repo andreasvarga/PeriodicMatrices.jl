@@ -27,6 +27,7 @@ b(t) = [cos(t)]
 @test PeriodicFunctionMatrix{:c,BigFloat}(b,2pi)(1) ≈ PeriodicFunctionMatrix(b,2pi)(1)
 
 # PeriodicFunctionMatrix
+@show "periodic function matrix operations"
 At = PeriodicFunctionMatrix(A,2*pi)
 Ct = PeriodicFunctionMatrix(C,2*pi)
 Cdt = PeriodicFunctionMatrix(Cd,2*pi)
@@ -82,6 +83,7 @@ D = rand(2,2)
 @test tpmeval(At,1)[1:2,1:1] == tpmeval(At[1:2,1],1) && lastindex(At,1) == 2 && lastindex(At,2) == 2
 
 # HarmonicArray
+@show "Harmonic array operations"
 A0 = rand(2,2); Acos = [rand(2,2)]; Asin = [rand(2,2),rand(2,2)]
 HarmonicArray(A0,Acos,Asin,pi)
 @test iszero(imag(HarmonicArray(A0,Acos,pi).values))
@@ -147,6 +149,7 @@ t = rand();
 
 
 # PeriodicSymbolicMatrix
+@show "symbolic operations"
 @variables t
 A11 = [0  1; -10*cos(t)-1 -24-19*sin(t)]
 X1 =  [1+cos(t) 0; 0 1+sin(t)] 
@@ -204,6 +207,8 @@ ac = rand(2,2)
 @test As*I == I*As
 @test [As ac](1) == [As(1) ac] && [ac As](1) == [ac As(1)]
 @test [As; ac](1) == [As(1); ac] && [ac; As](1) == [ac; As(1)]
+@test horzcat(As,ac)(1) == [As(1) ac] && horzcat(ac,As)(1) == [ac As(1)]
+@test vertcat(As,ac)(1) == [As(1); ac] && vertcat(ac,As)(1) == [ac; As(1)]
 
 
 D = rand(2,2)
@@ -232,14 +237,25 @@ t = rand();
 @test blockdiag(As,Cs)(t) ≈ bldiag(As(t),Cs(t))
 
 # FourierFunctionMatrix
+@show "Fourier series operations"
 @time Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,2*pi));
 @time Af1 = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A1,2*pi));
+@time Af2 = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,4*pi));
 @time Cf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(C,2*pi));
 @time Cdf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Cd,2*pi));
 @time Xf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(X,2*pi));
 @time Xderf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Xder,2*pi));
 
 @test set_period(set_period(Af,4pi),2pi) == Af
+Aft = Af'
+@test transpose(Af) == Aft
+@test tr(Af) == tr(Aft)
+@test trace(Af) == trace(Aft)
+@test opnorm(Af,2) ≈ opnorm(Aft,2) 
+@test norm(Af,1) == norm(Aft,1) && norm(Af,2) == norm(Aft,2) && norm(Af,Inf) == norm(Aft,Inf)
+@test_throws ArgumentError opnorm(Af,1)
+@test_throws ArgumentError norm(Af,3)
+
 @test FourierFunctionMatrix(Af.M) == Af
 a = rand(2,2);
 Af11=FourierFunctionMatrix(a,3)
@@ -248,26 +264,45 @@ Af11=FourierFunctionMatrix(a,3)
 
 As = PeriodicSymbolicMatrix(A11,2*pi)
 
-At1=convert(PeriodicFunctionMatrix,Af)
+@time At1=convert(PeriodicFunctionMatrix,Af) 
 @test ≈(convert(FourierFunctionMatrix,At1),Af)
 
-Ah1 = convert(HarmonicArray,Af)
+@time Ah1 = convert(HarmonicArray,Af)
 @test ≈(convert(FourierFunctionMatrix,Ah1),Af)
 
-Ah1 = convert(HarmonicArray,Af*Af)
+@time Ah1 = convert(HarmonicArray,Af*Af)
 @test ≈(convert(FourierFunctionMatrix,Ah1),Af*Af)
 
-Ats1 = convert(PeriodicTimeSeriesMatrix,Af);
+@time Ats1 = convert(PeriodicTimeSeriesMatrix,Af);
 @test ≈(convert(FourierFunctionMatrix,Ats1),Af)
 
-Ats2 = convert(PeriodicTimeSeriesMatrix,Af)
+@time Ats2 = convert(PeriodicTimeSeriesMatrix,Af)
 @test ≈(convert(FourierFunctionMatrix,Ats2),Af)
 
-Af11 = convert(FourierFunctionMatrix,As)
-As1 = convert(PeriodicSymbolicMatrix,Af11)
+@time Af11 = convert(FourierFunctionMatrix,As)
+@time As1 = convert(PeriodicSymbolicMatrix,Af11)
+
 @test ≈(As1,As) 
 @test ≈(Af11,Af)
 @test ≈(As,PeriodicSymbolicMatrix(ffm2psm(Af,0:0)+ffm2psm(Af,1:1),As.period))
+@test domain((Af+Af2).M).b ≈ 4pi
+
+ac = rand(2,2)
+@test Af+ac ≈ ac+Af
+@test Af-ac ≈ -(ac-Af)
+@test Af-I == -(I-Af)
+@test Af+At ≈ At+Af
+@test Af-At ≈ -(At-Af)
+@test (Af*ac)(1) ≈ Af(1)*ac
+@test (ac*Af)(1) ≈ ac*Af(1)
+@test (Af*At)(1) ≈ Af(1)*At(1)
+@test (At*Af)(1) ≈ At(1)*Af(1)
+@test Af/2 == 0.5*Af
+@test Af*I == I*Af
+@test [Af ac](1) ≈ [Af(1) ac] && [ac Af](1) ≈ [ac Af(1)]
+@test [Af; ac](1) ≈ [Af(1); ac] && [ac; Af](1) ≈ [ac; Af(1)]
+@test horzcat(Af,ac)(1) ≈ [Af(1) ac] && horzcat(ac,Af)(1) ≈ [ac Af(1)]
+@test vertcat(Af,ac)(1) ≈ [Af(1); ac] && vertcat(ac,Af)(1) ≈ [ac; Af(1)]
 
 
 @test issymmetric(Cf) && issymmetric(Cdf) && issymmetric(Xf) && issymmetric(Xderf)
@@ -282,8 +317,7 @@ D = rand(2,2)
       FourierFunctionMatrix(D,2*pi) ≈ FourierFunctionMatrix(D,4*pi)
 @test inv(Af1)*Af1 ≈ I ≈ Af1*inv(Af1) 
 @test norm(Af-Af,1) == norm(Af-Af,2) == norm(Af-Af,Inf) == 0
-@test iszero(opnorm(Af-Af,1)) && iszero(opnorm(Af-Af,2)) && iszero(opnorm(Af-Af,Inf)) && 
-      iszero(opnorm(Af-Af)) 
+@test iszero(opnorm(Af-Af,2)) && iszero(opnorm(Af-Af)) 
 @test trace(Af-Af) == 0 && iszero(tr(Af-Af))
 
 @test blockdiag(Af,Cf)(t) ≈ bldiag(Af(t),Cf(t))

@@ -6,9 +6,7 @@ LinearAlgebra.adjoint(A::FourierFunctionMatrix) = transpose(A)
 function LinearAlgebra.tr(V::Fun)
     typeof(size(space(V))) == Tuple{} && (return V)
     n, m = size(space(V))
-    if n ≠ m
-        throw(DimensionMismatch("space $(space(V)) is not square"))
-    end
+    n == m || throw(DimensionMismatch("space $(space(V)) is not square"))
     a = Array(V)
     temp = a[1,1]
     for i = 2:n
@@ -23,8 +21,9 @@ function trace(A::FourierFunctionMatrix; rtol = sqrt(eps()))
     tt, = quadgk(t -> tr(tpmeval(A,t)), 0., tsub; rtol)
     return tt/tsub
 end
-function LinearAlgebra.opnorm(A::FourierFunctionMatrix, p::Union{Real, Missing} = missing) 
-    return convert(FourierFunctionMatrix,opnorm(convert(PeriodicFunctionMatrix,A),p))
+function LinearAlgebra.opnorm(A::FourierFunctionMatrix, p::Real=2) 
+    p == 2 && (return convert(FourierFunctionMatrix,opnorm(convert(PeriodicFunctionMatrix,A),p)))
+    throw(ArgumentError("Only 2-opnom supported"))
 end
 function LinearAlgebra.norm(A::FourierFunctionMatrix, p::Real = 2; rtol = sqrt(eps())) 
     isconstant(A) && (return norm(tpmeval(A,0)))
