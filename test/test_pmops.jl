@@ -158,6 +158,14 @@ Xs = PeriodicSymbolicMatrix(X1,2*pi)
 Xders = PeriodicSymbolicMatrix(X1der,2*pi)
 
 @test set_period(set_period(As,4pi),2pi) == As
+Ast = As'
+@test transpose(As) == Ast
+@test tr(As) == tr(Ast)
+@test trace(As) == trace(Ast)
+@test opnorm(As,1) == opnorm(Ast,1) && opnorm(As,2) == opnorm(Ast,2) && opnorm(As,Inf) == opnorm(Ast,Inf)
+@test norm(As,1) == norm(Ast,1) && norm(As,2) == norm(Ast,2) && norm(As,Inf) == norm(Ast,Inf)
+@test_throws ArgumentError opnorm(As,3)
+@test_throws ArgumentError norm(As,3)
 
 At=convert(PeriodicFunctionMatrix,As)
 @test ≈(convert(PeriodicSymbolicMatrix,At),As)
@@ -181,6 +189,7 @@ At1=PeriodicFunctionMatrix(A11,2pi)
 @test norm(As'*Xs+Xs*As+Cds + pmderiv(Xs),1) < 1.e-7
 @test As*Xs+Xs*As'+Cs ≈  pmderiv(Xs) ≈ Xders
 @test As'*Xs+Xs*As+Cds ≈ -pmderiv(Xs) 
+@test transpose(As) == As'
 
 D = rand(2,2)
 @test As+I == I+As && As*5 == 5*As && As*D ≈ -As*(-D) && iszero(As-As) && !iszero(As)
@@ -206,6 +215,20 @@ t = rand();
 @test [As Cs](t) ≈ [As(t) Cs(t)]
 @test [As; Cs](t) ≈ [As(t); Cs(t)]
 @test blockdiag(As,Cs)(t) ≈ bldiag(As(t),Cs(t))
+ac = rand(2,2)
+@test As+ac == ac+As
+@test As-ac == -(ac-As)
+@test As-I == -(I-As)
+@test As+At ≈ At+As
+@test As-At ≈ -(At-As)
+@test (As*ac)(1) == As(1)*ac
+@test (ac*As)(1) == ac*As(1)
+@test (As*At)(1) == As(1)*At(1)
+@test (At*As)(1) == At(1)*As(1)
+@test As/2 == 0.5*As
+@test As*I == I*As
+@test [As ac](1) == [As(1) ac] && [ac As](1) == [ac As(1)]
+@test [As; ac](1) == [As(1); ac] && [ac; As](1) == [ac; As(1)]
 
 # FourierFunctionMatrix
 @time Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,2*pi));
@@ -405,6 +428,7 @@ t = rand();
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*PeriodicArray(rand(Float64,n,n,pa),pa);
 @test Ad(0) == Ad.M[:,:,1]
+@test getpm(Ad,4) == getpm(Ad,1)
 x = rand(n,n,px); [x[:,:,i] = x[:,:,i]'+x[:,:,i] for i in 1:px];
 Xd = PeriodicArray(x,px);
 Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
@@ -465,7 +489,7 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*PeriodicMatrix([rand(Float64,n,n) for i in 1:pa],pa);
 @test Ad(0) == Ad.M[1]
-
+@test getpm(Ad,4) == getpm(Ad,1)
 x = [rand(n,n) for i in 1:px]
 Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
 Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2

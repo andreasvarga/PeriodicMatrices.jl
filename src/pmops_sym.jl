@@ -6,13 +6,7 @@ function pmderiv(A::PeriodicSymbolicMatrix)
 end
 #LinearAlgebra.inv(A::PeriodicSymbolicMatrix) = PeriodicSymbolicMatrix(inv(A.F), A.period; nperiod = A.nperiod)
 function LinearAlgebra.inv(A::PeriodicSymbolicMatrix)
-    if isconstant(A)
-       # fix for Symbolics.jl issue #895
-       @variables t 
-       PeriodicSymbolicMatrix(Num.(inv(Symbolics.unwrap.(substitute.(A.F, (Dict(t => 0.),))))), A.period; nperiod = A.nperiod)    
-    else
-       PeriodicSymbolicMatrix(inv(A.F), A.period; nperiod = A.nperiod)
-    end
+    PeriodicSymbolicMatrix(inv(A.F), A.period; nperiod = A.nperiod)
 end
 function LinearAlgebra.transpose(A::PeriodicSymbolicMatrix)  
     return PeriodicSymbolicMatrix{:c,Num}(copy(transpose(A.F)), A.period, nperiod = A.nperiod)
@@ -42,6 +36,15 @@ function trace(A::PeriodicSymbolicMatrix; rtol=sqrt(eps()))
     tsub = A.period/A.nperiod
     tt, = quadgk(t -> tr(tpmeval(A,t)), 0., tsub; rtol)
     return tt/tsub
+end
+function LinearAlgebra.opnorm(A::PeriodicSymbolicMatrix, p::Real = 2) 
+    if p == 2
+       return PeriodicSymbolicMatrix([norm(A.F,2)],A.period; nperiod = A.nperiod) 
+    elseif p == 1 || isinf(p)
+       return PeriodicSymbolicMatrix([opnorm(A.F,p)],A.period; nperiod = A.nperiod) 
+    else
+       throw(ArgumentError("only p-opnorms for p = 1, 2, or Inf are supported"))
+    end
 end
 
 function LinearAlgebra.norm(A::PeriodicSymbolicMatrix, p::Real = 2; rtol = sqrt(eps())) 
