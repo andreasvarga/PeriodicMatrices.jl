@@ -162,7 +162,7 @@ Ast = As'
 @test transpose(As) == Ast
 @test tr(As) == tr(Ast)
 @test trace(As) == trace(Ast)
-@test opnorm(As,1) == opnorm(Ast,1) && opnorm(As,2) == opnorm(Ast,2) && opnorm(As,Inf) == opnorm(Ast,Inf)
+@test opnorm(As,1) == opnorm(Ast,Inf) && opnorm(As,2) == opnorm(Ast,2) && opnorm(As,Inf) == opnorm(Ast,1)
 @test norm(As,1) == norm(Ast,1) && norm(As,2) == norm(Ast,2) && norm(As,Inf) == norm(Ast,Inf)
 @test_throws ArgumentError opnorm(As,3)
 @test_throws ArgumentError norm(As,3)
@@ -190,6 +190,21 @@ At1=PeriodicFunctionMatrix(A11,2pi)
 @test As*Xs+Xs*As'+Cs ≈  pmderiv(Xs) ≈ Xders
 @test As'*Xs+Xs*As+Cds ≈ -pmderiv(Xs) 
 @test transpose(As) == As'
+ac = rand(2,2)
+@test As+ac ≈ ac+As
+@test As-ac ≈ -(ac-As)
+@test As-I == -(I-As)
+@test As+At ≈ At+As
+@test As-At ≈ -(At-As)
+@test (As*ac)(1) ≈ As(1)*ac
+@test (ac*As)(1) ≈ ac*As(1)
+@test (As*At)(1) ≈ As(1)*At(1)
+@test (At*As)(1) ≈ At(1)*As(1)
+@test As/2 == 0.5*As
+@test As*I == I*As
+@test [As ac](1) == [As(1) ac] && [ac As](1) == [ac As(1)]
+@test [As; ac](1) == [As(1); ac] && [ac; As](1) == [ac; As(1)]
+
 
 D = rand(2,2)
 @test As+I == I+As && As*5 == 5*As && As*D ≈ -As*(-D) && iszero(As-As) && !iszero(As)
@@ -215,20 +230,6 @@ t = rand();
 @test [As Cs](t) ≈ [As(t) Cs(t)]
 @test [As; Cs](t) ≈ [As(t); Cs(t)]
 @test blockdiag(As,Cs)(t) ≈ bldiag(As(t),Cs(t))
-ac = rand(2,2)
-@test As+ac ≈ ac+As
-@test As-ac ≈ -(ac-As)
-@test As-I == -(I-As)
-@test As+At ≈ At+As
-@test As-At ≈ -(At-As)
-@test (As*ac)(1) ≈ As(1)*ac
-@test (ac*As)(1) ≈ ac*As(1)
-@test (As*At)(1) ≈ As(1)*At(1)
-@test (At*As)(1) ≈ At(1)*As(1)
-@test As/2 == 0.5*As
-@test As*I == I*As
-@test [As ac](1) == [As(1) ac] && [ac As](1) == [ac As(1)]
-@test [As; ac](1) == [As(1); ac] && [ac; As](1) == [ac; As(1)]
 
 # FourierFunctionMatrix
 @time Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,2*pi));
