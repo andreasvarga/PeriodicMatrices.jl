@@ -56,11 +56,11 @@ or structure exploitung fast algorithms.
 These functions are instrumental to apply [Floquet theory](https://en.wikipedia.org/wiki/Floquet_theory) to study the properties of solutions of 
 various classes of differential equations (Mathieu, Hill, Meissner) and the stability of linear periodic systems (see [PeriodicSystems](https://github.com/andreasvarga/PeriodicSystems.jl) package). 
  
-## Example: Floquet-analysis of differential equations with periodic parameters**
+## Example: Floquet-analysis of differential equations with periodic parameters
 
 A frequently encountered periodic differential equation is of second order, expressible as
 
-     $$\ddot{z} + (a - 2q\psi (t))x = 0 ,$$
+$$\ddot{z} + (a - 2q\psi(t))x = 0 ,$$
 
 where  $ψ(t) = ψ(t+T)$ is a periodic function of period $T$. The parameter $a$ represents a constant portion of the
 coefficient of $x$ and $q$ accounts for the magnitude of the time variation. In what follows we will assume that $T = \pi$. 
@@ -70,7 +70,9 @@ If $\phi(t)$ is a rectangular function, the corresponding particular form is kno
 as the [_Meissner equation_](https://en.wikipedia.org/wiki/Meissner_equation).  
 
 The above equation can be equivalently expressed as a first order system of differential equations, by defining
- $$ y(t) = \begin{array} x(t)\\ \dot{x}(t) \end{array} $$
+
+$$ y(t) = \begin{array}{c} x(t)\\ \dot{x}(t) \end{array} $$
+
 to recast the second order differential equation into the form
 
 $$ \dot{y}(t) = A(t)y(t)$$
@@ -83,12 +85,12 @@ The state transition matrix $\Phi(t,0)$ over the time interval $(0,t)$ satisfies
 
 $$ \dot{\Psi}(t,0) = A(t)\Phi(t,0),  \Phi(0,0) = I $$
 
-and the _monodromy matrix_ $\Phi := \Phi(T,0)$, i.e., the state transition matrix over one full period.
+and the _monodromy matrix_ $\Psi := \Phi(T,0)$, i.e., the state transition matrix over one full period.
 
-The Floquet-analysis of the above equations addresses the determination of characteristic multipliers $\lamba_i$ as the eigenvalues of the monodromy matrix
+The Floquet-analysis of the above equations addresses the determination of characteristic multipliers $\lambda_i$ as the eigenvalues of the monodromy matrix
 or alternatively the characteristic exponents $\mu_i$ related to the characteristic multipliers as
 
-$$ \lambda_i = exp(\mu_iT) $$. 
+$$ \lambda_i = exp(\mu_iT) .$$ 
 
 ## References
 
