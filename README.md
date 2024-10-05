@@ -79,7 +79,7 @@ $$ \dot{y}(t) = A(t)y(t)$$
 
 where $A(t)$ is a $2\times 2$ matrix of constant or periodically varying coefficients of the form
 
-$$ A(t) = \\left[ \\begin{matrix} 0 & 1\\\\ -a+2*q*\phi(t) & 0 \\end{matrix} \\right] .$$
+$$ A(t) = \\begin{matrix} 0 & 1\\\\ -a+2*q*\phi(t) & 0 \\end{matrix}  .$$
 
 The state transition matrix $\Phi(t,0)$ over the time interval $(0,t)$ satisfies the differential equation 
 
