@@ -542,7 +542,7 @@ struct PeriodicFunctionMatrix{Domain,T} <: AbstractPeriodicArray{Domain,T}
       # else
       #    isc == isconst || @warn "constant function matrix detected: isconst has been reset to true"
       # end
-      F0 = f(period)
+      F0 = f(zero(period))
       nd = ndims(F0)
       nd <= 2 || error("two-dimensional function array expected, got an $nd -dimensional array")
       m, n = size(F0,1),size(F0,2)
@@ -555,7 +555,7 @@ end
 function PeriodicFunctionMatrix{:c,Tf}(f::Function, period::Real; isconst::Bool = false, nperiod::Int = 1) where {Tf} 
    period > 0 || error("period must be positive") 
    nperiod > 0 || error("number of subperiods must be positive") 
-   F0 = f(period)
+   F0 = f(zero(period))
    if typeof(F0) <: Real 
       return eltype(F0) == Tf ? PeriodicFunctionMatrix{:c,Tf}(t -> [f(t)], Float64(period), (1,1), nperiod, isconst) :
                                 PeriodicFunctionMatrix{:c,Tf}(t -> [Tf(f(Tf(t)))], Float64(period), (1,1), nperiod, isconst)
@@ -567,7 +567,7 @@ function PeriodicFunctionMatrix{:c,Tf}(f::Function, period::Real; isconst::Bool 
                       PeriodicFunctionMatrix{:c,Tf}(t -> n == 1 ? convert(Matrix{Tf},reshape(f(Tf(t)),m,n)) : convert(Matrix{Tf},f(Tf(t))), Float64(period), (m,n), nperiod, isconst)
 end
 PeriodicFunctionMatrix(f::F, period::Real; isconst::Bool = false, nperiod::Int = 1) where {F<:Function}  = 
-             PeriodicFunctionMatrix{:c,eltype(f(period))}(f, period; isconst, nperiod)
+             PeriodicFunctionMatrix{:c,eltype(f(zero(period)))}(f, period; isconst, nperiod)
 # function PeriodicFunctionMatrix(A::VecOrMat{T}, period::Real) where {T <: Real}
 #    if T == Num
 #       @variables t

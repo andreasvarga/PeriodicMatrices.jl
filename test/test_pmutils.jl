@@ -349,9 +349,10 @@ a = 1; q = .1; τ = pi/3;
 ψ3(t) = t <= τ ? 1. : -1. # Meissner equation Example Fig 3.1
 A3(t) = [0. 1.; -a+2*q*ψ3(t) 0]
 G3f = PeriodicFunctionMatrix(A3,pi)
-cm3f = pseig(G3f,1000; reltol = 1.e-14) # characteristic multipliers
+cm3f = pseig(G3f,1000; reltol = 1.e-14)  # characteristic multipliers
+ce3f = psceig(G3f,1000; reltol = 1.e-14) # characteristic exponents
 
-# analytic approach form Richards's book page 29
+# analytic approach from Richards's book page 29
 c = sqrt(a-2q); d = sqrt(a+2q)
 Φ = [cos(d*(pi-τ)) 1/d*sin(d*(pi-τ)); -d*sin(d*(pi-τ)) cos(d*(pi-τ)) ]*[cos(c*τ) 1/c*sin(c*τ); -c*sin(c*τ) cos(c*τ)]
 cm3 = eigvals(Φ)  # exact characteristic multipliers
@@ -365,7 +366,18 @@ ce3sw = psceig(G3sw) # characteristic exponents
 tt = rand(10)*pi
 @test tvmeval(G3sw,tt)  ≈ tvmeval(G3sw,tt.+2pi) 
 
+# Floquet analysis for a generalized Meissner equation with ns switching points (ns must be odd)
+a = 1; q = .1; ns = 5; ts1 = [0; sort(rand(ns))*pi; pi]; #τ = [0;pi/3;pi]
+ψ(t,a,q,ts1) = -a + 2*q*(isodd(findfirst(ts1 .> mod(t,pi))) ? 1. : -1.)
+G(t) = [0. 1.; ψ(t,a,q,ts1) 0]
+Gf = PeriodicFunctionMatrix(G,pi)
+cmf = pseig(Gf,1000; reltol = 1.e-14) # characteristic multipliers
 
+Gsw = PeriodicSwitchingMatrix([G(ti) for ti in ts1[1:end-1]],ts1[1:end-1],pi)
+cmsw = pseig(Gsw)
+
+tt = rand(10)*pi
+@test tvmeval(Gsw,tt)  ≈ tvmeval(Gsw,tt.+2pi) ≈ tvmeval(Gf,tt)
 
 # Floquet analysis for Hill equation with a negative slope sawtooth waveform coefficient of Example Fig 3.3
 a = 1; q = .1; 
