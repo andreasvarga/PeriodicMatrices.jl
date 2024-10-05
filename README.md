@@ -60,7 +60,7 @@ various classes of differential equations (Mathieu, Hill, Meissner) and the stab
 
 A frequently encountered periodic differential equation is of second order, expressible as
 
-$$\ddot{z} + (a - 2q\psi(t))x = 0 ,$$
+$$\ddot{x} + (a - 2q\psi(t))x = 0 ,$$
 
 where  $ψ(t) = ψ(t+T)$ is a periodic function of period $T$. The parameter $a$ represents a constant portion of the
 coefficient of $x$ and $q$ accounts for the magnitude of the time variation. In what follows we will assume that $T = \pi$. 
@@ -71,7 +71,7 @@ as the [_Meissner equation_](https://en.wikipedia.org/wiki/Meissner_equation).
 
 The above equation can be equivalently expressed as a first order system of differential equations, by defining
 
-$$ y(t) = \\begin{array}{c} x(t)\\\\ \dot{x}(t) \\end{array} $$
+$$ y(t) = \\left  \\begin{array}{c} x(t)\\\\ \dot{x}(t) \\end{array} \\right $$
 
 to recast the second order differential equation into the form
 
@@ -79,7 +79,7 @@ $$ \dot{y}(t) = A(t)y(t)$$
 
 where $A(t)$ is a $2\times 2$ matrix of constant or periodically varying coefficients of the form
 
-$$ A(t) = \\begin{array}{cc} 0 & 1\\\\ -a+2*q*\phi(t) & 0 \\end{array} .$$
+$$ A(t) = \\left \\begin{array}{cc} 0 & 1\\\\ -a+2*q*\\phi(t) & 0 \\end{array} \\right.$$
 
 The state transition matrix $\Phi(t,0)$ over the time interval $(0,t)$ satisfies the differential equation 
 

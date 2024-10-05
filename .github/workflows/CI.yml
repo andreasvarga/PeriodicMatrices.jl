@@ -7,7 +7,7 @@ on:
       - 'LICENSE.md'
       - 'README.md'
       - '.github/workflows/TagBot.yml'
-      - '.github/workflows/docs.yml'
+      - '.github/workflows/Documentation.yml'
       - 'docs/*'
   push:
     branches:
@@ -16,7 +16,7 @@ on:
       - 'LICENSE.md'
       - 'README.md'
       - '.github/workflows/TagBot.yml'
-      - '.github/workflows/docs.yml'
+      - '.github/workflows/Documentation.yml'
       - 'docs/*'
     # tags: '*'
 permissions:
