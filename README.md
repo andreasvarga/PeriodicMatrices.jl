@@ -71,7 +71,9 @@ as the [_Meissner equation_](https://en.wikipedia.org/wiki/Meissner_equation).
 
 The above equation can be equivalently expressed as a first order system of differential equations, by defining
 
-$$ y(t) = \\left[  \\begin{array}{c} x(t)\\\\ \dot{x}(t) \\end{array} \\right] $$
+```math
+y(t) = \\left[  \\begin{array}{c} x(t)\\\\ \dot{x}(t) \\end{array} \\right] 
+```    
 
 to recast the second order differential equation into the form
 
@@ -79,15 +81,10 @@ $$ \dot{y}(t) = A(t)y(t)$$
 
 where $A(t)$ is a $2\times 2$ matrix of constant or periodically varying coefficients of the form
 
-$$ A(t) = \\begin{array}{cc} 
-          0 & 1\\\\ 
-          -a+2*q*psi(t) & 0 
-          \\end{array}  . $$
-
 ```math
    A(t) = \left[ \begin{array}{cc} 
           0 & 1\\
-          -a+2*q*\psi(t) & 0 
+          -a+2q\psi(t) & 0 
           \end{array} \right]
 ```         
 
