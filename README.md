@@ -72,7 +72,7 @@ as the [_Meissner equation_](https://en.wikipedia.org/wiki/Meissner_equation).
 The above equation can be equivalently expressed as a first order system of differential equations, by defining
 
 ```math
-y(t) = \\left[  \\begin{array}{c} x(t)\\\\ \dot{x}(t) \\end{array} \\right] 
+y(t) = \left[  \begin{array}{c} x(t)\\ \dot{x}(t) \end{array} \right] 
 ```    
 
 to recast the second order differential equation into the form
