@@ -85,10 +85,10 @@ $$ A(t) = \\begin{array}{cc}
           \\end{array}  . $$
 
 ```math
-   A(t) = \begin{array}{cc} 
+   A(t) = \left[ \begin{array}{cc} 
           0 & 1\\
-          -a+2*q*psi(t) & 0 
-          \end{array}  
+          -a+2*q*\psi(t) & 0 
+          \end{array} \right]
 ```         
 
 The state transition matrix $\Phi(t,0)$ over the time interval $(0,t)$ satisfies the differential equation 
