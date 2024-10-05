@@ -71,7 +71,7 @@ as the [_Meissner equation_](https://en.wikipedia.org/wiki/Meissner_equation).
 
 The above equation can be equivalently expressed as a first order system of differential equations, by defining
 
-$$ y(t) = \begin{array}{c} x(t)\\ \dot{x}(t) \end{array} $$
+$$ y(t) = \\begin{array}{c} x(t)\\\\ \dot{x}(t) \\end{array} $$
 
 to recast the second order differential equation into the form
 
@@ -79,7 +79,7 @@ $$ \dot{y}(t) = A(t)y(t)$$
 
 where $A(t)$ is a $2\times 2$ matrix of constant or periodically varying coefficients of the form
 
-$$ A(t) = \begin{array}{cc} 0 & 1\\ -a+2*q*\phi(t) & 0 \end{array} .$$
+$$ A(t) = \\begin{array}{cc} 0 & 1\\\\ -a+2*q*\phi(t) & 0 \\end{array} .$$
 
 The state transition matrix $\Phi(t,0)$ over the time interval $(0,t)$ satisfies the differential equation 
 
