@@ -90,7 +90,7 @@ where $A(t)$ is a $2\times 2$ matrix of constant or periodically varying coeffic
 
 The state transition matrix $\Phi(t,0)$ over the time interval $(0,t)$ satisfies the differential equation 
 
-$$ \dot{\Psi}(t,0) = A(t)\Phi(t,0),  \Phi(0,0) = I $$
+$$ \dot{\Psi}(t,0) = A(t)\Phi(t,0),  \; \Phi(0,0) = I $$
 
 and the _monodromy matrix_ $\Psi := \Phi(T,0)$, i.e., the state transition matrix over one full period.
 
