@@ -96,13 +96,61 @@ The state transition matrix $\Phi(t,0)$ over the time interval $(0,t)$ satisfies
 
 and the _monodromy matrix_ $\Psi := \Phi(T,0)$, i.e., the state transition matrix over one full period.
 
-The Floquet-theory based stability analysis of the above equations addresses the determination of characteristic multipliers $\lambda_i$ as the eigenvalues of the monodromy matrix
-or alternatively the characteristic exponents $\mu_i$ related to the characteristic multipliers as
+The Floquet-theory based stability analysis of the above equations addresses the determination of _characteristic multipliers_ $\lambda_i$ as the eigenvalues of the monodromy matrix
+or alternatively the _characteristic exponents_ $\mu_i$ related to the characteristic multipliers as
 
 $$ \lambda_i = exp(\mu_iT) .$$ 
 
-The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that $Re(\mu_i) < 0 \forall i$, which is the same as $|\lambda_i| < 1 \forall i$. 
-Such a solution will also be _stable_ if in addition one $Re(\mu_i) = 0$ or one $|\lambda_i| = 1$. 
+The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that Re$(\mu_i) < 0 \, \forall i$, which is the same as $|\lambda_i| < 1 \, \forall i$. 
+Such a solution will also be _stable_ if in addition one Re$(\mu_i) = 0$ or one $|\lambda_i| = 1$. 
+
+In what follows we illustrate how to perform the stability analysis for the three types of equations based on the characteristic multipliers/exponents.  
+
+** The lossles Meissner equation with a rectangular waveform coefficient (see Example of Fig 3.1 in [3])**
+
+Assume the period $T = \pi$ and let $\tau = \pi/3$ the switching time. We consider the periodic function $\psi(t) = 1$ is $t \in [0,\tau)$ and $\psi(t) = -1$ is $t \in [\tau,\pi)$. 
+We descrive the periodic matrix $A(t)$ as a _PeriodicSwitchingMatrix_  with two components corresponding to the two constant values of $\psi(t)$ and switching times at $t = 0$ and $t = \tau$. 
+The following code can be used for stability analysis purposes:
+
+````JULIA
+using PeriodicMatrices
+
+# set parameters
+a = 1; q = .1; T = pi
+ts = [0;  T/3; T] 
+
+ψ(t,ts) = isodd(findfirst(mod(3,T) .< ts)) ? -1 : 1
+
+# setup A(t)
+A = PeriodicSwitchingMatrix([[0. 1.; -a+2*q*ψ(t,ts) 0] for t in ts[1:end-1]], ts[1:end-1], T)
+ce = psceig(A)  
+
+# stability test
+all(real(ce) .< 0)
+````
+
+The computed characteristic exponents are:
+
+````JULIA
+julia> ce = psceig(A)
+2-element Vector{ComplexF64}:
+ 0.041379744661220644 + 1.0im
+  -0.0413797446612206 + 1.0im
+````
+and therefore the solutions are unstable. The computations can be applied to several switching points as well.
+
+For a lossy Meissner equation, the computations reveal stability:
+
+````JULIA
+# setup A(t)
+ζ = 0.2
+A = PeriodicSwitchingMatrix([[0. 1.; -a+2*q*ψ(t,ts) -2ζ] for t in ts[1:end-1]], ts[1:end-1], T)
+ce = psceig(A)  
+
+# stability test
+all(real(ce) .< 0)
+````
+
 
 ## References
 
