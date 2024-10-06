@@ -106,10 +106,9 @@ Such a solution will also be _stable_ if in addition one $Re(\mu_i) = 0$ or one 
 
 In what follows we illustrate how to perform the stability analysis for the three types of equations based on the characteristic multipliers/exponents.  
 
-### The lossless Meissner equation with a rectangular waveform coefficient (see Example of Fig 3.1 in [3])
+### The lossless Meissner equation with a rectangular waveform coefficient
 
-**The lossless Meissner equation with a rectangular waveform coefficient (see Example of Fig 3.1 in [3])**
-
+This is Example of Fig 3.1 in [3]. 
 Assume the period $T = \pi$ and let $\tau = T/3$ the switching time. We consider the periodic function $\psi(t) = 1$ if $t \in [0,\tau)$ and $\psi(t) = -1$ if $t \in [\tau,\pi)$. 
 We can describe the periodic matrix $A(t)$ as a _PeriodicSwitchingMatrix_  with two components corresponding to the two constant values of $\psi(t)$ and switching times at $t = 0$ and $t = \tau$. 
 The following code can be used for stability analysis purposes:
