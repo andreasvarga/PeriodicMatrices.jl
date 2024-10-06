@@ -64,10 +64,10 @@ $$\ddot{x} + 2\zeta\dot{x} + (a - 2q\psi(t))x = 0 ,$$
 
 where  $ψ(t) = ψ(t+T)$ is a periodic function of period $T$. The parameter $a$ represents a constant portion of the
 coefficient of $x$ and $q$ accounts for the magnitude of the time variation. A positive damping coefficient $\zeta$ is frequently used in practical applications.  
-The above equation is generally known as the [_Hill-equation_](https://en.wikipedia.org/wiki/Hill_differential_equation) and the form in which
+The above equation for $\zeta = 0$ is generally known as the [_Hill-equation_](https://en.wikipedia.org/wiki/Hill_differential_equation) and the form in which
 it is expressed is that most widely encountered in applications. When $\psi(t) = cos 2t$ , the equation becomes the [_Mathieu equation_](https://en.wikipedia.org/wiki/Mathieu_function#Mathieu_equation).
 If $\phi(t)$ is a rectangular function, the corresponding particular form is known
-as the [_Meissner equation_](https://en.wikipedia.org/wiki/Meissner_equation).  
+as the [_Meissner equation_](https://en.wikipedia.org/wiki/Meissner_equation). If $\zeta > 0$, we speak of the _lossy_ variants of these equations.
 
 The above equation can be equivalently expressed as a first order system of differential equations, by defining
 
@@ -101,8 +101,8 @@ or alternatively the characteristic exponents $\mu_i$ related to the characteris
 
 $$ \lambda_i = exp(\mu_iT) .$$ 
 
-The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that $\Re \{µ_i\} < 0, \, \forall i$, which is the same as $|\lambda_i| < 1 \,  \forall i$. 
-Such a solution will also be _stable_ if in addition one $\Re \{µ_i}\ = 0$ or one $|\lambda_i| = 1$. 
+The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that $Re(µ_i) < 0, \forall i$, which is the same as $|\lambda_i| < 1 \forall i$. 
+Such a solution will also be _stable_ if in addition one $Re(µ_i) = 0$ or one $|\lambda_i| = 1$. 
 
 ## References
 
