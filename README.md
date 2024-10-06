@@ -109,8 +109,8 @@ In what follows we illustrate how to perform the stability analysis for the thre
 ### The lossless Meissner equation with a rectangular waveform coefficient
 
 This is Example of Fig 3.1 in [3]. 
-Assume the period $T = \pi$ and let $\tau = T/3$ the switching time. We consider the periodic function $\psi(t) = 1$ if $t \in [0,\tau)$ and $\psi(t) = -1$ if $t \in [\tau,\pi)$. 
-We can describe the periodic matrix $A(t)$ as a _PeriodicSwitchingMatrix_  with two components corresponding to the two constant values of $\psi(t)$ and switching times at $t = 0$ and $t = \tau$. 
+Assume the period is $T = \pi$ and let $\tau = T/3$ be the switching time. We consider the periodic function $\psi(t) = 1$ if $t \in [0,\tau)$ and $\psi(t) = -1$ if $t \in [\tau,\pi)$. 
+We can describe the periodic matrix $A(t)$ as a **PeriodicSwitchingMatrix**  with two components corresponding to the two constant values of $\psi(t)$ and switching times at $t = 0$ and $t = \tau$. 
 The following code can be used for stability analysis purposes:
 
 ````JULIA
@@ -118,7 +118,7 @@ using PeriodicMatrices
 
 # set parameters
 a = 1; q = .1; T = pi
-ts = [0;  T/3; T] 
+ts = [0; τ; T] 
 
 ψ(t,ts) = isodd(findfirst(mod(t,T) .< ts)) ? -1 : 1
 
@@ -138,7 +138,7 @@ julia> ce
  0.041379744661220644 + 1.0im
   -0.0413797446612206 + 1.0im
 ````
-and therefore the solutions are unstable. The computations can be easily extended to several switching points as well.
+and therefore the solutions are unstable. The computations can be easily extended to several switching points in $\tau$ as well.
 
 For a lossy Meissner equation, the computations reveal stability:
 
