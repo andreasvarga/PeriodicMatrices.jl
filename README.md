@@ -60,10 +60,10 @@ various classes of differential equations (Mathieu, Hill, Meissner) and the stab
 
 A frequently encountered periodic differential equation is of second order, expressible as
 
-$$\ddot{x} + (a - 2q\psi(t))x = 0 ,$$
+$$\ddot{x} + 2\zeta\dot{x} + (a - 2q\psi(t))x = 0 ,$$
 
 where  $ψ(t) = ψ(t+T)$ is a periodic function of period $T$. The parameter $a$ represents a constant portion of the
-coefficient of $x$ and $q$ accounts for the magnitude of the time variation. In what follows we will assume that $T = \pi$. 
+coefficient of $x$ and $q$ accounts for the magnitude of the time variation. A positive damping coefficient $\zeta$ is frequently used in practical applications.  
 The above equation is generally known as the [_Hill-equation_](https://en.wikipedia.org/wiki/Hill_differential_equation) and the form in which
 it is expressed is that most widely encountered in applications. When $\psi(t) = cos 2t$ , the equation becomes the [_Mathieu equation_](https://en.wikipedia.org/wiki/Mathieu_function#Mathieu_equation).
 If $\phi(t)$ is a rectangular function, the corresponding particular form is known
@@ -84,22 +84,25 @@ where $A(t)$ is a $2\times 2$ matrix of constant or periodically varying coeffic
 ```math
    A(t) = \left[ \begin{array}{cc} 
           0 & 1\\
-          -a+2q\psi(t) & 0 
+          -a+2q\psi(t) & -2\zeta 
           \end{array} \right]
 ```         
 
 The state transition matrix $\Phi(t,0)$ over the time interval $(0,t)$ satisfies the differential equation 
 
 ```math
-\dot{\Psi}(t,0) = A(t)\Phi(t,0),  \,\, \Phi(0,0) = I 
+\dot{\Phi}(t,0) = A(t)\Phi(t,0),  \,\, \Phi(0,0) = I 
 ``` 
 
 and the _monodromy matrix_ $\Psi := \Phi(T,0)$, i.e., the state transition matrix over one full period.
 
-The Floquet-analysis of the above equations addresses the determination of characteristic multipliers $\lambda_i$ as the eigenvalues of the monodromy matrix
+The Floquet-theory based stability analysis of the above equations addresses the determination of characteristic multipliers $\lambda_i$ as the eigenvalues of the monodromy matrix
 or alternatively the characteristic exponents $\mu_i$ related to the characteristic multipliers as
 
 $$ \lambda_i = exp(\mu_iT) .$$ 
+
+The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that $\Re \{µ_i\} < 0, \, \forall i$, which is the same as $|\lambda_i| < 1 \,  \forall i$. 
+Such a solution will also be _stable_ if in addition one $\Re \{µ_i}\ = 0$ or one $|\lambda_i| = 1$. 
 
 ## References
 
