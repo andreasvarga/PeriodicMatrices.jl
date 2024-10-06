@@ -101,8 +101,8 @@ or alternatively the characteristic exponents $\mu_i$ related to the characteris
 
 $$ \lambda_i = exp(\mu_iT) .$$ 
 
-The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that $Re(µ_i) < 0, \forall i$, which is the same as $|\lambda_i| < 1 \forall i$. 
-Such a solution will also be _stable_ if in addition one $Re(µ_i) = 0$ or one $|\lambda_i| = 1$. 
+The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that $Re(\mu_i) < 0 \forall i$, which is the same as $|\lambda_i| < 1 \forall i$. 
+Such a solution will also be _stable_ if in addition one $Re(\mu_i) = 0$ or one $|\lambda_i| = 1$. 
 
 ## References
 
