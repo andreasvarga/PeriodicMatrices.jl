@@ -101,10 +101,12 @@ or alternatively the _characteristic exponents_ $\mu_i$ related to the character
 
 $$ \lambda_i = exp(\mu_iT) .$$ 
 
-The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that Re$(\mu_i) < 0 \, \forall i$, which is the same as $|\lambda_i| < 1 \, \forall i$. 
-Such a solution will also be _stable_ if in addition one Re$(\mu_i) = 0$ or one $|\lambda_i| = 1$. 
+The solution $x(t)$ is _stable_ if it remains bounded as time goes to infinity.  For stability it is sufficient that $Re(\mu_i) < 0 \, \forall i$, which is the same as $|\lambda_i| < 1 \, \forall i$. 
+Such a solution will also be _stable_ if in addition one $Re(\mu_i) = 0$ or one $|\lambda_i| = 1$. 
 
 In what follows we illustrate how to perform the stability analysis for the three types of equations based on the characteristic multipliers/exponents.  
+
+### The lossless Meissner equation with a rectangular waveform coefficient (see Example of Fig 3.1 in [3])
 
 **The lossless Meissner equation with a rectangular waveform coefficient (see Example of Fig 3.1 in [3])**
 
