@@ -108,7 +108,7 @@ In what follows we illustrate how to perform the stability analysis for the thre
 
 ### The lossless Meissner equation with a rectangular waveform coefficient
 
-This is Example of Fig 3.1 in [3]. 
+This is the Example of Fig 3.1 in [3]. 
 Assume the period is $T = \pi$ and let $\tau = T/3$ be the switching time. We consider the periodic function $\psi(t) = 1$ if $t \in [0,\tau)$ and $\psi(t) = -1$ if $t \in [\tau,\pi)$. 
 We can describe the periodic matrix $A(t)$ as a **PeriodicSwitchingMatrix**  with two components corresponding to the two constant values of $\psi(t)$ and switching times at $t = 0$ and $t = \tau$. 
 The following code can be used for stability analysis purposes:
@@ -140,7 +140,7 @@ julia> ce
 ````
 and therefore the solutions are unstable. The computations can be easily extended to several switching points in $\tau$ as well.
 
-For a lossy Meissner equation, the computations reveal stability:
+For a lossy Meissner equation with $\zeta = 0.2$, the computations reveal stability:
 
 ````JULIA
 # setup of A(t)
@@ -158,6 +158,113 @@ julia> ce
  -0.14798307933724503 + 1.0im
    -0.252016920662755 + 1.0im
 ````
+
+### The Hill equation with a sawtooth waveform coefficient
+
+This is the Example of Fig 3.3 in [3]. Assume again the period is $T = \pi$ and let $\psi(t)$ be the periodic negative slope sawtooth function $\psi(t) = -2*t/T+1$. 
+We can describe the periodic matrix $A(t)$ as a **PeriodicFunctionMatrix**. 
+The following code can be used for stability analysis purposes:
+
+````JULIA
+using PeriodicMatrices
+
+# set parameters
+a = 1; q = .1; T = pi
+ψ(t) = -2*t/pi+1
+
+# setup of A(t)
+A = PeriodicFunctionMatrix(t->[0. 1.; -a+2*q*ψ(t) 0], T)
+ce = psceig(A)  
+
+# stability test
+all(real(ce) .< 0)
+````
+The computed characteristic exponents are:
+
+````JULIA
+julia> ce
+2-element Vector{ComplexF64}:
+ 0.031815620244098085 + 1.0im
+  -0.0318155972239221 + 1.0im
+````
+and therefore the solutions are unstable. 
+
+Stability can be illustrated with the lossy Hill equation $\zeta = 0.2$:  
+
+````JULIA
+# setup of A(t)
+ζ = 0.2
+A = PeriodicFunctionMatrix(t->[0. 1.; -a+2*q*ψ(t) -2ζ], T)
+
+ce = psceig(A)  
+
+# stability test
+all(real(ce) .< 0)
+````
+and 
+````JULIA
+ulia> ce = psceig(A)
+2-element Vector{ComplexF64}:
+ -0.17487078757796817 + 1.0im
+ -0.22513738474355782 + 1.0im
+````
+
+Alternatively, the same computations can be performed with $A$ defined as a **PeriodicSymbolicMatrix**: 
+
+````JULIA
+using PeriodicMatrices
+using Symbolics
+
+# set parameters
+a = 1; q = .1; T = pi
+@variables t
+ψ1 = -2*t/pi+1
+
+# setup of A(t)
+A = PeriodicSymbolicMatrix([0. 1.; -a+2*q*ψ1 0], T)
+ce = psceig(A)  
+
+# stability test
+all(real(ce) .< 0)
+````
+
+### Using multiple shooting to enhance accuracy
+
+Consider the following periodic matrix of period $T = 2pi$
+
+
+```math
+   A(t) = \left[ \begin{array}{cc} 
+          0 & 1\\
+          -10*cos(t) & -24-10*sin(t) 
+          \end{array} \right]
+```         
+which has characterisitic exponents equal to $0$ and $-24$.
+
+Using the standard settings to compute the characteristic exponents,  the resulting characteristic exponents have no one exact digit 
+even by imposing a high relative tolerance for solving the underlying differential equations:
+
+````JULIA
+julia> using Periodicmatrices
+
+julia> A = PeriodicFunctionMatrix(t -> [0 1; -10*cos(t) -24-10*sin(t)],2pi);
+
+julia> ce = psceig(A; reltol = 1.e-10)
+2-element Vector{Float64}:
+ -6.398432404426897
+ -1.4291292368715818e-13
+````
+
+However, full accuracy can be achieved with multiple shooting by determining the monodromy matrix as a product of, say 500 matrices, and computing the eigenvalues using the periodic Schur decomposition:
+
+````JULIA
+julia> ce = psceig(A,500; reltol = 1.e-10)
+2-element Vector{Float64}:
+   3.180554681463513e-16
+ -23.99999999998858
+````
+
+Note that the evaluation of the 500 factors can be done in parallel, in which case a substantial speedup of computations can be achieved.
 
 ## References
 
