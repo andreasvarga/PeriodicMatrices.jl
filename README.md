@@ -285,7 +285,7 @@ Let $A(t)$ be a continuous-time periodic matrix of period $T$, such that $A(t+T)
 $A_d(k) = A((k-1)\Delta)$, where $\Delta := T/p$ is called the _sampling time_.  The sequence $A_d(1)$, ..., $A_d(k)$, ... satisfies $A_d(k+p) = A_d(k)$ for all $k$ and thus is $p$-periodic. 
 When considering discrete-time periodic matrices, this connection to a continuous-time periodic matrix is implicitly assumed. 
 
-A discrete-time periodic matrix $A_d(k)$ can be specified via a collection of component matrices  $A_1$, $A_2$, ..., $A_p$ (such that $A_k = A_d(k)$) and the real period $T$ (the discrete-period $p$ implicitly results).
+A discrete-time periodic matrix $A_d(k)$ can be specified via a collection of component matrices  $A_1$, $A_2$, ..., $A_p$ (such that $A_k = A_d(k)$ ) and the real period $T$ (the discrete period $p$ implicitly results).
 Normally, the component matrices have constant dimensions. However, for some specific problems, it is necessary
 to allow for periodic time variability in the dimensions as well, in which case the component matrices $A_k$
 exhibit a time-varying dimensionality.  
@@ -294,7 +294,7 @@ If the dimensions allow to form the product $\Phi(p,0) := A_p...A_2A_1$ such tha
 its eigenvalues $\lambda_i$ are the _characteristic multipliers_ of $A_d(k)$.  The associated _characteristic exponents_ $\mu_i$ satisfy $\lambda_i = \mu_i^p$. 
 The stability of a discrete-time periodic matrix can be assessed by computing its characteristic multipliers and checking that all characteristic multiplies have moduli less than one. 
 
-Consider a discrete-time periodic matrix A(k) of period T = 2 with two component matrices A_1 and A_2, with both having eigenvalues equal to zero. 
+Consider a discrete-time periodic matrix $A(k)$ of period $T = 2$ with two component matrices $A_1$ and $A_2$, with both having eigenvalues equal to zero. 
 
 ```math
    A_1 = \left[ \begin{array}{cc} 
@@ -307,18 +307,76 @@ Consider a discrete-time periodic matrix A(k) of period T = 2 with two component
           \end{array} \right]
 
 ```         
-In spite of this, the matrix is unstable as can be checked using a **PeriodicMatrix** representation of A(k).
+In spite of this, the matrix is unstable as can be checked using a **PeriodicArray** representation of $A(k)$.
 
 
 ````JULIA
-julia> using PeriodicMatrices
+julia> using PeriodicMatrices 
 
-julia> A = PeriodicMatrix([[0 0;2 0],[0 2;0 0]],2);
+julia> A = PeriodicArray(cat([0 0;2 0],[0 2;0 0], dims=3),2);
 
 julia> pseig(A)
 2-element Vector{Float64}:
  4.0
  0.0
+````
+Consider a discrete-time periodic matrix $A(k)$ of period $T = 2$ with two component matrices $A_1$ and $A_2$, with both having eigenvalues equal to 2. 
+
+```math
+   A_1 = \left[ \begin{array}{cc} 
+          2 & 0\\
+          -3.5 & 0 
+          \end{array} \right], \qquad 
+   A_2 = \left[ \begin{array}{cc} 
+          2 & 1\\
+          0 & 0 
+          \end{array} \right]
+
+```         
+In spite of this, the matrix is stable as can be checked using a **PeriodicMatrix** representation of $A(k)$.
+
+
+````JULIA
+julia> using PeriodicMatrices
+
+julia> A = PeriodicMatrix([[2 0;-3.5 0],[2 1;0 0]],2);
+
+julia> pseig(A)
+2-element Vector{Float64}:
+ 0.4999999999999999
+ 0.0
+````
+Consider a discrete-time periodic matrix $A(k)$ of period $T = 2$ with two component matrices $A_1$ and $A_2$, with time-varying dimensions. 
+
+```math
+   A_1 = \left[ \begin{array}{cc} 
+          2 & 0\\
+          -3.5 & 0 
+          \end{array} \right], \qquad 
+   A_2 = \left[ \begin{array}{cc} 
+          2 & 1\\
+          0 & 0 
+          \end{array} \right]
+
+```         
+The matrix has a core characteristic multiplier equal to 1 (and therefore can be considered marginally stable). 
+The core characteristic multiplier can be isolated using the shifting of component matrices, which reverts the order of components used to form the monodromy matrix.
+
+
+````JULIA
+julia> using PeriodicMatrices
+
+julia> A = PeriodicMatrix([[ 1 0 ], [ 1; 1]],2);
+
+julia> pseig(A)
+2-element Vector{Float64}:
+ 0.4999999999999999
+ 0.0
+
+julia> pseig(pmshift(A,1))
+1-element Vector{Float64}:
+ 0.9999999999999997
+
 ````
 
 
