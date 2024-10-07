@@ -161,7 +161,7 @@ julia> ce
 
 ### The Hill equation with a sawtooth waveform coefficient
 
-This is the Example of Fig 3.3 in [3]. Assume again the period is $T = \pi$ and let $\psi(t)$ be the periodic negative slope sawtooth function $\psi(t) = -2*t/T+1$. 
+This is the Example of Fig 3.3 in [3]. Assume again the period is $T = \pi$ and let $\psi(t)$ be the periodic negative slope sawtooth function $\psi(t) = -2t/T+1$. 
 We can describe the periodic matrix $A(t)$ as a **PeriodicFunctionMatrix**. 
 The following code can be used for stability analysis purposes:
 
@@ -189,7 +189,7 @@ julia> ce
 ````
 and therefore the solutions are unstable. 
 
-Stability can be illustrated with the lossy Hill equation $\zeta = 0.2$:  
+Stability can be illustrated with the lossy Hill equation with $\zeta = 0.2$:  
 
 ````JULIA
 # setup of A(t)
@@ -203,7 +203,7 @@ all(real(ce) .< 0)
 ````
 and 
 ````JULIA
-ulia> ce = psceig(A)
+julia> ce 
 2-element Vector{ComplexF64}:
  -0.17487078757796817 + 1.0im
  -0.22513738474355782 + 1.0im
@@ -236,7 +236,7 @@ Consider the following periodic matrix of period $T = 2pi$
 ```math
    A(t) = \left[ \begin{array}{cc} 
           0 & 1\\
-          -10*cos(t) & -24-10*sin(t) 
+          -10cos t & -24-10sin t 
           \end{array} \right]
 ```         
 which has characterisitic exponents equal to $0$ and $-24$.
@@ -255,7 +255,8 @@ julia> ce = psceig(A; reltol = 1.e-10)
  -1.4291292368715818e-13
 ````
 
-However, full accuracy can be achieved with multiple shooting by determining the monodromy matrix as a product of, say 500 matrices, and computing the eigenvalues using the periodic Schur decomposition:
+However, full accuracy can be achieved with the multiple shooting approach by determining the monodromy matrix as a product of, say 500, matrices and computing the 
+characteristic multipliers (i.e., the eigenvalues of the monodromy matrix) using the _periodic Schur decomposition_:
 
 ````JULIA
 julia> ce = psceig(A,500; reltol = 1.e-10)
@@ -265,6 +266,21 @@ julia> ce = psceig(A,500; reltol = 1.e-10)
 ````
 
 Note that the evaluation of the 500 factors can be done in parallel, in which case a substantial speedup of computations can be achieved.
+
+Satisfactory accuracy can be also achieved using frequency lifting techniques based on the **FourierFunctionMatrix** representaion of $A(t)$:
+
+````JULIA
+julia> using Periodicmatrices, ApproxFun
+
+julia> A = FourierFunctionMatrix( Fun(t -> [0 1; -10*cos(t) -24-10*sin(t)],Fourier(0..2π)));
+
+julia> ce = psceigfr(A,50)
+2-element Vector{Float64}:
+ -24.000000200907923
+  -3.4668116010166546e-14
+````
+
+
 
 ## References
 
