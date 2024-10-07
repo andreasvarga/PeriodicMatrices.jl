@@ -294,7 +294,8 @@ If the dimensions allow to form the product $\Phi(p,0) := A_p...A_2A_1$ such tha
 its eigenvalues $\lambda_i$ are the _characteristic multipliers_ of $A_d(k)$.  The associated _characteristic exponents_ $\mu_i$ satisfy $\lambda_i = \mu_i^p$. 
 The stability of a discrete-time periodic matrix can be assessed by computing its characteristic multipliers and checking that all characteristic multiplies have moduli less than one. 
 
-Consider a discrete-time periodic matrix $A(k)$ of period $T = 2$ with two component matrices $A_1$ and $A_2$, with both having eigenvalues equal to zero. 
+The following examples are taken from [2], to illustrate some unexpected features. 
+Consider first a discrete-time periodic matrix $A(k)$ of period $T = 2$ with two component matrices $A_1$ and $A_2$, with both having eigenvalues equal to zero. 
 
 ```math
    A_1 = \left[ \begin{array}{cc} 
@@ -346,20 +347,19 @@ julia> pseig(A)
  0.4999999999999999
  0.0
 ````
-Consider a discrete-time periodic matrix $A(k)$ of period $T = 2$ with two component matrices $A_1$ and $A_2$, with time-varying dimensions. 
+Consider a discrete-time periodic matrix $A(k)$ of period $T = 2$ with time-varying dimensions with two component matrices $A_1$ and $A_2$ 
 
 ```math
    A_1 = \left[ \begin{array}{cc} 
-          2 & 0\\
-          -3.5 & 0 
+          1 & 0
           \end{array} \right], \qquad 
-   A_2 = \left[ \begin{array}{cc} 
-          2 & 1\\
-          0 & 0 
+   A_2 = \left[ \begin{array}{c} 
+          1 \\
+          1 
           \end{array} \right]
 
 ```         
-The matrix has a core characteristic multiplier equal to 1 (and therefore can be considered marginally stable). 
+The matrix has a _core_ characteristic multiplier equal to 1 and therefore can be considered marginally stable. 
 The core characteristic multiplier can be isolated using the shifting of component matrices, which reverts the order of components used to form the monodromy matrix.
 
 
