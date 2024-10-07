@@ -268,8 +268,8 @@ pseig(at::PeriodicTimeSeriesMatrix{:c,T}) where T = pseig(monodromy(at)).^at.npe
 Compute the eigenvalues of a product of `p` square matrices 
 `A(p)...*A(2)*A(1)`, if `rev = true` (default) (also called characteristic multipliers) or 
 of `A(1)*A(2)...A(p)` if `rev = false`, without evaluating the product. 
-The matrices `A(1)`, `...`, `A(p)` are contained in the `n×n×p` array `A` 
-such that the `i`-th matrix `A(i)` is contained in `A[:,:,i]`.
+The matrices `A(1)`, `...`, `A(p)` are contained in the `n×n×p` array `A.M` 
+such that the `i`-th matrix `A(i)` is contained in `A.M[:,:,i]`.
 If `fast = false` (default) then the eigenvalues are computed using an approach
 based on the periodic Schur decomposition [1], while if `fast = true` 
 the structure exploiting reduction [2] of an appropriate lifted pencil is employed.
@@ -318,18 +318,18 @@ Compute the eigenvalues of a square cyclic product of `p` matrices
 `A(k-1)...*A(2)*A(1)*A(p)...*A(k)`, if `rev = true` (default) or 
 `A(k)*A(k+1)*...A(p)*A(1)...A(k-1)` if `rev = false`, without evaluating the product. 
 The argument `k` specifies the starting index (default: `k = 1`). 
-The matrices `A(1)`, `...`, `A(p)` are contained in the `p`-vector of matrices `A` 
-such that the `i`-th matrix  `A(i)`, of dimensions `m(i)×n(i)`, is contained in `A[i]`.
+The matrices `A(1)`, `...`, `A(p)` are contained in the `p`-vector of matrices `A.M` 
+such that the `i`-th matrix  `A(i)`, of dimensions `m(i)×n(i)`, is contained in `A.M[i]`.
 If `fast = false` (default) then the eigenvalues are computed using an approach
 based on the periodic Schur decomposition [1], while if `fast = true` 
 the structure exploiting reduction [2] of an appropriate lifted pencil is employed. 
 This later option may occasionally lead to inaccurate results for large number of matrices. 
 
 _Note:_ The first `nmin` components of `ev` contains the `core eigenvalues` of the appropriate matrix product,
-where `nmin` is the minimum row dimensions of matrices `A[i]`, for `i = 1, ..., p`, 
+where `nmin` is the minimum row dimensions of matrices `A.M[i]`, for `i = 1, ..., p`, 
 while the last `ncur-nmin` components of `ev` are zero, 
-where `ncur` is the column dimension of `A[k]` if `rev = true` or 
-the row dimension of `A[k]` if `rev = false`. 
+where `ncur` is the column dimension of `A.M[k]` if `rev = true` or 
+the row dimension of `A.M[k]` if `rev = false`. 
 
 _References_
 

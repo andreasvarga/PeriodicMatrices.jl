@@ -56,7 +56,7 @@ or structure exploitung fast algorithms.
 These functions are instrumental to apply [Floquet theory](https://en.wikipedia.org/wiki/Floquet_theory) to study the properties of solutions of 
 various classes of differential equations (Mathieu, Hill, Meissner) and the stability of linear periodic systems (see [PeriodicSystems](https://github.com/andreasvarga/PeriodicSystems.jl) package). 
  
-## Example: Floquet-analysis of differential equations with periodic parameters
+## Example 1: Floquet-analysis of differential equations with periodic parameters
 
 A frequently encountered periodic differential equation is of second order, expressible as
 
@@ -236,16 +236,16 @@ Consider the following periodic matrix of period $T = 2pi$
 ```math
    A(t) = \left[ \begin{array}{cc} 
           0 & 1\\
-          -10cos t & -24-10sin t 
+          -10cos(t) & -24-10sin(t) 
           \end{array} \right]
 ```         
-which has characterisitic exponents equal to $0$ and $-24$.
+which has the characteristic exponents equal to $0$ and $-24$.
 
-Using the standard settings to compute the characteristic exponents,  the resulting characteristic exponents have no one exact digit 
+Using the standard settings to compute the characteristic exponents,  one of the resulting characteristic exponents has no one exact digit 
 even by imposing a high relative tolerance for solving the underlying differential equations:
 
 ````JULIA
-julia> using Periodicmatrices
+julia> using PeriodicMatrices
 
 julia> A = PeriodicFunctionMatrix(t -> [0 1; -10*cos(t) -24-10*sin(t)],2pi);
 
@@ -270,16 +270,56 @@ Note that the evaluation of the 500 factors can be done in parallel, in which ca
 Satisfactory accuracy can be also achieved using frequency lifting techniques based on the **FourierFunctionMatrix** representaion of $A(t)$:
 
 ````JULIA
-julia> using Periodicmatrices, ApproxFun
+julia> using PeriodicMatrices, ApproxFun
 
-julia> A = FourierFunctionMatrix( Fun(t -> [0 1; -10*cos(t) -24-10*sin(t)],Fourier(0..2π)));
+julia> A = FourierFunctionMatrix(Fun(t -> [0 1; -10*cos(t) -24-10*sin(t)], Fourier(0..2π)));
 
 julia> ce = psceigfr(A,50)
 2-element Vector{Float64}:
  -24.000000200907923
   -3.4668116010166546e-14
 ````
+### Example 2: Discrete-time periodic matrices 
 
+Let $A(t)$ be a continuous-time periodic matrix of period $T$, such that $A(t+T) = A(t)$ for all $t$. We can associate to $A(t)$ a discrete-time periodic matrix $A_d(k)$ of discrete period $p$ by defining
+$A_d(k) = A((k-1)\Delta)$, where $\Delta := T/p$ is called the _sampling time_.  The sequence $A_d(1)$, ..., $A_d(k)$, ... satisfies $A_d(k+p) = A_d(k)$ for all $k$ and thus is $p$-periodic. 
+When considering discrete-time periodic matrices, this connection to a continuous-time periodic matrix is implicitly assumed. 
+
+A discrete-time periodic matrix $A_d(k)$ can be specified via a collection of component matrices  $A_1$, $A_2$, ..., $A_p$ (such that $A_k = A_d(k)$) and the real period $T$ (the discrete-period $p$ implicitly results).
+Normally, the component matrices have constant dimensions. However, for some specific problems, it is necessary
+to allow for periodic time variability in the dimensions as well, in which case the component matrices $A_k$
+exhibit a time-varying dimensionality.  
+
+If the dimensions allow to form the product $\Phi(p,0) := A_p...A_2A_1$ such that $\Phi(p,0)$ is square, then $\Psi := \Phi(p,0)$ is called the _monodromy matrix_ and, similarly to the continuous-time case,
+its eigenvalues $\lambda_i$ are the _characteristic multipliers_ of $A_d(k)$.  The associated _characteristic exponents_ $\mu_i$ satisfy $\lambda_i = \mu_i^p$. 
+The stability of a discrete-time periodic matrix can be assessed by computing its characteristic multipliers and checking that all characteristic multiplies have moduli less than one. 
+
+Consider a discrete-time periodic matrix A(k) of period T = 2 with two component matrices A_1 and A_2, with both having eigenvalues equal to zero. 
+
+```math
+   A_1 = \left[ \begin{array}{cc} 
+          0 & 0\\
+          2 & 0 
+          \end{array} \right], \qquad 
+   A_2 = \left[ \begin{array}{cc} 
+          0 & 2\\
+          0 & 0 
+          \end{array} \right]
+
+```         
+In spite of this, the matrix is unstable as can be checked using a **PeriodicMatrix** representation of A(k).
+
+
+````JULIA
+julia> using PeriodicMatrices
+
+julia> A = PeriodicMatrix([[0 0;2 0],[0 2;0 0]],2);
+
+julia> pseig(A)
+2-element Vector{Float64}:
+ 4.0
+ 0.0
+````
 
 
 ## References
