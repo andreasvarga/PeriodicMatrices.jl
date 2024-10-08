@@ -233,8 +233,7 @@ A discrete-time periodic matrix $A_d(k)$ can be specified via a collection of co
 Normally, the component matrices have constant dimensions. However, for some specific problems, it is necessary
 to allow for periodic time variability in the dimensions as well, in which case the component matrices $A_k$
 exhibit a time-varying dimensionality.  
-
-If the dimensions allow to form the product $\Phi(p,0) := A_p...A_2A_1$ such that $\Phi(p,0)$ is square, then $\Psi := \Phi(p,0)$ is called the _monodromy matrix_ and, similarly to the continuous-time case,
+If the dimensions allow to form the product $\Phi(p,1) := A_p...A_2A_1$ such that $\Phi(p,1)$ is square, then $\Psi(1) := \Phi(p,1)$ is called the _monodromy matrix_ and, similarly to the continuous-time case,
 its eigenvalues $\lambda_i$ are the _characteristic multipliers_ of $A_d(k)$.  The associated _characteristic exponents_ $\mu_i$ satisfy $\lambda_i = \mu_i^p$. 
 The stability of a discrete-time periodic matrix can be assessed by computing its characteristic multipliers and checking that all characteristic multiplies have moduli less than one. 
 
@@ -291,6 +290,9 @@ julia> pseig(A)
  0.4999999999999999
  0.0
 ````
+The above examples illustrate that there is no direct relation between the eigenvalues of component matrices and stability. 
+
+
 Consider a discrete-time periodic matrix $A(k)$ of period $T = 2$ with time-varying dimensions with two component matrices $A_1$ and $A_2$ 
 
 ```math
