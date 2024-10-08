@@ -4,8 +4,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'LICENSE.md'
-      - 'README.md'
+      - '*.md'
       - '.github/workflows/TagBot.yml'
       - '.github/workflows/Documentation.yml'
       - 'docs/*'
@@ -13,8 +12,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'LICENSE.md'
-      - 'README.md'
+      - '*.md'
       - '.github/workflows/TagBot.yml'
       - '.github/workflows/Documentation.yml'
       - 'docs/*'
