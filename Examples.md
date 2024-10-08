@@ -232,8 +232,7 @@ When considering discrete-time periodic matrices, this connection to a continuou
 A discrete-time periodic matrix $A_d(k)$ can be specified via a collection of component matrices  $A_1$, $A_2$, ..., $A_p$ (such that $A_k = A_d(k)$ ) and the real period $T$ (the discrete period $p$ implicitly results).
 Normally, the component matrices have constant dimensions. However, for some specific problems, it is necessary
 to allow for periodic time variability in the dimensions as well, in which case the component matrices $A_k$
-exhibit a time-varying dimensionality.  
-If the dimensions allow to form the product $\Phi(p,1) := A_p...A_2A_1$ such that $\Phi(p,1)$ is square, then $\Psi(1) := \Phi(p,1)$ is called the _monodromy matrix_ and, similarly to the continuous-time case,
+exhibit a time-varying dimensionality.  If the dimensions allow to form the product $\Phi(p,1) := A_p...A_2A_1$ such that $\Phi(p,1)$ is square, then $\Psi(1) := \Phi(p,1)$ is called the _monodromy matrix_ and, similarly to the continuous-time case,
 its eigenvalues $\lambda_i$ are the _characteristic multipliers_ of $A_d(k)$.  The associated _characteristic exponents_ $\mu_i$ satisfy $\lambda_i = \mu_i^p$. 
 The stability of a discrete-time periodic matrix can be assessed by computing its characteristic multipliers and checking that all characteristic multiplies have moduli less than one. 
 

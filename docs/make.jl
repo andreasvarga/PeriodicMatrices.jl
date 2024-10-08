@@ -14,11 +14,12 @@ makedocs(warnonly = true,
           ],
           "Periodic Matrix Operations" => "pmops.md",
           "Periodic Matrix Tools" => "pmtools.md",
-          "Periodic matrix conversions" => "pmconv.md",
-          "Periodic Schur Decomposition" => "pschur.md"
+          "Periodic matrix conversions" => "pmconv.md"
          ],
-         "SLICOT Based Wrappers" => [
-         "slicot.md"
+         "Internals" => [
+         "Utilities" => "pmutilities.md",
+         "Periodic Schur Decomposition" => "pschur.md",
+         "SLICOT Based Wrappers" => "slicot.md"
          ],
      "Index" => "makeindex.md"
   ]

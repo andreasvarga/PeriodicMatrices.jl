@@ -23,7 +23,7 @@ import Base: +, -, *, /, \, (==), (!=), ^, isapprox, iszero, isequal, convert, p
 
 export PeriodicMatrix, pschur, pschur!, pschur1, pschur2, pgschur, pgschur!, phess, phess!, phess1, psreduc_reg, psreduc_fast, check_psim, mshift,  
        tvmeval, tpmeval, hreval, tvstm, psordschur!, psordschur1!, pgordschur!
-export ts2hr, ts2pfm, tsw2pfm, ts2ffm, pfm2hr, pm2pa, ffm2hr, pmaverage, hrtrunc, hrchop
+export ts2hr, ts2pfm, ts2fm, tsw2pfm, ts2ffm, pfm2hr, pm2pa, ffm2hr, pmaverage, hrtrunc, hrchop
 export monodromy, pseig, psceig, psceighr, psceigfr
 export PeriodicArray, PeriodicMatrix, SwitchingPeriodicArray, SwitchingPeriodicMatrix
 export PeriodicTimeSeriesMatrix, PeriodicSwitchingMatrix, HarmonicArray, PeriodicFunctionMatrix
@@ -52,5 +52,6 @@ include("psfutils.jl")
 include("pmutils.jl")
 include("pmutils_sym.jl")
 include("pmutils_Fourier.jl")
+include("pmutilities.jl")
 
 end

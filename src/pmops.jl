@@ -45,12 +45,6 @@ function promote_period2(PM1,args...; ndigits = 4)
 end
  
 # Operations with periodic arrays
-function pmzeros(::Type{T},m::Vector{Int},n::Vector{Int}) where {T}
-    lm = length(m)
-    ln = length(n)
-    return [zeros(T,m[mod(i-1,lm)+1], n[mod(i-1,ln)+1]) for i in 1:lcm(lm,ln)]
-end
-pmzeros(m::Vector{Int},n::Vector{Int}) = pmzeros(Float64,m,n)
 """
     pmshift(A[,k = 1])
 
