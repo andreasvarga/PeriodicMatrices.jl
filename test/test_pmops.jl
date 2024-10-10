@@ -470,6 +470,7 @@ t = rand();
 # PeriodicArray
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*PeriodicArray(rand(Float64,n,n,pa),pa);
+Ad1 = PeriodicArray(Ad.M,pa);
 @test Ad(0) == Ad.M[:,:,1]
 @test getpm(Ad,4) == getpm(Ad,1)
 x = rand(n,n,px); [x[:,:,i] = x[:,:,i]'+x[:,:,i] for i in 1:px];
@@ -501,8 +502,27 @@ Qds = pmshift(Qdf);
 @test issymmetric(Qdf) && issymmetric(Qds) && isequal(pmshift(pmshift(Qdf,1),-1),Qdf) && iszero(Qdf-Qdf')
 @test inv(Ad)*Ad ≈ I ≈ Ad*inv(Ad) && Ad+I == I+Ad
 @test norm(Ad-Ad,1) == norm(Ad-Ad,2) == norm(Ad-Ad,Inf) == 0
-@test iszero(opnorm(Ad-Ad,1)) && iszero(opnorm(Ad-Ad,2)) && iszero(opnorm(Ad-Ad,Inf))
+@test_throws ArgumentError norm(Ad,3)
+@test iszero(opnorm(Ad-Ad,1)) && iszero(opnorm(Ad-Ad,2)) && iszero(opnorm(Ad-Ad,Inf)) && iszero(opnorm(Ad-Ad))
 @test trace(Ad-Ad) == 0 && iszero(tr(Ad-Ad))
+aa = rand(5,5)
+@test Ad+aa ≈ aa+Ad
+@test Ad-aa ≈ -(aa-Ad)
+@test Ad-I ≈ -(I-Ad)
+@test (Ad+Ad')/2 ≈ pmsymadd!(Ad1,0.5) && (Ad+Ad') ≈ pmsymadd!(Ad1) && issymmetric(Ad1)
+@test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
+@test Ad*I == I*Ad
+Adt = transpose(Ad)
+@test pmmuladdsym(Ad1, Ad, Adt, 1, 1) ≈ Ad1+Ad*Adt
+@test pmmultraddsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Adt*Ad
+@test pmmuladdtrsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Ad*Adt
+@test pmmulsym(Ad, Adt, 1) ≈ Ad*Adt
+@test pmmultrsym(Ad, Ad, 1) ≈ Adt*Ad
+@test pmmultrsym(Ad, Ad, 1) ≈ Ad*Adt
+@test [Ad aa](1) ≈ [Ad(1) aa] && [aa Ad](1) ≈ [aa Ad(1)]
+@test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
+@test horzcat(Ad,aa)(1) ≈ [Ad(1) aa] && horzcat(aa,Ad)(1) ≈ [aa Ad(1)]
+@test vertcat(Ad,aa)(1) ≈ [Ad(1); aa] && vertcat(aa,Ad)(1) ≈ [aa; Ad(1)]
 
 
 D = rand(n,n)
@@ -533,6 +553,7 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 # PeriodicMatrix
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*PeriodicMatrix([rand(Float64,n,n) for i in 1:pa],pa);
+Ad1 = PeriodicMatrix(Ad.M,pa);
 @test Ad(0) == Ad.M[1]
 @test getpm(Ad,4) == getpm(Ad,1)
 x = [rand(n,n) for i in 1:px]
@@ -557,6 +578,30 @@ Qds = pmshift(Qdf);
 @test norm(Ad-Ad,1) == norm(Ad-Ad,2) == norm(Ad-Ad,Inf) == 0
 @test iszero(opnorm(Ad-Ad,1)) && iszero(opnorm(Ad-Ad,2)) && iszero(opnorm(Ad-Ad,Inf))
 @test trace(Ad-Ad) == 0 && iszero(tr(Ad-Ad))
+@test reverse(reverse(Ad)) == Ad
+@test norm(Ad-Ad,1) == norm(Ad-Ad,2) == norm(Ad-Ad,Inf) == 0
+@test_throws ArgumentError norm(Ad,3)
+@test iszero(opnorm(Ad-Ad,1)) && iszero(opnorm(Ad-Ad,2)) && iszero(opnorm(Ad-Ad,Inf)) && iszero(opnorm(Ad-Ad))
+aa = rand(5,5)
+@test Ad+aa ≈ aa+Ad
+@test Ad-aa ≈ -(aa-Ad)
+@test Ad-I ≈ -(I-Ad)
+@test (Ad+Ad')/2 ≈ pmsymadd!(Ad1,0.5) && (Ad+Ad') ≈ pmsymadd!(Ad1) && issymmetric(Ad1)
+@test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
+@test Ad*I == I*Ad
+Adt = transpose(Ad)
+@test pmmuladdsym(Ad1, Ad, Adt, 1, 1) ≈ Ad1+Ad*Adt
+@test pmmultraddsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Adt*Ad
+@test pmmuladdtrsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Ad*Adt
+@test pmmulsym(Ad, Adt, 1) ≈ Ad*Adt
+@test pmmultrsym(Ad, Ad, 1) ≈ Adt*Ad
+@test pmmultrsym(Ad, Ad, 1) ≈ Ad*Adt
+@test [Ad aa](1) ≈ [Ad(1) aa] && [aa Ad](1) ≈ [aa Ad(1)]
+@test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
+@test horzcat(Ad,aa)(1) ≈ [Ad(1) aa] && horzcat(aa,Ad)(1) ≈ [aa Ad(1)]
+@test vertcat(Ad,aa)(1) ≈ [Ad(1); aa] && vertcat(aa,Ad)(1) ≈ [aa; Ad(1)]
+
+
 
 @test convert(PeriodicArray,Ad) == convert(PeriodicArray{:d,Float64},Ad)
 @test convert(PeriodicTimeSeriesMatrix,Ad) == convert(PeriodicTimeSeriesMatrix,convert(PeriodicArray,Ad))
