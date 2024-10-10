@@ -255,7 +255,7 @@ function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", 
    end
    return nperiod == 1 ? ev : ev.^nperiod
 end
-pseig(at::PeriodicSwitchingMatrix{:c,T}) where T = pseig(monodromy_sw(at)).^at.nperiod
+pseig(at::PeriodicSwitchingMatrix{:c,T}) where T = PeriodicMatrices.peigvals(monodromy_sw(at)).^at.nperiod
 pseig(at::PeriodicTimeSeriesMatrix{:c,T}) where T = pseig(monodromy(at)).^at.nperiod
 
 """
