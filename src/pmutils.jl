@@ -279,10 +279,10 @@ _References_
 
 """
 function pseig(A::PeriodicArray{:d,T}; fast::Bool = false) where T
-   pseig(A.M; fast).^(A.nperiod)
+   PeriodicMatrices.peigvals(A.M; fast).^(A.nperiod)
 end
 function pseig(A::SwitchingPeriodicMatrix{:d,T}; fast::Bool = false) where T
-   pseig(convert(PeriodicArray,A).M; fast).^(A.nperiod)
+   PeriodicMatrices.peigvals(convert(PeriodicArray,A).M; fast).^(A.nperiod)
 end
 """
    cm = pseig(A::PeriodicMatrix[, k = 1]; fast = false) 
@@ -311,7 +311,7 @@ _References_
 
 """
 function pseig(A::PeriodicMatrix{:d,T}, k::Int = 1; fast::Bool = false) where T
-   pseig(A.M, k; fast).^(A.nperiod)
+   PeriodicMatrices.peigvals(A.M, k; fast).^(A.nperiod)
 end
 """
      psceig(A[, K = 1]; lifting = false, solver, reltol, abstol, dt) -> ce
@@ -406,21 +406,22 @@ function psceighr(Ahr::HarmonicArray{:c,T}, N::Int = max(10,size(Ahr.values,3)-1
    return isreal(ce) ? real(ce) : ce
 end
 """
-    psceig(A::AbstractPeriodicArray[, k]; kwargs...) -> ce
+    psceig(A[, k]; fast = false) -> ce
 
 Compute the characteristic exponents of a cyclic matrix product of `p` matrices.
 
-The characteristic exponents of a product of `p` matrices are computed as the `p`th roots of the 
-characteristic multipliers. These are computed as the eigenvalues of the square 
-cyclic product of `p` matrices `A(k-1)...*A(2)*A(1)*A(p)...*A(k)`, if `rev = true` (default) or 
-`A(k)*A(k+1)*...A(p)*A(1)...A(k-1)` if `rev = false`, without evaluating the product. 
-The argument `k` specifies the starting index (default: `k = 1`). 
-The matrices `A(1)`, `...`, `A(p)` are contained in the `p`-vector of matrices `A` 
-such that the `i`-th matrix  `A(i)`, of dimensions `m(i)×n(i)`, is contained in `A[i]`.
-The keyword arguments `kwargs` are those of  [`pseig(::PeriodicMatrix)`](@ref).  
+Compute the characteristic exponents of a discrete-time periodic matrix `A(t)`.
+The characteristic exponents are computed from the characteristic multipliers as
+determined by calling the function [`pseig(::PeriodicMatrix)`](@ref). 
+If `fast = false` (default) then the characteristic multipliers are computed using an approach
+based on the periodic Schur decomposition [1], while if `fast = true` 
+the structure exploiting reduction [2] of an appropriate lifted pencil is employed.
+This later option may occasionally lead to inaccurate results for large number of matrices. 
 
-_Note:_ The first `nmin` components of `ce` contains the _core characteristic exponents_ of the appropriate matrix product,
-where `nmin` is the minimum row dimensions of matrices `A[i]`, for `i = 1, ..., p`, 
+The argument `k` specifies the starting index of the component matrices (default: `k = 1`). 
+
+_Note:_ The first `nmin` components of `ce` contains the _core characteristic exponents_,
+where `nmin` is the minimum row dimensions of the component matrices, 
 while the last components of `ce` are zero. 
 """
 function psceig(at::AbstractPeriodicArray{:d,T}, k::Int = 1; kwargs...) where T

@@ -244,7 +244,7 @@ A = reshape([A1 A2 A3], n, n, K);
 M = PeriodicArray(A,K);
 MA = PeriodicMatrix([A1,A2,A3],K); 
 
-@time eigs = pseig(A); ev = pseig(A,fast = true);
+@time eigs = PeriodicMatrices.peigvals(A); ev = PeriodicMatrices.peigvals(A,fast = true);
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       isapprox(sort(imag(eigs)),sort(imag(ev)), atol = 1.e-7)
 @test sort(eigs, by = real) ≈ sort(ev, by = real)  
@@ -252,7 +252,7 @@ MA = PeriodicMatrix([A1,A2,A3],K);
 @test sort(psceig(M),by = real) ≈ sort(psceig(MA),by = real)
 
 
-@time eigs = pseig(A); ev = pseig(M,fast = true);
+@time eigs = PeriodicMatrices.peigvals(A); ev = pseig(M,fast = true);
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       isapprox(sort(imag(eigs)),sort(imag(ev)), atol = 1.e-7)
 @test sort(eigs, by = real) ≈ sort(ev, by = real)  
@@ -334,16 +334,16 @@ MatrixPencils.ordeigvals(S[:,:,1]*S[:,:,2]*S[:,:,3])
 
 
 A = [A1, A2, A3];
-@time eigs = pseig(A); ev = pseig(A,fast = true);
+@time eigs = PeriodicMatrices.peigvals(A); ev = PeriodicMatrices.peigvals(A,fast = true);
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       isapprox(sort(imag(eigs)),sort(imag(ev)), atol = 1.e-7)
 
-@time eigs = pseig(A; rev = false); ev = pseig(A; fast = true, rev = false);
+@time eigs = PeriodicMatrices.peigvals(A; rev = false); ev = PeriodicMatrices.peigvals(A; fast = true, rev = false);
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       isapprox(sort(imag(eigs)),sort(imag(ev)), atol = 1.e-7)
 
-@time eigs = pseig(A, 2; rev = false); 
-@time ev = pseig(A, 2; fast = true, rev = false);
+@time eigs = PeriodicMatrices.peigvals(A, 2; rev = false); 
+@time ev = PeriodicMatrices.peigvals(A, 2; fast = true, rev = false);
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       isapprox(sort(imag(eigs)),sort(imag(ev)), atol = 1.e-7)
 

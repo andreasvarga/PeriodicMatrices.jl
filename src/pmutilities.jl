@@ -11,7 +11,7 @@ pmzeros(m::Vector{Int},n::Vector{Int}) = pmzeros(Float64,m,n)
 
 
 """
-     ev = pseig(A::Array{T,3}; rev = true, fast = false) 
+     ev = peigvals(A::Array{T,3}; rev = true, fast = false) 
 
 Compute the eigenvalues of a product of `p` square matrices 
 `A(p)...*A(2)*A(1)`, if `rev = true` (default) (also called characteristic multipliers) or 
@@ -32,7 +32,7 @@ _References_
     Systems and Control Letters, 50:371-381, 2003.
 
 """
-function pseig(A::Array{T,3}; rev::Bool = true, fast::Bool = false) where T
+function peigvals(A::Array{T,3}; rev::Bool = true, fast::Bool = false) where T
    n = size(A,1)
    n == size(A,2) || error("A must have equal first and second dimensions") 
    p = size(A,3)
@@ -54,7 +54,7 @@ function pseig(A::Array{T,3}; rev::Bool = true, fast::Bool = false) where T
    end
 end
 """
-     ev = pseig(A::Vector{Matrix}[, k = 1]; rev = true, fast = false) 
+     ev = peigvals(A::Vector{Matrix}[, k = 1]; rev = true, fast = false) 
 
 Compute the eigenvalues of a square cyclic product of `p` matrices 
 `A(k-1)...*A(2)*A(1)*A(p)...*A(k)`, if `rev = true` (default) or 
@@ -82,7 +82,7 @@ _References_
     Systems and Control Letters, 50:371-381, 2003.
 
 """
-function pseig(A::Vector{Matrix{T}}, k::Int = 1; rev::Bool = true, fast::Bool = false) where T
+function peigvals(A::Vector{Matrix{T}}, k::Int = 1; rev::Bool = true, fast::Bool = false) where T
    p = length(A)
    istart = mod(k-1,p)+1
    nev = rev ? size(A[istart],2) : size(A[istart],1)
