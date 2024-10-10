@@ -541,9 +541,9 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 
 @test Ad1 == Ad2 && (Ad1+Ad)/3 ≈ 2*Ad2/3 && issymmetric(Qdf1+Qdr1)
 # Xf1 = pfdlyap(Ad1, Qdf1);
-@test Ad*Xd*Ad' + Qdf ≈ pmshift(Xd) 
+@test Ad*Xd1*Ad' + Qdf1 ≈ pmshift(Xd1) 
 # Xr1 = prdlyap(Ad1, Qdr1);
-@test Ad'*pmshift(Xd)*Ad + Qdr ≈ Xd 
+@test Ad'*pmshift(Xd1)*Ad + Qdr1 ≈ Xd1 
 
 @test Ad[1:2,1:1].M == Ad.M[1:2,1:1,:]  && lastindex(Ad,1) == n && lastindex(Ad,2) == n
 
@@ -623,9 +623,9 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 
 @test Ad1 !== Ad && (Ad1+Ad)/3 ≈ 2*Ad1/3 && issymmetric(Qdf1+Qdr1)
 # Xf1 = pfdlyap(Ad1, Qdf1);
-@test Ad*Xd1*Ad' + Qdf ≈ pmshift(Xd1) 
+@test Ad*Xd1*Ad' + Qdf1 ≈ pmshift(Xd1) 
 #Xr1 = prdlyap(Ad1, Qdr1);
-@test Ad'*pmshift(Xd1)*Ad + Qdr ≈ Xd1 
+@test Ad'*pmshift(Xd1)*Ad + Qdr1 ≈ Xd1 
 
 @test Ad[1:2,1:1].M == [Ad.M[i][1:2,1:1] for i in 1:length(Ad)] && lastindex(Ad,1) == [n;n;n] && lastindex(Ad,2) == [n;n;n]
 
