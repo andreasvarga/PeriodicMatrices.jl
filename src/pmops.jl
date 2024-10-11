@@ -498,7 +498,8 @@ function horzcat(A::PeriodicArray, B::PeriodicArray)
     m == mb || throw(DimensionMismatch("A and B have incompatible row dimensions"))
     p = lcm(pa,pb)
     nta = numerator(rationalize(period/A.period))
-    K = nta*A.nperiod*pa
+    ntb = numerator(rationalize(period/B.period))
+    K = max(nta*A.nperiod*pa,ntb*B.nperiod*pb)
     T = promote_type(eltype(A),eltype(B))
     X = Array{T,3}(undef, m, na+nb, p)
     for i = 1:p
@@ -529,7 +530,8 @@ function vertcat(A::PeriodicArray, B::PeriodicArray)
     n == nb || throw(DimensionMismatch("A and B have incompatible column dimensions"))
     p = lcm(pa,pb)
     nta = numerator(rationalize(period/A.period))
-    K = nta*A.nperiod*pa
+    ntb = numerator(rationalize(period/B.period))
+    K = max(nta*A.nperiod*pa,ntb*B.nperiod*pb)
     T = promote_type(eltype(A),eltype(B))
     X = Array{T,3}(undef, ma+mb, n, p)
     for i = 1:p
@@ -761,7 +763,8 @@ for (PMF, MF) in ((:pmmulsym, :muladdsym!), (:pmtrmulsym, :multraddsym!), (:pmmu
             T = promote_type(eltype(B),eltype(B))
             X = Vector{Matrix{T}}(undef, p)
             ntb = numerator(rationalize(period/B.period))
-            K = ntb*B.nperiod*pb      
+            ntc = numerator(rationalize(period/C.period))
+            K = max(ntb*B.nperiod*pb,ntc*C.nperiod*pc)   
             tb = $PMF == pmtrmulsym
             for i = 1:p
                 ib = mod(i-1,pb)+1
@@ -966,7 +969,8 @@ function horzcat(A::PeriodicMatrix, B::PeriodicMatrix)
     pb = length(B)
     p = lcm(pa,pb)
     nta = numerator(rationalize(period/A.period))
-    K = nta*A.nperiod*pa
+    ntb = numerator(rationalize(period/B.period))
+    K = max(nta*A.nperiod*pa,ntb*B.nperiod*pb)
     T = promote_type(eltype(A),eltype(B))
     X = Vector{Matrix{T}}(undef, p)
     for i = 1:p
@@ -990,7 +994,8 @@ function vertcat(A::PeriodicMatrix, B::PeriodicMatrix)
     pb = length(B)
     p = lcm(pa,pb)
     nta = numerator(rationalize(period/A.period))
-    K = nta*A.nperiod*pa
+    ntb = numerator(rationalize(period/B.period))
+    K = max(nta*A.nperiod*pa,ntb*B.nperiod*pb)
     T = promote_type(eltype(A),eltype(B))
     X = Vector{Matrix{T}}(undef, p)
     for i = 1:p
@@ -1014,7 +1019,8 @@ function blockdiag(A::PeriodicMatrix, B::PeriodicMatrix)
     pb = length(B)
     p = lcm(pa,pb)
     nta = numerator(rationalize(period/A.period))
-    K = nta*A.nperiod*pa
+    ntb = numerator(rationalize(period/B.period))
+    K = max(nta*A.nperiod*pa,ntb*B.nperiod*pb)
     T = promote_type(eltype(A),eltype(B))
     X = Vector{Matrix{T}}(undef, p)
     for i = 1:p

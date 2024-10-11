@@ -536,6 +536,8 @@ bc = rand(5,5); bct = copy(transpose(bc))
 @test pmmultrsym(bc, bc*Ad1, 1) ≈ bc*Ad1*bct
 @test pmmultrsym(bc*Ad1,bc, 1) ≈ bc*Ad1*bct
 
+@test [Ad Ad]  ≈ horzcat(Ad,Ad)
+@test [Ad; Ad]  ≈ vertcat(Ad,Ad)
 @test [Ad aa](1) ≈ [Ad(1) aa] && [aa Ad](1) ≈ [aa Ad(1)]
 @test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
 @test horzcat(Ad,aa)(1) ≈ [Ad(1) aa] && horzcat(aa,Ad)(1) ≈ [aa Ad(1)]
@@ -570,7 +572,7 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 # PeriodicMatrix
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*PeriodicMatrix([rand(Float64,n,n) for i in 1:pa],pa);
-Ad1 = PeriodicMatrix(Ad.M,pa);
+Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[1]
 @test getpm(Ad,4) == getpm(Ad,1)
 x = [rand(n,n) for i in 1:px]
@@ -610,9 +612,33 @@ Adt = transpose(Ad)
 @test pmmuladdsym(Ad1, Ad, Adt, 1, 1) ≈ Ad1+Ad*Adt
 @test pmmultraddsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Adt*Ad
 @test pmmuladdtrsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Ad*Adt
+
+bc = rand(5,5); bct = copy(transpose(bc))
+@test pmmuladdsym(Ad1, bc, Ad1*bct, 1, 1) ≈ Ad1+bc*Ad1*bct
+@test pmmuladdsym(Ad1, bc*Ad1, bct, 1, 1) ≈ Ad1+bc*Ad1*bct
+@test pmmuladdsym(Ad1, bc, bct, 1, 1) ≈ Ad1+bc*bct
+@test pmmuladdsym(Ad1(0), Ad, Adt, 1, 1) ≈ Ad1(0)+Ad*Adt
+@test pmmuladdsym(Ad1(0), bc, Ad1*bct, 1, 1) ≈ Ad1(0)+bc*Ad1*bct
+@test pmmuladdsym(Ad1(0), bc*Ad1, bct, 1, 1) ≈ Ad1(0)+bc*Ad1*bct
+@test pmmuladdsym(Ad1(0), Ad(0), Adt(0), 1, 1) ≈ Ad1(0)+Ad(0)*Adt(0)
+
+
+
+
 @test pmmulsym(Ad, Adt, 1) ≈ Ad*Adt
 @test pmmultrsym(Ad, Ad, 1) ≈ Adt*Ad
 @test pmmultrsym(Ad, Ad, 1) ≈ Ad*Adt
+
+@test pmmulsym(bc, Ad1*bct, 1) ≈ bc*Ad1*bct
+@test pmmulsym(bc*Ad1,bct, 1) ≈ bc*Ad1*bct
+@test pmtrmulsym(bc, Ad1*bc, 1) ≈ bct*Ad1*bc
+@test pmtrmulsym(Ad1*bc,bc, 1) ≈ bct*Ad1*bc
+@test pmmultrsym(bc, bc*Ad1, 1) ≈ bc*Ad1*bct
+@test pmmultrsym(bc*Ad1,bc, 1) ≈ bc*Ad1*bct
+
+@test [Ad Ad]  ≈ horzcat(Ad,Ad)
+@test [Ad; Ad]  ≈ vertcat(Ad,Ad)
+
 @test [Ad aa](1) ≈ [Ad(1) aa] && [aa Ad](1) ≈ [aa Ad(1)]
 @test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
 @test horzcat(Ad,aa)(1) ≈ [Ad(1) aa] && horzcat(aa,Ad)(1) ≈ [aa Ad(1)]
