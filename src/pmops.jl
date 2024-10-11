@@ -298,7 +298,7 @@ for (PMF, MF) in ((:pmmuladdsym, :muladdsym!), (:pmmultraddsym, :multraddsym!), 
             n = size(A,1)
             X = Array{T,3}(undef, n, n, p)
             nta = numerator(rationalize(period/A.period))
-            ntb = numerator(rationalize(period/C.period))
+            ntb = numerator(rationalize(period/B.period))
             ntc = numerator(rationalize(period/C.period))
             Ka = nta*A.nperiod*pa
             Kb = ntb*B.nperiod*pb
@@ -319,7 +319,8 @@ for (PMF, MF) in ((:pmmuladdsym, :muladdsym!), (:pmmultraddsym, :multraddsym!), 
             T = promote_type(eltype(A),eltype(B),eltype(C))
             $MF(LinearAlgebra.copy_oftype(A,T),B,C,(α,β))
         end
-    end
+        $PMF(A::AbstractMatrix,B::AbstractMatrix,C::AbstractMatrix, α, β) = $PMF(A, B, C, (α,β))
+     end
 end
 """
     pmmuladdsym(A, B, C, α, β)
@@ -366,7 +367,8 @@ for (PMF, MF) in ((:pmmulsym, :muladdsym!), (:pmtrmulsym, :multraddsym!), (:pmmu
             n = $PMF == pmtrmulsym ? size(B,2) : size(B,1)
             X = Array{T,3}(undef, n, n, p)
             ntb = numerator(rationalize(period/B.period))
-            K = ntb*B.nperiod*pb      
+            ntc = numerator(rationalize(period/C.period))
+            K = max(ntb*B.nperiod*pb,ntc*C.nperiod*pc)   
             for i = 1:p
                 ib = mod(i-1,pb)+1
                 ic = mod(i-1,pc)+1
@@ -412,11 +414,17 @@ for PMF in (:pmmuladdsym, :pmmultraddsym, :pmmuladdtrsym)
     for PM in (:PeriodicArray, :PeriodicMatrix)
         @eval begin
             $PMF(A::$PM,B::AbstractMatrix,C::$PM, (α,β) = (true, true)) = $PMF(A, $PM(B, A.period), C, (α,β))
+            $PMF(A::$PM,B::AbstractMatrix,C::$PM, α, β) = $PMF(A, $PM(B, A.period), C, (α,β))
             $PMF(A::$PM,B::$PM,C::AbstractMatrix, (α,β) = (true, true)) = $PMF(A, B, $PM(C, A.period), (α,β))
+            $PMF(A::$PM,B::$PM,C::AbstractMatrix, α, β) = $PMF(A, B, $PM(C, A.period), (α,β))
             $PMF(A::$PM,B::AbstractMatrix,C::AbstractMatrix, (α,β) = (true, true)) = $PMF(A, $PM(B, A.period), $PM(C, A.period), (α,β))
+            $PMF(A::$PM,B::AbstractMatrix,C::AbstractMatrix, α, β) = $PMF(A, $PM(B, A.period), $PM(C, A.period), (α,β))
             $PMF(A::AbstractMatrix,B::$PM,C::$PM, (α,β) = (true, true)) = $PMF($PM(A, B.period), B, C, (α,β))
+            $PMF(A::AbstractMatrix,B::$PM,C::$PM, α, β) = $PMF($PM(A, B.period), B, C, (α,β))
             $PMF(A::AbstractMatrix,B::AbstractMatrix,C::$PM, (α,β) = (true, true)) = $PMF($PM(A, C.period), $PM(B, C.period), C, (α,β))
+            $PMF(A::AbstractMatrix,B::AbstractMatrix,C::$PM, α, β) = $PMF($PM(A, C.period), $PM(B, C.period), C, (α,β))
             $PMF(A::AbstractMatrix,B::$PM,C::AbstractMatrix, (α,β) = (true, true)) = $PMF($PM(A, B.period), B, $PM(C, B.period), (α,β))
+            $PMF(A::AbstractMatrix,B::$PM,C::AbstractMatrix, α, β) = $PMF($PM(A, B.period), B, $PM(C, B.period), (α,β))
         end
     end
 end

@@ -18,7 +18,7 @@ using .SLICOTtools: mb03vd!, mb03vy!, mb03bd!, mb03wd!, mb03vw!, mb03kd!
 
 
 import LinearAlgebra: BlasInt, BlasFloat, BlasReal, BlasComplex, copy_oftype, transpose, adjoint, opnorm, normalize, rdiv!, issymmetric, norm, tr
-import Base: +, -, *, /, \, (==), (!=), ^, isapprox, iszero, isequal, convert, promote_op, size, length, ndims, reverse,
+import Base: +, -, *, /, \, (==), (!=), ^, isapprox, iszero, isequal, convert, promote_op, size, length, ndims, reverse, 
              hcat, vcat, hvcat, inv, show, lastindex, require_one_based_indexing, print, show, one, zero, eltype
 
 export PeriodicMatrix, pschur, pschur!, pschur1, pschur2, pgschur, pgschur!, phess, phess!, phess1, psreduc_reg, psreduc_fast, check_psim, mshift,  
@@ -30,7 +30,7 @@ export PeriodicTimeSeriesMatrix, PeriodicSwitchingMatrix, HarmonicArray, Periodi
 export isconstant, iscontinuous, isdiscrete, set_period, promote_period, promote_period2, getpm
 export mb03vd!, mb03vy!, mb03bd!, mb03wd!, mb03kd! 
 export ps2fls, hr2bt, hr2btupd, phasemat, ps2frls, DiagDerOp, ps2ls, ps2spls
-export pmshift, trace, pmzeros
+export pmshift, trace, pmzeros, pmcopy
 export pmderiv, pmrand, horzcat, vertcat, pmsymadd!
 export bldiag, blockdiag
 export pmmulsym, pmtrmulsym, pmmultrsym, pmmuladdsym, pmmultraddsym, pmmuladdtrsym
