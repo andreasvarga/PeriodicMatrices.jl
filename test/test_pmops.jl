@@ -524,6 +524,7 @@ bc = rand(5,5); bct = copy(transpose(bc))
 @test pmmuladdsym(Ad1(0), bc, Ad1*bct, 1, 1) ≈ Ad1(0)+bc*Ad1*bct
 @test pmmuladdsym(Ad1(0), bc*Ad1, bct, 1, 1) ≈ Ad1(0)+bc*Ad1*bct
 @test pmmuladdsym(Ad1(0), Ad(0), Adt(0), 1, 1) ≈ Ad1(0)+Ad(0)*Adt(0)
+@test pmata(Ad) ≈ Ad'*Ad && pmaat(Ad) ≈ Ad*Ad'
 
 
 @test pmmulsym(Ad, Adt, 1) ≈ Ad*Adt
@@ -622,6 +623,7 @@ bc = rand(5,5); bct = copy(transpose(bc))
 @test pmmuladdsym(Ad1(0), bc*Ad1, bct, 1, 1) ≈ Ad1(0)+bc*Ad1*bct
 @test pmmuladdsym(Ad1(0), Ad(0), Adt(0), 1, 1) ≈ Ad1(0)+Ad(0)*Adt(0)
 
+@test pmata(Ad) ≈ Ad'*Ad && pmaat(Ad) ≈ Ad*Ad'
 
 
 
