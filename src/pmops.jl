@@ -414,17 +414,17 @@ for PMF in (:pmmuladdsym, :pmmultraddsym, :pmmuladdtrsym)
     for PM in (:PeriodicArray, :PeriodicMatrix)
         @eval begin
             $PMF(A::$PM,B::AbstractMatrix,C::$PM, (α,β) = (true, true)) = $PMF(A, $PM(B, A.period), C, (α,β))
-            $PMF(A::$PM,B::AbstractMatrix,C::$PM, α, β) = $PMF(A, $PM(B, A.period), C, (α,β))
+            $PMF(A::$PM,B::AbstractMatrix,C::$PM, α, β) = $PMF(A, B, C, (α,β))
             $PMF(A::$PM,B::$PM,C::AbstractMatrix, (α,β) = (true, true)) = $PMF(A, B, $PM(C, A.period), (α,β))
-            $PMF(A::$PM,B::$PM,C::AbstractMatrix, α, β) = $PMF(A, B, $PM(C, A.period), (α,β))
+            $PMF(A::$PM,B::$PM,C::AbstractMatrix, α, β) = $PMF(A, B, C, (α,β))
             $PMF(A::$PM,B::AbstractMatrix,C::AbstractMatrix, (α,β) = (true, true)) = $PMF(A, $PM(B, A.period), $PM(C, A.period), (α,β))
-            $PMF(A::$PM,B::AbstractMatrix,C::AbstractMatrix, α, β) = $PMF(A, $PM(B, A.period), $PM(C, A.period), (α,β))
+            $PMF(A::$PM,B::AbstractMatrix,C::AbstractMatrix, α, β) = $PMF(A, B, C, (α,β))
             $PMF(A::AbstractMatrix,B::$PM,C::$PM, (α,β) = (true, true)) = $PMF($PM(A, B.period), B, C, (α,β))
-            $PMF(A::AbstractMatrix,B::$PM,C::$PM, α, β) = $PMF($PM(A, B.period), B, C, (α,β))
+            $PMF(A::AbstractMatrix,B::$PM,C::$PM, α, β) = $PMF(A, B, C, (α,β))
             $PMF(A::AbstractMatrix,B::AbstractMatrix,C::$PM, (α,β) = (true, true)) = $PMF($PM(A, C.period), $PM(B, C.period), C, (α,β))
-            $PMF(A::AbstractMatrix,B::AbstractMatrix,C::$PM, α, β) = $PMF($PM(A, C.period), $PM(B, C.period), C, (α,β))
+            $PMF(A::AbstractMatrix,B::AbstractMatrix,C::$PM, α, β) = $PMF(A, B, C, (α,β))
             $PMF(A::AbstractMatrix,B::$PM,C::AbstractMatrix, (α,β) = (true, true)) = $PMF($PM(A, B.period), B, $PM(C, B.period), (α,β))
-            $PMF(A::AbstractMatrix,B::$PM,C::AbstractMatrix, α, β) = $PMF($PM(A, B.period), B, $PM(C, B.period), (α,β))
+            $PMF(A::AbstractMatrix,B::$PM,C::AbstractMatrix, α, β) = $PMF(A, B, C, (α,β))
         end
     end
 end

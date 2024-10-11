@@ -519,6 +519,8 @@ Adt = transpose(Ad)
 bc = rand(5,5); bct = copy(transpose(bc))
 @test pmmuladdsym(Ad1, bc, Ad1*bct, 1, 1) ≈ Ad1+bc*Ad1*bct
 @test pmmuladdsym(Ad1, bc*Ad1, bct, 1, 1) ≈ Ad1+bc*Ad1*bct
+@test pmmuladdsym(Ad1, bc, bct, 1, 1) ≈ Ad1+bc*bct
+@test pmmuladdsym(Ad1(0), Ad, Adt, 1, 1) ≈ Ad1(0)+Ad*Adt
 @test pmmuladdsym(Ad1(0), bc, Ad1*bct, 1, 1) ≈ Ad1(0)+bc*Ad1*bct
 @test pmmuladdsym(Ad1(0), bc*Ad1, bct, 1, 1) ≈ Ad1(0)+bc*Ad1*bct
 @test pmmuladdsym(Ad1(0), Ad(0), Adt(0), 1, 1) ≈ Ad1(0)+Ad(0)*Adt(0)
