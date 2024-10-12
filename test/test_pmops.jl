@@ -766,8 +766,11 @@ aa = rand(2,2)
 @test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
 @test Ad*I == I*Ad
 
+Bd = SwitchingPeriodicMatrix([rand(Float64,n,n) for i in 1:2],[10,20],T);
 @test [Ad Ad]  ≈ horzcat(Ad,Ad)
+@test [Ad Bd]  ≈ horzcat(Ad,Bd)
 @test [Ad; Ad]  ≈ vertcat(Ad,Ad)
+@test [Ad; Bd]  ≈ vertcat(Ad,Bd)
 
 @test [Ad aa](1) ≈ [Ad(1) aa] && [aa Ad](1) ≈ [aa Ad(1)]
 @test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
@@ -787,7 +790,9 @@ D = rand(n,n)
 
 @test [[Ad Xd]; [Xd Ad]] == [[Ad;Xd] [Xd;Ad]]
 
+@test blockdiag(Ad,Ad)[10] ≈ bldiag(Ad[10],Ad[10])   
 @test blockdiag(Ad,Xd)[10] ≈ bldiag(Ad[10],Xd[10])   
+@test blockdiag(Ad,Bd)[10] ≈ bldiag(Ad[10],Bd[10])   
 
 # SwitchingPeriodicArray
 n = 2; pa = 3; px = 6; T = 10; 
@@ -836,8 +841,11 @@ aa = rand(2,2)
 @test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
 @test Ad*I == I*Ad
 
+Bd = SwitchingPeriodicArray(rand(Float64,n,n,2),[10,20],T);
 @test [Ad Ad]  ≈ horzcat(Ad,Ad)
+@test [Ad Bd]  ≈ horzcat(Ad,Bd)
 @test [Ad; Ad]  ≈ vertcat(Ad,Ad)
+@test [Ad; Bd]  ≈ vertcat(Ad,Bd)
 
 @test [Ad aa](1) ≈ [Ad(1) aa] && [aa Ad](1) ≈ [aa Ad(1)]
 @test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
@@ -860,7 +868,9 @@ D = rand(n,n)
 
 @test [[Ad Xd]; [Xd Ad]] == [[Ad;Xd] [Xd;Ad]]
 
+@test blockdiag(Ad,Ad)[10] ≈ bldiag(Ad[10],Ad[10])   
 @test blockdiag(Ad,Xd)[10] ≈ bldiag(Ad[10],Xd[10])   
+@test blockdiag(Ad,Bd)[10] ≈ bldiag(Ad[10],Bd[10])   
 
 
 end # pmops
