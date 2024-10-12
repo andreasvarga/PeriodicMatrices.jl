@@ -726,6 +726,7 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 # SwitchingPeriodicMatrix
 n = 2; pa = 3; px = 6; T = 10; 
 Ad = 0.5*SwitchingPeriodicMatrix([rand(Float64,n,n) for i in 1:pa],[10,15,20],T);
+Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[1]
 
 x = [rand(n,n) for i in 1:px]
@@ -748,8 +749,6 @@ Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 # Xr = prdlyap(Ad, Qdr);
 @test norm(Ad'*pmshift(Xd)*Ad + Qdr - Xd) < 1.e-7 
 
-
-
 @test issymmetric(Xd) && iszero(Xd-Xd')
 @test inv(Ad)*Ad ≈ I ≈ Ad*inv(Ad) && Ad+I == I+Ad
 @test Ad == reverse(reverse(Ad))
@@ -758,8 +757,23 @@ Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 @test norm(Ad,Inf) == norm(convert(PeriodicMatrix,Ad),Inf)
 @test norm(Ad,1) ≈ norm(convert(PeriodicMatrix,Ad),1)
 @test norm(Ad,2) ≈ norm(convert(PeriodicMatrix,Ad),2)
-@test iszero(opnorm(Ad-Ad,Inf)) && iszero(opnorm(Ad-Ad,1)) && iszero(opnorm(Ad-Ad,2))
+@test iszero(opnorm(Ad-Ad,Inf)) && iszero(opnorm(Ad-Ad,1)) && iszero(opnorm(Ad-Ad,2)) && iszero(opnorm(Ad-Ad))
 @test trace(Ad) ≈ trace(convert(PeriodicMatrix,Ad)) && tr(Ad) ≈ convert(SwitchingPeriodicMatrix,tr(convert(PeriodicMatrix,Ad)))
+aa = rand(2,2)
+@test Ad+aa ≈ aa+Ad
+@test Ad-aa ≈ -(aa-Ad)
+@test Ad-I ≈ -(I-Ad)
+@test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
+@test Ad*I == I*Ad
+
+@test [Ad Ad]  ≈ horzcat(Ad,Ad)
+@test [Ad; Ad]  ≈ vertcat(Ad,Ad)
+
+@test [Ad aa](1) ≈ [Ad(1) aa] && [aa Ad](1) ≈ [aa Ad(1)]
+@test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
+@test horzcat(Ad,aa)(1) ≈ [Ad(1) aa] && horzcat(aa,Ad)(1) ≈ [aa Ad(1)]
+@test vertcat(Ad,aa)(1) ≈ [Ad(1); aa] && vertcat(aa,Ad)(1) ≈ [aa; Ad(1)]
+
 
 @test convert(PeriodicArray,Ad) == convert(PeriodicArray,convert(PeriodicMatrix,Ad))
 
@@ -778,6 +792,7 @@ D = rand(n,n)
 # SwitchingPeriodicArray
 n = 2; pa = 3; px = 6; T = 10; 
 Ad = 0.5*SwitchingPeriodicArray(rand(Float64,n,n,pa),[10,15,20],T);
+Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[:,:,1]
 
 x = pmsymadd!(PeriodicArray(rand(n,n,px),T));
@@ -811,8 +826,24 @@ Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
 @test norm(Ad,Inf) == norm(convert(PeriodicArray,Ad),Inf)
 @test norm(Ad,1) ≈ norm(convert(PeriodicArray,Ad),1)
 @test norm(Ad,2) ≈ norm(convert(PeriodicArray,Ad),2)
-@test iszero(opnorm(Ad-Ad,Inf)) && iszero(opnorm(Ad-Ad,1)) && iszero(opnorm(Ad-Ad,2))
+@test iszero(opnorm(Ad-Ad,Inf)) && iszero(opnorm(Ad-Ad,1)) && iszero(opnorm(Ad-Ad,2)) && iszero(opnorm(Ad-Ad))
 @test trace(Ad) ≈ trace(convert(PeriodicArray,Ad)) && tr(Ad) ≈ convert(SwitchingPeriodicArray,tr(convert(PeriodicArray,Ad)))
+
+aa = rand(2,2)
+@test Ad+aa ≈ aa+Ad
+@test Ad-aa ≈ -(aa-Ad)
+@test Ad-I ≈ -(I-Ad)
+@test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
+@test Ad*I == I*Ad
+
+@test [Ad Ad]  ≈ horzcat(Ad,Ad)
+@test [Ad; Ad]  ≈ vertcat(Ad,Ad)
+
+@test [Ad aa](1) ≈ [Ad(1) aa] && [aa Ad](1) ≈ [aa Ad(1)]
+@test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
+@test horzcat(Ad,aa)(1) ≈ [Ad(1) aa] && horzcat(aa,Ad)(1) ≈ [aa Ad(1)]
+@test vertcat(Ad,aa)(1) ≈ [Ad(1); aa] && vertcat(aa,Ad)(1) ≈ [aa; Ad(1)]
+
 
 @test convert(PeriodicMatrix,convert(PeriodicArray,Ad)) == convert(PeriodicMatrix,Ad)
 @test convert(SwitchingPeriodicArray,convert(PeriodicArray,Ad)) == Ad

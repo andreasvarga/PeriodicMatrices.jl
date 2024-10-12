@@ -778,7 +778,7 @@ for (PMF, MF) in ((:pmmulsym, :muladdsym!), (:pmtrmulsym, :multraddsym!), (:pmmu
     end
 end
 
-muladdsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, α, β) = muladdsym!(A,B,C,(α,β))
+# muladdsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, α, β) = muladdsym!(A,B,C,(α,β))
 function muladdsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, (α,β) = (true, true))
     # compute in A the symmetrix matrix α*A +  β*B*C
     n = LinearAlgebra.checksquare(A)
@@ -812,7 +812,7 @@ function muladdsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, (α
     end
     return A
 end
-multraddsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, α, β) = multraddsym!(A, B, C, (α,β))
+# multraddsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, α, β) = multraddsym!(A, B, C, (α,β))
 function multraddsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, (α,β) = (true, true))
     # compute in A the symmetrix matrix α*A +  β*transpose(B)*C
     n = LinearAlgebra.checksquare(A)
@@ -846,7 +846,7 @@ function multraddsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, (
     end
     return A
 end
-muladdtrsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, α, β) = muladdtrsym!(A, B, C, (α,β))
+# muladdtrsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, α, β) = muladdtrsym!(A, B, C, (α,β))
 function muladdtrsym!(A::AbstractMatrix, B::AbstractMatrix, C::AbstractMatrix, (α,β) = (true, true))
     # compute in A the symmetrix matrix α*A +  β*transpose(B)*C
     n = LinearAlgebra.checksquare(A)
@@ -907,6 +907,23 @@ for (PMF, MF) in ((:pmata, :mulatasym), (:pmaat, :mulaatsym) )
         end
     end
 end
+
+"""
+    pmata(A)
+
+Compute for a discrete-time periodic matrix `A` the symmetric matrix `transpose(A)*A`. 
+
+_Note:_ This function is available only for periodic matrices of types `PeriodicArray` and `PeriodicMatrix`.
+"""
+pmata(A)
+"""
+    pmaat(A)
+
+Compute for a discrete-time periodic matrix `A` the symmetric matrix `A*transpose(A)`. 
+
+_Note:_ This function is available only for periodic matrices of types `PeriodicArray` and `PeriodicMatrix`.
+"""
+pmaat(A)
 
         
 function mulatasym(A::AbstractMatrix{T}) where {T}

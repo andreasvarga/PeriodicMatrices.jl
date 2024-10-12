@@ -1068,5 +1068,14 @@ function hr2btupd(A::HarmonicArray, N::Int; P::Int = 1, nperiod::Int = A.nperiod
     return BT
 end
 
-pmcopy(A::PeriodicMatrix) = PeriodicMatrix(A.M,A.period;nperiod = A.nperiod)
+"""
+    pmcopy(A)
+
+Create a copy of the periodic matrix `A`. 
+"""
+function pmcopy(A::PeriodicMatrix)
+    PeriodicMatrix(A.M,A.period;nperiod = A.nperiod)
+end
 pmcopy(A::PeriodicArray) = PeriodicArray(A.M,A.period;nperiod = A.nperiod)
+pmcopy(A::SwitchingPeriodicMatrix) = SwitchingPeriodicMatrix(A.M, A.ns, A.period;nperiod = A.nperiod)
+pmcopy(A::SwitchingPeriodicArray) = SwitchingPeriodicArray(A.M, A.ns, A.period;nperiod = A.nperiod)

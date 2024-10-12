@@ -10,6 +10,7 @@ tr
 Base.:+
 Base.:-(A::PeriodicArray, B::PeriodicArray)
 Base.:*
+pmcopy
 horzcat
 vertcat
 blockdiag
@@ -40,6 +41,8 @@ norm(A::PeriodicArray)
 trace(A::PeriodicArray)
 pmshift
 pmsymadd!
+pmata
+pmaat
 ```
 
 ## Operations with symmetric periodic matrices
