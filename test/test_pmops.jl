@@ -871,6 +871,9 @@ D = rand(n,n)
 @test blockdiag(Ad,Ad)[10] ≈ bldiag(Ad[10],Ad[10])   
 @test blockdiag(Ad,Xd)[10] ≈ bldiag(Ad[10],Xd[10])   
 @test blockdiag(Ad,Bd)[10] ≈ bldiag(Ad[10],Bd[10])   
+Cd = SwitchingPeriodicArray(rand(2,2,1),[10],Ad.period)
+@test blockdiag(Ad,Cd)[10] ≈ bldiag(Ad[10],Cd[10])   
+@test blockdiag(Cd,Ad)[10] ≈ bldiag(Cd[10],Ad[10])   
 
 
 end # pmops
