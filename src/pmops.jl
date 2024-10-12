@@ -1193,7 +1193,6 @@ function horzcat(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix)
     A.period == B.period || error("periods must be equal for horizontal concatenation")
     nperiod = A.nperiod
     if  nperiod == B.nperiod
-        @show nperiod
         ns = unique(sort([A.ns;B.ns]))
     else
         nperiod = gcd(A.nperiod,B.nperiod)
