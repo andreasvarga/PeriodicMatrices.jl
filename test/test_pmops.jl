@@ -31,6 +31,7 @@ b(t) = [cos(t)]
 @show "periodic function matrix operations"
 At = PeriodicFunctionMatrix(A,2*pi)
 Ct = PeriodicFunctionMatrix(C,2*pi)
+At1 = pmcopy(At)
 Cdt = PeriodicFunctionMatrix(Cd,2*pi)
 Xt = PeriodicFunctionMatrix(X,2*pi)
 Xdert = PeriodicFunctionMatrix(Xder,2*pi)
@@ -60,6 +61,60 @@ ap = rand(2,2); Ap = PeriodicFunctionMatrix(ap,pi)
 @test norm(At*Xt+Xt*At'+Ct-pmderiv(Xt)) < 1.e-7
 @test norm(At'*Xt+Xt*At+Cdt+pmderiv(Xt)) < 1.e-7
 
+# method = "cd"
+@test norm(pmderiv(Xt,discont=true)-Xdert) < 1.e-7 && norm(pmderiv(Xt)-Xdert) < 1.e-7  
+
+# method = "4d"
+@test opnorm(pmderiv(Xt,discont=true,method="4d",h=0.0000001)-Xdert)(rand()*Xt.period)[1,1] < 1.e-7 && 
+      norm(pmderiv(Xt,method="4d",)-Xdert) < 1.e-7  
+
+# method = ""
+@test opnorm(pmderiv(Xt,method="",discont=true,h=0.00000001)-Xdert,Inf)(rand()*Xt.period)[1,1] < 1.e-7 && 
+      opnorm(pmderiv(Xt,method="",discont=true,h=-0.00000001)-Xdert,Inf)(rand()*Xt.period)[1,1] < 1.e-7 && 
+      opnorm(pmderiv(Xt,method="",h=0.00000001)-Xdert,Inf)(rand()*Xt.period)[1,1] < 1.e-7 
+
+
+aa = rand(2,2)
+bb = rand(2,2)
+@test PeriodicFunctionMatrix(aa,2) + PeriodicFunctionMatrix(bb,2) ≈ PeriodicFunctionMatrix(aa+bb,2)
+@test PeriodicFunctionMatrix(aa,2)*PeriodicFunctionMatrix(bb,2) ≈ PeriodicFunctionMatrix(aa*bb,2)
+@test At+aa ≈ aa+At
+@test At-aa ≈ -(aa-At)
+@test At-I ≈ -(I-At)
+At1 = (At+At')/2
+@test (At*aa)(1) ≈ At(1)*aa && (aa*At)(1) ≈ aa*At(1)
+@test At*I == I*At
+Att = transpose(At)
+@test pmmuladdsym(At1, At, Att, 1, 1) ≈ At1+At*Att
+@test pmmultraddsym(At1, At, At, 1, 1) ≈ At1+Att*At
+@test pmmuladdtrsym(At1, At, At, 1, 1) ≈ At1+At*Att
+bc = rand(2,2); bct = copy(transpose(bc))
+@test pmmuladdsym(At1, bc, At1*bct, 1, 1) ≈ At1+bc*At1*bct
+@test pmmuladdsym(At1, bc*At1, bct, 1, 1) ≈ At1+bc*At1*bct
+@test pmmuladdsym(At1, bc, bct, 1, 1) ≈ At1+bc*bct
+@test pmmuladdsym(At1(0), At, Att, 1, 1) ≈ At1(0)+At*Att
+@test pmmuladdsym(At1(0), bc, At1*bct, 1, 1) ≈ At1(0)+bc*At1*bct
+@test pmmuladdsym(At1(0), bc*At1, bct, 1, 1) ≈ At1(0)+bc*At1*bct
+@test pmmuladdsym(At1(0), At(0), Att(0), 1, 1) ≈ At1(0)+At(0)*Att(0)
+#@test pmata(At) ≈ At'*At && pmaat(At) ≈ At*At'
+
+
+@test pmmulsym(At, Att, 1) ≈ At*Att
+@test pmtrmulsym(At, At, 1) ≈ Att*At
+@test pmmultrsym(At, At, 1) ≈ At*Att
+# @test pmmulsym(bc, At1*bct, 1) ≈ bc*At1*bct
+# @test pmmulsym(bc*At1,bct, 1) ≈ bc*At1*bct
+# @test pmtrmulsym(bc, At1*bc, 1) ≈ bct*At1*bc
+# @test pmtrmulsym(At1*bc,bc, 1) ≈ bct*At1*bc
+# @test pmmultrsym(bc, bc*At1, 1) ≈ bc*At1*bct
+# @test pmmultrsym(bc*At1,bc, 1) ≈ bc*At1*bct
+
+@test [At At]  ≈ horzcat(At,At)
+@test [At; At]  ≈ vertcat(At,At)
+@test [At aa](1) ≈ [At(1) aa] && [aa At](1) ≈ [aa At(1)]
+@test [At; aa](1) ≈ [At(1); aa] && [aa; At](1) ≈ [aa; At(1)]
+@test horzcat(At,aa)(1) ≈ [At(1) aa] && horzcat(aa,At)(1) ≈ [aa At(1)]
+@test vertcat(At,aa)(1) ≈ [At(1); aa] && vertcat(aa,At)(1) ≈ [aa; At(1)]
 
 
 At = PeriodicFunctionMatrix(A,4*pi,nperiod=2)
@@ -82,13 +137,19 @@ D = rand(2,2)
 @test At+I == I+At && At*5 == 5*At && At*D ≈ -At*(-D) && iszero(At-At) && !iszero(At)
 @test inv(At)*At ≈ I ≈ At*inv(At) && At+I == I+At
 @test norm(At-At,1) == norm(At-At,2) == norm(At-At,Inf) == 0
+@test 2*norm(At,1) ≈ norm(2*At,1) && 2*norm(At,2) ≈ norm(2*At,2) && 2*norm(At,Inf) ≈ norm(2*At,Inf)
+@test_throws ArgumentError norm(At,3)
 @test iszero(opnorm(At-At,1)) && iszero(opnorm(At-At,2)) && iszero(opnorm(At-At,Inf)) && iszero(opnorm(At-At))
-@test trace(At-At) == 0 && iszero(tr(At-At))
+@test trace(At-At) == 0 && iszero(tr(At-At)) && abs(trace(At)+24) < 1.e-10
+@test At' == transpose(At)
 
 @test PeriodicFunctionMatrix(D,2*pi) !== PeriodicFunctionMatrix(D,4*pi) && 
       !(PeriodicFunctionMatrix(D,2*pi) ≈ PeriodicFunctionMatrix(D,4*pi))
 
 @test tpmeval(At,1)[1:2,1:1] == tpmeval(At[1:2,1],1) && lastindex(At,1) == 2 && lastindex(At,2) == 2
+
+
+
 
 # HarmonicArray
 @show "Harmonic array operations"

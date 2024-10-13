@@ -1079,3 +1079,4 @@ end
 pmcopy(A::PeriodicArray) = PeriodicArray(A.M,A.period;nperiod = A.nperiod)
 pmcopy(A::SwitchingPeriodicMatrix) = SwitchingPeriodicMatrix(A.M, A.ns, A.period;nperiod = A.nperiod)
 pmcopy(A::SwitchingPeriodicArray) = SwitchingPeriodicArray(A.M, A.ns, A.period;nperiod = A.nperiod)
+pmcopy(A::PeriodicFunctionMatrix) = PeriodicFunctionMatrix(A.f, A.period; nperiod = A.nperiod, isconst = A._isconstant)
