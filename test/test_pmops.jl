@@ -614,6 +614,7 @@ bc = rand(5,5); bct = copy(transpose(bc))
 @test [Ad; aa](1) ≈ [Ad(1); aa] && [aa; Ad](1) ≈ [aa; Ad(1)]
 @test horzcat(Ad,aa)(1) ≈ [Ad(1) aa] && horzcat(aa,Ad)(1) ≈ [aa Ad(1)]
 @test vertcat(Ad,aa)(1) ≈ [Ad(1); aa] && vertcat(aa,Ad)(1) ≈ [aa; Ad(1)]
+@test blockut(Ad,Ad,Ad)(1) ≈ [Ad(1) Ad(1); zeros(5,5) Ad(1)]
 
 
 D = rand(n,n)
@@ -622,7 +623,6 @@ D = rand(n,n)
       !(PeriodicArray(D,2*pi) ≈ PeriodicArray(D,4*pi))
 
 @test blockdiag(Ad,Xd)[10] ≈ bldiag(Ad[10],Xd[10])      
-
 
 Ad1 = PeriodicArray(Ad.M,2*pa;nperiod=2);
 Ad2 = set_period(Ad,2*pa)
@@ -729,6 +729,7 @@ D = rand(n,n)
       !(PeriodicMatrix(D,2*pi) ≈ PeriodicMatrix(D,4*pi))
      
 @test blockdiag(Ad,Xd)[10] ≈ bldiag(Ad[10],Xd[10])      
+@test blockut(Ad,Ad,Ad)(1) ≈ [Ad(1) Ad(1); zeros(5,5) Ad(1)]
       
 
 

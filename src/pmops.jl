@@ -2808,6 +2808,13 @@ function blockdiag(A::PeriodicSwitchingMatrix, B::PeriodicSwitchingMatrix)
     end
     return PeriodicSwitchingMatrix{:c,promote_type(eltype(A),eltype(B))}([bldiag(tpmeval(A,ts[i]), tpmeval(B,ts[i])) for i in 1:length(ts)], ts, A.period, gcd(A.nperiod,B.nperiod))
 end
+"""
+    blockut(A, B, C) -> D
+
+Block upper triangular appending of periodic matrices `A`, `B` and `C`. 
+The resulting `D` is constructed as `D = [A B; 0 C]`. 
+`A`, `B` and `C` may have different, but commensurate periods.
+"""
 function blockut(A11::PeriodicMatrix, A12::PeriodicMatrix, A22::PeriodicMatrix)
     T = promote_type(eltype(A11),eltype(A12),eltype(A22))
     period = promote_period(A11, A12, A22)
@@ -2886,12 +2893,13 @@ function blockut(A11::PeriodicMatrix, A12::PeriodicMatrix, A22::PeriodicMatrix)
     ma11 == ma12 || throw(DimensionMismatch("A11 and A12 must have the same number of rows")) 
     na12 == na22 || throw(DimensionMismatch("A12 and A22 must have the same number of columns"))   
     T = promote_type(eltype(A11),eltype(A12),eltype(A22))
-    period = promote_period(A11, A12, A22)
-    nperiod = gcd(A11.nperiod,A12.nperiod,A22.nperiod)
+    # period = promote_period(A11, A12, A22)
+    # nperiod = gcd(A11.nperiod,A12.nperiod,A22.nperiod)
+    period, nperiod = promote_period2(A11, A12, A22)
     if isconstant(A11) && isconstant(A12) && isconstant(A22)
        return PeriodicFunctionMatrix{:c,T}(t -> [A11.f(0) A12.f(0); zeros(T,ma22,na11) A22.f(0)] , period, (ma11+ma22,na11+na22), nperiod, true)
     else
-       return PeriodicFunctionMatrix{:c,T}(t -> [A11.f(t) A12.f(t); zeros(T,ma22,na11) A22.f(t)], period, (ma11+ma22,na11+na22), nperiod, false)
+       return PeriodicFunctionMatrix{:c,T}(t -> [tpmeval(A11,t) tpmeval(A12,t); zeros(T,ma22,na11) tpmeval(A22,t)], period, (ma11+ma22,na11+na22), nperiod, false)
     end
  end
  
