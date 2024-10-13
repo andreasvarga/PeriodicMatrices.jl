@@ -74,14 +74,17 @@ ap = rand(2,2); Ap = PeriodicFunctionMatrix(ap,pi)
       opnorm(pmderiv(Xt,method="",h=0.00000001)-Xdert,Inf)(rand()*Xt.period)[1,1] < 1.e-7 
 
 
-aa = rand(2,2)
-bb = rand(2,2)
-@test PeriodicFunctionMatrix(aa,2) + PeriodicFunctionMatrix(bb,2) ≈ PeriodicFunctionMatrix(aa+bb,2)
-@test PeriodicFunctionMatrix(aa,2)*PeriodicFunctionMatrix(bb,2) ≈ PeriodicFunctionMatrix(aa*bb,2)
+aa = rand(2,2); Ac = PeriodicFunctionMatrix(aa,2)
+bb = rand(2,2); Bc = PeriodicFunctionMatrix(bb,2)
+aat = (bb+bb')/2; AAtc = PeriodicFunctionMatrix(aat,2)
+@test Ac+Bc ≈ PeriodicFunctionMatrix(aa+bb,2)
+@test Ac*Bc ≈ PeriodicFunctionMatrix(aa*bb,2)
 @test At+aa ≈ aa+At
 @test At-aa ≈ -(aa-At)
 @test At-I ≈ -(I-At)
+@test At+I-At ≈ I
 At1 = (At+At')/2
+@test issymmetric(At1)
 @test (At*aa)(1) ≈ At(1)*aa && (aa*At)(1) ≈ aa*At(1)
 @test At*I == I*At
 Att = transpose(At)
@@ -96,12 +99,15 @@ bc = rand(2,2); bct = copy(transpose(bc))
 @test pmmuladdsym(At1(0), bc, At1*bct, 1, 1) ≈ At1(0)+bc*At1*bct
 @test pmmuladdsym(At1(0), bc*At1, bct, 1, 1) ≈ At1(0)+bc*At1*bct
 @test pmmuladdsym(At1(0), At(0), Att(0), 1, 1) ≈ At1(0)+At(0)*Att(0)
+@test pmmuladdsym(AAtc, Ac, Ac', 1, 1) ≈ AAtc+Ac*Ac'
 #@test pmata(At) ≈ At'*At && pmaat(At) ≈ At*At'
 
 
 @test pmmulsym(At, Att, 1) ≈ At*Att
+@test pmmulsym(Ac, Ac', 1) ≈ Ac*Ac'
 @test pmtrmulsym(At, At, 1) ≈ Att*At
 @test pmmultrsym(At, At, 1) ≈ At*Att
+
 # @test pmmulsym(bc, At1*bct, 1) ≈ bc*At1*bct
 # @test pmmulsym(bc*At1,bct, 1) ≈ bc*At1*bct
 # @test pmtrmulsym(bc, At1*bc, 1) ≈ bct*At1*bc
@@ -110,11 +116,15 @@ bc = rand(2,2); bct = copy(transpose(bc))
 # @test pmmultrsym(bc*At1,bc, 1) ≈ bc*At1*bct
 
 @test [At At]  ≈ horzcat(At,At)
+@test [Ac Ac]  ≈ horzcat(Ac,Ac)
 @test [At; At]  ≈ vertcat(At,At)
+@test [Ac; Ac]  ≈ vertcat(Ac,Ac)
 @test [At aa](1) ≈ [At(1) aa] && [aa At](1) ≈ [aa At(1)]
 @test [At; aa](1) ≈ [At(1); aa] && [aa; At](1) ≈ [aa; At(1)]
 @test horzcat(At,aa)(1) ≈ [At(1) aa] && horzcat(aa,At)(1) ≈ [aa At(1)]
 @test vertcat(At,aa)(1) ≈ [At(1); aa] && vertcat(aa,At)(1) ≈ [aa; At(1)]
+@test blockut(At,At,At)(1) ≈ [At(1) At(1); zeros(2,2) At(1)]
+@test blockut(Ac,Ac,Ac)(1) ≈ [aa aa; zeros(2,2) aa]
 
 
 At = PeriodicFunctionMatrix(A,4*pi,nperiod=2)

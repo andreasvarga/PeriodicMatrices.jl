@@ -32,7 +32,7 @@ export mb03vd!, mb03vy!, mb03bd!, mb03wd!, mb03kd!
 export ps2fls, hr2bt, hr2btupd, phasemat, ps2frls, DiagDerOp, ps2ls, ps2spls
 export pmshift, trace, pmzeros, pmcopy
 export pmderiv, pmrand, horzcat, vertcat, pmsymadd!
-export bldiag, blockdiag
+export bldiag, blockdiag, blockut
 export pmmulsym, pmtrmulsym, pmmultrsym, pmmuladdsym, pmmultraddsym, pmmuladdtrsym, pmata, pmaat
 export AbstractPeriodicArray
 
