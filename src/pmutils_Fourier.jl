@@ -371,4 +371,5 @@ the corresponding time averaged matrix `Am` over one period.
 function pmaverage(A::FourierFunctionMatrix)
    typeof(size(A.M)) == Tuple{} ? (return coefficients(A.M)[1]) : (return get.(coefficients.(Matrix(A.M)),1,0.0))
 end
+pmcopy(A::FourierFunctionMatrix) = FourierFunctionMatrix(A.M)
 

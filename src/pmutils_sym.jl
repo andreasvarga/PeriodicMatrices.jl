@@ -253,4 +253,6 @@ function hr2psm(ahr::HarmonicArray, nrange::UnitRange = 0:size(ahr.values,3)-1)
    end
    return a
 end 
+pmcopy(A::PeriodicSymbolicMatrix) = PeriodicSymbolicMatrix(A.F,A.period;nperiod = A.nperiod)
+
 

@@ -14,6 +14,7 @@ pmcopy
 horzcat
 vertcat
 blockdiag
+blockut
 iszero
 isconstant
 Base.isequal

@@ -173,7 +173,7 @@ At = PeriodicFunctionMatrix(A,2*pi);
 Ah = convert(HarmonicArray,At);
 @test convert(PeriodicFunctionMatrix{:c,BigFloat},Ah)(1) ≈ Ah(1)
 @test convert(PeriodicTimeSeriesMatrix,Ah) ≈ convert(PeriodicTimeSeriesMatrix,At)
-
+Ah2 = pmcopy(Ah)
 
 Ah1 = convert(HarmonicArray,PeriodicFunctionMatrix(A1,2*pi));
 Ch = convert(HarmonicArray,PeriodicFunctionMatrix(C,2*pi));
@@ -194,6 +194,50 @@ Xderh = convert(HarmonicArray,PeriodicFunctionMatrix(Xder,2*pi));
 @test norm(Ah*Xh+Xh*Ah'+Ch-pmderiv(Xh),Inf) < 1.e-7 && norm(pmderiv(Xh)- Xderh) < 1.e-7
 @test norm(Ah'*Xh+Xh*Ah+Cdh+pmderiv(Xh),1) < 1.e-7
 
+aa = rand(2,2); Ac = HarmonicArray(aa,2)
+bb = rand(2,2); Bc = HarmonicArray(bb,2)
+aat = (bb+bb')/2; AAhc = HarmonicArray(aat,2)
+@test Ac+Bc ≈ HarmonicArray(aa+bb,2)
+@test Ac*Bc ≈ HarmonicArray(aa*bb,2)
+@test Ah+aa ≈ aa+Ah
+@test Ah-aa ≈ -(aa-Ah)
+@test Ah-I ≈ -(I-Ah)
+@test Ah+I-Ah ≈ I
+Ah1 = (Ah+Ah')/2
+@test issymmetric(Ah1)
+@test (Ah*aa)(1) ≈ Ah(1)*aa && (aa*Ah)(1) ≈ aa*Ah(1)
+@test Ah*I == I*Ah
+Aht = transpose(Ah)
+@test pmmuladdsym(Ah1, Ah, Aht, 1, 1) ≈ Ah1+Ah*Aht
+@test pmmultraddsym(Ah1, Ah, Ah, 1, 1) ≈ Ah1+Aht*Ah
+@test pmmuladdtrsym(Ah1, Ah, Ah, 1, 1) ≈ Ah1+Ah*Aht
+bc = rand(2,2); bct = copy(transpose(bc))
+@test pmmuladdsym(Ah1, bc, Ah1*bct, 1, 1) ≈ Ah1+bc*Ah1*bct
+@test pmmuladdsym(Ah1, bc*Ah1, bct, 1, 1) ≈ Ah1+bc*Ah1*bct
+@test pmmuladdsym(Ah1, bc, bct, 1, 1) ≈ Ah1+bc*bct
+@test pmmuladdsym(Ah1(0), Ah, Aht, 1, 1) ≈ Ah1(0)+Ah*Aht
+@test pmmuladdsym(Ah1(0), bc, Ah1*bct, 1, 1) ≈ Ah1(0)+bc*Ah1*bct
+@test pmmuladdsym(Ah1(0), bc*Ah1, bct, 1, 1) ≈ Ah1(0)+bc*Ah1*bct
+@test pmmuladdsym(Ah1(0), Ah(0), Aht(0), 1, 1) ≈ Ah1(0)+Ah(0)*Aht(0)
+@test pmmuladdsym(AAhc, Ac, Ac', 1, 1) ≈ AAhc+Ac*Ac'
+
+@test pmmulsym(Ah, Aht, 1) ≈ Ah*Aht
+@test pmmulsym(Ac, Ac', 1) ≈ Ac*Ac'
+@test pmtrmulsym(Ah, Ah, 1) ≈ Aht*Ah
+@test pmmultrsym(Ah, Ah, 1) ≈ Ah*Aht
+
+@test [Ah Ah]  ≈ horzcat(Ah,Ah)
+@test [Ac Ac]  ≈ horzcat(Ac,Ac)
+@test [Ah; Ah]  ≈ vertcat(Ah,Ah)
+@test [Ac; Ac]  ≈ vertcat(Ac,Ac)
+@test [Ah aa](1) ≈ [Ah(1) aa] && [aa Ah](1) ≈ [aa Ah(1)]
+@test [Ah; aa](1) ≈ [Ah(1); aa] && [aa; Ah](1) ≈ [aa; Ah(1)]
+@test horzcat(Ah,aa)(1) ≈ [Ah(1) aa] && horzcat(aa,Ah)(1) ≈ [aa Ah(1)]
+@test vertcat(Ah,aa)(1) ≈ [Ah(1); aa] && vertcat(aa,Ah)(1) ≈ [aa; Ah(1)]
+@test blockut(Ah,Ah,Ah)(1) ≈ [Ah(1) Ah(1); zeros(2,2) Ah(1)]
+@test blockut(Ac,Ac,Ac)(1) ≈ [aa aa; zeros(2,2) aa]
+
+Ah1 = convert(HarmonicArray,PeriodicFunctionMatrix(A1,2*pi));
 D = rand(2,2)
 @test Ah+I == I+Ah && Ah*5 == 5*Ah && Ah*D ≈ -Ah*(-D) && iszero(Ah-Ah) && !iszero(Ah)
 @test HarmonicArray(D,2*pi) !== HarmonicArray(D,4*pi) && 
@@ -207,6 +251,7 @@ Ah1i = inv(Ah1)
 @test hrchop(Ah1i; tol = 1.e-10) ≈ hrchop(Ah1i; tol = eps()) ≈ hrchop(Ah1i; tol = 1.e-10) 
 @test hrtrunc(Ah1i,19) ≈ hrtrunc(Ah1i,20)
 
+t = rand();
 @test blockdiag(Ah,Ch)(t) ≈ bldiag(Ah(t),Ch(t))
 
 Ah = convert(HarmonicArray,PeriodicFunctionMatrix(A,4*pi));
@@ -234,6 +279,7 @@ A11 = [0  1; -10*cos(t)-1 -24-19*sin(t)]
 X1 =  [1+cos(t) 0; 0 1+sin(t)] 
 X1der = [-sin(t) 0; 0 cos(t)] 
 As = PeriodicSymbolicMatrix(A11,2*pi)
+As1 = pmcopy(As)
 Cs = PeriodicSymbolicMatrix(X1der - A11*X1-X1*A11', 2*pi)
 Cds = PeriodicSymbolicMatrix(-(A11'*X1+X1*A11+X1der),2*pi)
 Xs = PeriodicSymbolicMatrix(X1,2*pi)
@@ -324,6 +370,8 @@ t = rand();
 @time Cdf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Cd,2*pi));
 @time Xf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(X,2*pi));
 @time Xderf = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(Xder,2*pi));
+Afc = pmcopy(Af)
+
 
 @test set_period(set_period(Af,4pi),2pi) == Af
 Aft = Af'
@@ -426,6 +474,7 @@ t = rand();
 t1 = -rand(Float32,2,2); t2 = rand(Float32,2,2); Ats1 = PeriodicTimeSeriesMatrix{:c,Float64}([t1,t2],2)
 @test Ats1.ts == [0.,1.]
 Ats = convert(PeriodicTimeSeriesMatrix,PeriodicFunctionMatrix(A,2*pi));
+Ats1 = pmcopy(Ats)
 Cts = convert(PeriodicTimeSeriesMatrix,PeriodicFunctionMatrix(C,2*pi));
 Cdts = convert(PeriodicTimeSeriesMatrix,PeriodicFunctionMatrix(Cd,2*pi));
 Xts = convert(PeriodicTimeSeriesMatrix,PeriodicFunctionMatrix(X,2*pi));
@@ -437,6 +486,48 @@ Xderts = convert(PeriodicTimeSeriesMatrix,PeriodicFunctionMatrix(Xder,2*pi));
 @test lastindex(Ats,1) == size(Ats,1) && lastindex(Ats,2) == size(Ats,2)
 @test Ats[1] == Ats(0) == Ats[end+1]
 
+aa = rand(2,2); Ac = PeriodicTimeSeriesMatrix(aa,2)
+bb = rand(2,2); Bc = PeriodicTimeSeriesMatrix(bb,2)
+aat = (bb+bb')/2; AAtsc = PeriodicTimeSeriesMatrix(aat,2)
+@test Ac+Bc ≈ PeriodicTimeSeriesMatrix(aa+bb,2)
+@test Ac*Bc ≈ PeriodicTimeSeriesMatrix(aa*bb,2)
+@test Ats+aa ≈ aa+Ats
+@test Ats-aa ≈ -(aa-Ats)
+@test Ats-I ≈ -(I-Ats)
+@test Ats+I-Ats ≈ I
+Ats1 = (Ats+Ats')/2
+@test issymmetric(Ats1)
+@test (Ats*aa)(1) ≈ Ats(1)*aa && (aa*Ats)(1) ≈ aa*Ats(1)
+@test Ats*I == I*Ats
+Atst = transpose(Ats)
+# @test pmmuladdsym(Ats1, Ats, Atst, 1, 1) ≈ Ats1+Ats*Atst
+# @test pmmultraddsym(Ats1, Ats, Ats, 1, 1) ≈ Ats1+Atst*Ats
+# @test pmmuladdtrsym(Ats1, Ats, Ats, 1, 1) ≈ Ats1+Ats*Atst
+# bc = rand(2,2); bct = copy(transpose(bc))
+# @test pmmuladdsym(Ats1, bc, Ats1*bct, 1, 1) ≈ Ats1+bc*Ats1*bct
+# @test pmmuladdsym(Ats1, bc*Ats1, bct, 1, 1) ≈ Ats1+bc*Ats1*bct
+# @test pmmuladdsym(Ats1, bc, bct, 1, 1) ≈ Ats1+bc*bct
+# @test pmmuladdsym(Ats1(0), Ats, Atst, 1, 1) ≈ Ats1(0)+Ats*Atst
+# @test pmmuladdsym(Ats1(0), bc, Ats1*bct, 1, 1) ≈ Ats1(0)+bc*Ats1*bct
+# @test pmmuladdsym(Ats1(0), bc*Ats1, bct, 1, 1) ≈ Ats1(0)+bc*Ats1*bct
+# @test pmmuladdsym(Ats1(0), Ats(0), Atst(0), 1, 1) ≈ Ats1(0)+Ats(0)*Atst(0)
+# @test pmmuladdsym(AAtsc, Ac, Ac', 1, 1) ≈ AAtsc+Ac*Ac'
+
+@test pmmulsym(Ats, Atst, 1) ≈ Ats*Atst
+@test pmmulsym(Ac, Ac', 1) ≈ Ac*Ac'
+@test pmtrmulsym(Ats, Ats, 1) ≈ Atst*Ats
+@test pmmultrsym(Ats, Ats, 1) ≈ Ats*Atst
+
+@test [Ats Ats]  ≈ horzcat(Ats,Ats)
+@test [Ac Ac]  ≈ horzcat(Ac,Ac)
+@test [Ats; Ats]  ≈ vertcat(Ats,Ats)
+@test [Ac; Ac]  ≈ vertcat(Ac,Ac)
+@test [Ats aa](1) ≈ [Ats(1) aa] && [aa Ats](1) ≈ [aa Ats(1)]
+@test [Ats; aa](1) ≈ [Ats(1); aa] && [aa; Ats](1) ≈ [aa; Ats(1)]
+@test horzcat(Ats,aa)(1) ≈ [Ats(1) aa] && horzcat(aa,Ats)(1) ≈ [aa Ats(1)]
+@test vertcat(Ats,aa)(1) ≈ [Ats(1); aa] && vertcat(aa,Ats)(1) ≈ [aa; Ats(1)]
+# @test blockut(Ats,Ats,Ats)(1) ≈ [Ats(1) Ats(1); zeros(2,2) Ats(1)]
+# @test blockut(Ac,Ac,Ac)(1) ≈ [aa aa; zeros(2,2) aa]
 
 # @test Ats*Xts+Xts*Ats'+Cts ≈  pmderiv(Xts) ≈ Xderts
 # @test Ats'*Xts+Xts*Ats+Cdts ≈ -pmderiv(Xts) 
@@ -448,6 +539,7 @@ D = rand(2,2)
 @test PeriodicTimeSeriesMatrix(D,2*pi) !== PeriodicTimeSeriesMatrix(D,4*pi) && 
       !(PeriodicTimeSeriesMatrix(D,2*pi) ≈ PeriodicTimeSeriesMatrix(D,4*pi))
 @test inv(Ats)*Ats ≈ I ≈ Ats*inv(Ats) 
+@test eigvals(Ats)[1] ≈ eigvals(Ats.values[1])
 @test norm(Ats-Ats,1) == norm(Ats-Ats,2) == norm(Ats-Ats,Inf) == 0
 @test iszero(opnorm(Ats-Ats,1)) && iszero(opnorm(Ats-Ats,2)) && iszero(opnorm(Ats-Ats,Inf)) && 
       iszero(opnorm(Ats-Ats)) 
@@ -527,6 +619,8 @@ D = rand(2,2)
 @test PeriodicSwitchingMatrix(D,2) !== PeriodicSwitchingMatrix(D,4) && 
       !(PeriodicSwitchingMatrix(D,2) ≈ PeriodicSwitchingMatrix(D,4))
 @test issymmetric(Csw*Csw')
+@test eigvals(Asw)[1] ≈ eigvals(Asw.values[1])
+
 @test inv(Asw)*Asw ≈ I ≈ Asw*inv(Asw) 
 @test norm(Asw-Asw,1) == norm(Asw-Asw,2) == norm(Asw-Asw,Inf) == 0
 @test iszero(opnorm(Asw-Asw,1)) && iszero(opnorm(Asw-Asw,2)) && iszero(opnorm(Asw-Asw,Inf)) && 
@@ -535,6 +629,46 @@ D = rand(2,2)
 t = rand(); 
 @test blockdiag(Asw,Csw)(t) ≈ bldiag(Asw(t),Csw(t))
 
+aa = rand(2,2); Ac = PeriodicSwitchingMatrix(aa,2)
+bb = rand(2,2); Bc = PeriodicSwitchingMatrix(bb,2)
+aat = (bb+bb')/2; AAswc = PeriodicSwitchingMatrix(aat,2)
+@test Ac+Bc ≈ PeriodicSwitchingMatrix(aa+bb,2)
+@test Ac*Bc ≈ PeriodicSwitchingMatrix(aa*bb,2)
+@test Asw+aa ≈ aa+Asw
+@test Asw-aa ≈ -(aa-Asw)
+@test Asw-I ≈ -(I-Asw)
+@test Asw+I-Asw ≈ I
+Asw1 = (Asw+Asw')/2
+@test issymmetric(Asw1)
+@test (Asw*aa)(1) ≈ Asw(1)*aa && (aa*Asw)(1) ≈ aa*Asw(1)
+@test Asw*I == I*Asw
+Aswt = transpose(Asw)
+# @test pmmuladdsym(Asw1, Asw, Aswt, 1, 1) ≈ Asw1+Asw*Aswt
+# @test pmmultraddsym(Asw1, Asw, Asw, 1, 1) ≈ Asw1+Aswt*Asw
+# @test pmmuladdtrsym(Asw1, Asw, Asw, 1, 1) ≈ Asw1+Asw*Aswt
+# bc = rand(2,2); bct = copy(transpose(bc))
+# @test pmmuladdsym(Asw1, bc, Asw1*bct, 1, 1) ≈ Asw1+bc*Asw1*bct
+# @test pmmuladdsym(Asw1, bc*Asw1, bct, 1, 1) ≈ Asw1+bc*Asw1*bct
+# @test pmmuladdsym(Asw1, bc, bct, 1, 1) ≈ Asw1+bc*bct
+# @test pmmuladdsym(Asw1(0), Asw, Aswt, 1, 1) ≈ Asw1(0)+Asw*Aswt
+# @test pmmuladdsym(Asw1(0), bc, Asw1*bct, 1, 1) ≈ Asw1(0)+bc*Asw1*bct
+# @test pmmuladdsym(Asw1(0), bc*Asw1, bct, 1, 1) ≈ Asw1(0)+bc*Asw1*bct
+# @test pmmuladdsym(Asw1(0), Asw(0), Aswt(0), 1, 1) ≈ Asw1(0)+Asw(0)*Aswt(0)
+# @test pmmuladdsym(AAswc, Ac, Ac', 1, 1) ≈ AAswc+Ac*Ac'
+
+# @test pmmulsym(Asw, Aswt, 1) ≈ Asw*Aswt
+# @test pmmulsym(Ac, Ac', 1) ≈ Ac*Ac'
+# @test pmtrmulsym(Asw, Asw, 1) ≈ Aswt*Asw
+# @test pmmultrsym(Asw, Asw, 1) ≈ Asw*Aswt
+
+@test [Asw Asw]  ≈ horzcat(Asw,Asw)
+@test [Ac Ac]  ≈ horzcat(Ac,Ac)
+@test [Asw; Asw]  ≈ vertcat(Asw,Asw)
+@test [Ac; Ac]  ≈ vertcat(Ac,Ac)
+@test [Asw aa](1) ≈ [Asw(1) aa] && [aa Asw](1) ≈ [aa Asw(1)]
+@test [Asw; aa](1) ≈ [Asw(1); aa] && [aa; Asw](1) ≈ [aa; Asw(1)]
+@test horzcat(Asw,aa)(1) ≈ [Asw(1) aa] && horzcat(aa,Asw)(1) ≈ [aa Asw(1)]
+@test vertcat(Asw,aa)(1) ≈ [Asw(1); aa] && vertcat(aa,Asw)(1) ≈ [aa; Asw(1)]
 
 
 

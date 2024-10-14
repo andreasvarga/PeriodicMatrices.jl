@@ -1974,6 +1974,7 @@ for PMF in (:pmmuladdsym, :pmmultraddsym, :pmmuladdtrsym)
     for PM in (:HarmonicArray,)
         @eval begin
             $PMF(A::$PM,B::$PM,C::$PM, (α,β) = (true, true)) = convert($PM,$PMF(convert(PeriodicFunctionMatrix,A), convert(PeriodicFunctionMatrix,B), convert(PeriodicFunctionMatrix,C), (α,β)))
+            $PMF(A::$PM,B::$PM,C::$PM, α, β) = $PMF(A, B, C, (α,β))
             # $PMF(A::$PM,B::AbstractMatrix,C::$PM, (α,β) = (true, true)) = $PMF(A, $PM(B, A.period), C, (α,β))
             # $PMF(A::$PM,B::$PM,C::AbstractMatrix, (α,β) = (true, true)) = $PMF(A, B, $PM(C, A.period), (α,β))
             # $PMF(A::$PM,B::AbstractMatrix,C::AbstractMatrix, (α,β) = (true, true)) = $PMF(A, $PM(B, A.period), $PM(C, A.period), (α,β))
