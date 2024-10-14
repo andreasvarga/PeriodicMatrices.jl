@@ -30,6 +30,7 @@ issymmetric
 norm(A::Union{HarmonicArray, PeriodicFunctionMatrix}, p::Real; rtol)
 trace(A::Union{HarmonicArray, PeriodicFunctionMatrix}; rtol)
 pmderiv
+pmrand(::Type{PM}, n::Int64, m::Int64, period::Real; nh) where {T, PM<:AbstractPeriodicArray{:c, T}}
 ```
 
 
@@ -44,6 +45,7 @@ pmshift
 pmsymadd!
 pmata
 pmaat
+pmrand(::Type{PM}, n::Int64, m::Int64, period::Real; ns) where PM<:Union{PeriodicArray, PeriodicMatrix}
 ```
 
 ## Operations with symmetric periodic matrices

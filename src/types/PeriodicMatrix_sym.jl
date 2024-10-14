@@ -117,6 +117,8 @@ end
 Base.convert(::Type{PeriodicSymbolicMatrix}, A::PeriodicFunctionMatrix) = convert(PeriodicSymbolicMatrix{:c,eltype(A)}, A)
 Base.convert(::Type{PeriodicSymbolicMatrix}, ahr::HarmonicArray) = 
    PeriodicSymbolicMatrix(hr2psm(ahr), ahr.period; nperiod = 1) 
+Base.convert(::Type{PeriodicSymbolicMatrix{:c,T}}, ahr::HarmonicArray) where {T}= 
+   PeriodicSymbolicMatrix{:c,T,Matrix{Num}}(hr2psm(ahr), ahr.period, 1) 
    # PeriodicSymbolicMatrix(hr2psm(ahr), ahr.period; nperiod = ahr.nperiod)
 Base.convert(::Type{PeriodicSymbolicMatrix}, A::PeriodicTimeSeriesMatrix) = 
    PeriodicSymbolicMatrix(hr2psm(convert(HarmonicArray,A)), A.period; nperiod =1)

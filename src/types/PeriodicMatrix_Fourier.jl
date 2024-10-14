@@ -125,6 +125,10 @@ function Base.convert(::Type{FourierFunctionMatrix}, A::HarmonicArray)
    tA = convert(PeriodicFunctionMatrix,A)
    return FourierFunctionMatrix{:c,eltype(tA),Fun}(Fun(x -> tA.f(x), Fourier(0..tA.period/tA.nperiod)), Float64(tA.period), tA.nperiod)
 end
+function Base.convert(::Type{FourierFunctionMatrix{:c,T}}, A::HarmonicArray) where {T}
+   tA = convert(PeriodicFunctionMatrix,A)
+   return FourierFunctionMatrix{:c,T,Fun}(Fun(x -> tA.f(x), Fourier(0..tA.period/tA.nperiod)), Float64(tA.period), tA.nperiod)
+end
 function Base.convert(::Type{FourierFunctionMatrix}, A::PeriodicTimeSeriesMatrix) 
    tA = convert(PeriodicFunctionMatrix,A)
    return FourierFunctionMatrix{:c,eltype(tA),Fun}(Fun(x -> tA.f(x), Fourier(0..tA.period/tA.nperiod)), Float64(tA.period), tA.nperiod)

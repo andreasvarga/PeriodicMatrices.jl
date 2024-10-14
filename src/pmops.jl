@@ -2106,10 +2106,53 @@ end
 Base.isapprox(J::UniformScaling{<:Real}, A::PeriodicFunctionMatrix; kwargs...) = isapprox(A, J; kwargs...)
 
 # Operations with harmonic arrays
-function pmrand(::Type{T}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {T}
-    HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period) 
+# function pmrand(::Type{T}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {T}
+#     HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period) 
+# end    
+"""
+    pmrand(::Type{PM}, n, m[, period = 2pi]; nh = 1) 
+    pmrand(::Type{PM{:c,T}}, n, m[, period = 2pi]; nh = 1) 
+
+Generate a random  `n×m ` continuous-time periodic matrix of type  `PM ` or  `PM{:c,T} ` with period  `period ` (default:  `period = 2pi `)
+corresponding to a random harmonic representation with  `nh ` harmonic components (default:  `nh = 1 `). 
+The type  `T` of matrix elements can be specified using, e.g. `HarmonicArray{:c,T}` instead `HarmonicArray`, 
+which assumes by default `T = Float64`.
+"""
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {T,PM <: AbstractPeriodicArray{:c,T}}
+    A = HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period) 
+    PM <: HarmonicArray && (return A)
+    return convert(PM,A)
 end    
-pmrand(n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) = pmrand(Float64, n, m, period; nh)
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {PM <: AbstractPeriodicArray{:c}}
+    T = Float64
+    A = HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period) 
+    PM <: HarmonicArray && (return A)
+    return convert(PM,A)
+end    
+pmrand(n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) = pmrand(HarmonicArray, n, m, period; nh)
+"""
+    pmrand(::Type{PM}, n, m[, period = 10]; ns = 10) 
+    pmrand(::Type{PM{:d,T}}, n, m[, period = 10]; ns = 10) 
+
+Generate a random  `n×m ` discrete-time periodic matrix of type  `PM ` or  `PM{:d,T} ` with period  `period ` (default:  `period = 10`)
+with  `ns` component matrices (default: `ns = 10 `). 
+The type  `T` of matrix elements can be specified using, e.g. `PeriodicMatrix{:d,T}` instead `PeriodicMatrix`, 
+which assumes by default `T = Float64`.
+"""
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Int = 10) where {PM <: Union{PeriodicMatrix,PeriodicArray}}
+    if PM <: PeriodicMatrix 
+        PeriodicMatrix([rand(n,m) for i in 1:ns], period) 
+    else
+        PeriodicArray(rand(n,m,ns), period) 
+    end
+end    
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Int = 10) where {T,PM <: Union{PeriodicMatrix{:d,T},PeriodicArray{:d,T}}}
+    if PM <: PeriodicMatrix 
+        PeriodicMatrix{:d,T}([rand(T,n,m) for i in 1:ns], period) 
+    else
+        PeriodicArray{:d,T}(rand(T,n,m,ns), period) 
+    end
+end    
 """
     pmderiv(A::HarmonicArray) 
 
@@ -2399,7 +2442,7 @@ function trace(A::PeriodicTimeSeriesMatrix)
     end 
     return tt*A.nperiod/K
 end
-LinearAlgebra.eigvals(A::PeriodicTimeSeriesMatrix) = [eigvals(A.values[i]) for i in 1:length(A)]
+LinearAlgebra.eigvals(A::PeriodicTimeSeriesMatrix) = eigvals.(A.values)
 function LinearAlgebra.opnorm(A::PeriodicTimeSeriesMatrix, p::Union{Real,Missing} = missing)
     if ismissing(p)
         return PeriodicTimeSeriesMatrix([[norm(A.values[i])] for i in 1:length(A)], A.period; nperiod = A.nperiod)
@@ -2638,9 +2681,10 @@ function trace(A::PeriodicSwitchingMatrix)
     return tt*A.nperiod/A.period
 end
 
-LinearAlgebra.eigvals(A::PeriodicSwitchingMatrix) = [eigvals(A.values[i]) for i in 1:length(A)]
+LinearAlgebra.eigvals(A::PeriodicSwitchingMatrix) = eigvals.(A.values)
 function LinearAlgebra.opnorm(A::PeriodicSwitchingMatrix, p::Union{Real,Missing} = missing)
     if ismissing(p)
+        return PeriodicSwitchingMatrix([[norm(A.values[i])] for i in 1:length(A)], A.ts, A.period; nperiod = A.nperiod)
         return PeriodicSwitchingMatrix([[norm(A.values[i])] for i in 1:length(A)], A.ts, A.period; nperiod = A.nperiod)
     else
         return PeriodicSwitchingMatrix([[opnorm(A.values[i],p)] for i in 1:length(A)], A.ts, A.period; nperiod = A.nperiod)
