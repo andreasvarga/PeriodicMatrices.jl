@@ -141,11 +141,12 @@ t = rand();
 @test [At Ct](t) ≈ [At(t) Ct(t)]
 @test [At; Ct](t) ≈ [At(t); Ct(t)]
 @test blockdiag(At,Ct)(t) ≈ bldiag(At(t),Ct(t))
+@test blockdiag(Ac,Bc)(t) ≈ bldiag(aa,bb)
 
 
 D = rand(2,2)
 @test At+I == I+At && At*5 == 5*At && At*D ≈ -At*(-D) && iszero(At-At) && !iszero(At)
-@test inv(At)*At ≈ I ≈ At*inv(At) && At+I == I+At
+@test inv(At)*At ≈ I ≈ At*inv(At) && At+I == I+At && !(At ≈ I)
 @test norm(At-At,1) == norm(At-At,2) == norm(At-At,Inf) == 0
 @test 2*norm(At,1) ≈ norm(2*At,1) && 2*norm(At,2) ≈ norm(2*At,2) && 2*norm(At,Inf) ≈ norm(2*At,Inf)
 @test_throws ArgumentError norm(At,3)
