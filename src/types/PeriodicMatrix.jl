@@ -206,7 +206,7 @@ end
 
 # additional constructors
 #function  SwitchingPeriodicMatrix(M::Vector{<: Matrix}, ns::Vector{Int}, period::Real; nperiod::Int = 1) 
-function  SwitchingPeriodicMatrix(M::Vector{MT}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {MT <: Array} 
+function  SwitchingPeriodicMatrix{:d,T}(M::Vector{MT}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {T,MT <: Array{T}} 
    period > 0 || error("period must be positive") 
    nperiod > 0 || error("number of subperiods must be positive") 
    any(ndims.(M) .> 2) && error("only vectors with vector or matrix elements supported")
@@ -217,12 +217,17 @@ function  SwitchingPeriodicMatrix(M::Vector{MT}, ns::Vector{Int}, period::Real; 
        ns[i+1] > ns[i] || error("ns must have only strictly increasing positive values")
    end
    m = size.(M,2)
-   T = promote_type(eltype.(M)...)
+   #T = promote_type(eltype.(M)...)
    return any(m .== 1) ?  SwitchingPeriodicMatrix{:d,T}([T.(reshape(M[i],size(M[i],1),m[i])) for i in 1:p], ns, Float64(period), nperiod)  :  
                    SwitchingPeriodicMatrix{:d,T}([T.(M[i]) for i in 1:p], ns, Float64(period), nperiod) 
 end
-SwitchingPeriodicMatrix{:d,T}(A::Vector{Matrix{T}}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {T} = 
-   SwitchingPeriodicMatrix{:d,T}(A, ns, period, nperiod)
+# SwitchingPeriodicMatrix{:d,T}(A::Vector{Matrix{T}}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {T} = 
+#    SwitchingPeriodicMatrix{:d,T}(A, ns, period, nperiod)
+function SwitchingPeriodicMatrix(A::Vector{<:Array}, ns::Vector{Int}, period::Real; nperiod::Int = 1)
+   @show promote_type(eltype.(A)...), A
+    SwitchingPeriodicMatrix{:d,promote_type(eltype.(A)...)}(A, ns, period; nperiod)
+end
+
 # SwitchingPeriodicMatrix(M::Vector{Matrix{T}}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {T <: Real} = 
 #    SwitchingPeriodicMatrix{:d,T}(M, ns, period, nperiod)
 SwitchingPeriodicMatrix(M::VecOrMat{T}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {T <: Real} =

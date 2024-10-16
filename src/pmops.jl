@@ -219,10 +219,8 @@ end
     pmsymadd!(A, α = 1)
 
 Compute for a discrete-time periodic matrix `A` the symmetric matrix `α*(A+A')` in place. 
-
-_Note:_ This function is available only for periodic matrices of types `PeriodicArray` and `PeriodicMatrix`.
 """
-function pmsymadd!(A::PeriodicArray, α = 1)
+function pmsymadd!(A::Union{PeriodicArray,SwitchingPeriodicArray}, α = 1)
     # compute the symmetric matrix α*(A+transpose(A))
     m, n = size(A) 
     m == n || throw(ArgumentError("matrix A must be square"))
@@ -648,7 +646,7 @@ end
 (+)(J::UniformScaling{<:Real}, A::PeriodicMatrix) = +(A,J)
 (-)(A::PeriodicMatrix, J::UniformScaling{<:Real}) = +(A,-J)
 (-)(J::UniformScaling{<:Real}, A::PeriodicMatrix) = +(-A,J)
-function pmsymadd!(A::PeriodicMatrix, α = 1)
+function pmsymadd!(A::Union{PeriodicMatrix,SwitchingPeriodicMatrix}, α = 1)
     # compute the symmetric matrix α*(A+transpose(A))
     m, n = size(A) 
     m == n || throw(ArgumentError("matrix A must be square"))
@@ -1093,7 +1091,7 @@ function LinearAlgebra.norm(A::SwitchingPeriodicMatrix, p::Real = 2)
     end
 end
 function LinearAlgebra.tr(A::SwitchingPeriodicMatrix)
-    return SwitchingPeriodicMatrix([[tr(A.M[i])] for i in 1:length(A.M)], A.ns, A.period; nperiod = A.nperiod)
+    return SwitchingPeriodicMatrix([[tr(A.M[i]);;] for i in 1:length(A.M)], A.ns, A.period; nperiod = A.nperiod)
 end
 function trace(A::SwitchingPeriodicMatrix) 
     t = zero(eltype(A))
@@ -2112,47 +2110,100 @@ Base.isapprox(J::UniformScaling{<:Real}, A::PeriodicFunctionMatrix; kwargs...) =
 """
     pmrand(::Type{PM}, n, m[, period = 2pi]; nh = 1) 
     pmrand(::Type{PM{:c,T}}, n, m[, period = 2pi]; nh = 1) 
+    pmrand(n, m[, period = 2pi]; nh = 1) 
+    pmrand(PeriodicTimeSeriesMatrix, n, m[, period = 2pi]; ns = 1) 
+    pmrand(PeriodicTimeSeriesMatrix{:c,T}, n, m[, period = 2pi]; ns = 1) 
+    pmrand(PeriodicSwitchingMatrix, n, m[, period = 2pi]; ts = [0]) 
+    pmrand(PeriodicSwitchingMatrix{:c,T}, n, m[, period = 2pi]; ts = [0]) 
 
-Generate a random  `n×m ` continuous-time periodic matrix of type  `PM ` or  `PM{:c,T} ` with period  `period ` (default:  `period = 2pi `)
-corresponding to a random harmonic representation with  `nh ` harmonic components (default:  `nh = 1 `). 
+Generate a random `n×m` continuous-time periodic matrix of type `PM ` or `PM{:c,T} ` with period  `period ` (default:  `period = 2pi `).
+`PM` specifies the resulting type of the generated periodic matrix. For `PM = HarmonicArray`, or `PM = PeriodicFunctionMatrix`, or `PM = PeriodicSymbolicMatrix`
+or `PM = FourierFunctionMatrix`, the resulting periodic matrix corresponds 
+to a random harmonic representation with  `nh ` harmonic components (default:  `nh = 1 `). 
 The type  `T` of matrix elements can be specified using, e.g. `HarmonicArray{:c,T}` instead `HarmonicArray`, 
-which assumes by default `T = Float64`.
-"""
-function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {T,PM <: AbstractPeriodicArray{:c,T}}
-    A = HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period) 
-    PM <: HarmonicArray && (return A)
-    return convert(PM,A)
-end    
-function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {PM <: AbstractPeriodicArray{:c}}
-    T = Float64
-    A = HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period) 
-    PM <: HarmonicArray && (return A)
-    return convert(PM,A)
-end    
-pmrand(n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) = pmrand(HarmonicArray, n, m, period; nh)
-"""
-    pmrand(::Type{PM}, n, m[, period = 10]; ns = 10) 
-    pmrand(::Type{PM{:d,T}}, n, m[, period = 10]; ns = 10) 
+which assumes by default `T = Float64`. If `PM` is omitted, then by default `PM = HarmonicArray`.
 
-Generate a random  `n×m ` discrete-time periodic matrix of type  `PM ` or  `PM{:d,T} ` with period  `period ` (default:  `period = 10`)
-with  `ns` component matrices (default: `ns = 10 `). 
+For `PM = PeriodicTimeSeriesMatrix`, `ns` specifies the number of component matrices.
+
+For `PM = PeriodicSwitchingMatrix`, the vector `ts` specifies the switching times. 
+"""
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where 
+          {T,PM <: Union{HarmonicArray{:c,T},PeriodicFunctionMatrix{:c,T}}}
+    A = HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period) 
+    PM <: HarmonicArray && (return A)
+    return convert(PM,A)
+end 
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; kwargs...) where 
+         {PM <: Union{HarmonicArray,PeriodicFunctionMatrix}}
+    pmrand(PM{:c,Float64}, n, m, period; kwargs...)
+end 
+pmrand(n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) = pmrand(HarmonicArray{:c,Float64}, n, m, period; nh)
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; ns::Int = 1) where {T,PM <: PeriodicTimeSeriesMatrix{:c,T}}
+    return PeriodicTimeSeriesMatrix{:c,T}([rand(T,n,m) for i in 1:ns], period) 
+end 
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; ns::Int = 1) where {PM <: PeriodicTimeSeriesMatrix}
+    return PeriodicTimeSeriesMatrix{:c,Float64}([rand(n,m) for i in 1:ns], period) 
+end 
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; ts::Vector{<:Real} = [0.]) where {T,PM <: PeriodicSwitchingMatrix{:c,T}}
+    return PeriodicSwitchingMatrix{:c,T}([rand(T,n,m) for i in 1:length(ts)], ts, period) 
+end 
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; ts::Vector{<:Real} = [0.]) where {PM <: PeriodicSwitchingMatrix}
+    return PeriodicSwitchingMatrix{:c,Float64}([rand(n,m) for i in 1:length(ts)], ts, period) 
+end 
+
+"""
+    pmrand(::Type{PM}, n::Int, m::Int[, period = 10]; ns = 10) 
+    pmrand(::Type{PM{:d,T}}, n::Int, m::Int[, period = 10]; ns = 10) 
+    pmrand(::Type{PM}, n::Vector{Int}, m::Vector{Int}[, period = 10]) 
+    pmrand(SwitchingPeriodicMatrix, n, m[, period = 10]; ns = [period]) 
+    pmrand(SwitchingPeriodicArray, n, m[, period = 10]; ns = [period]) 
+
+Generate a random `n×m` discrete-time periodic matrix of type `PM` or `PM{:d,T}` with period  `period ` (default:  `period = 10`)
+with  `ns` component matrices (default: `ns = 10`). 
+If `PM = PeriodicMatrix` or `PM = PeriodicArray`, `ns` specifies the number of component matrices (default: `ns = 10`).
+If `PM = PeriodicMatrix`, then two integer vectors `n` and `m` containing the row and column dimensions of the
+the component matrices, respectively, can be used to specify periodic matrices with time-varying dimensions. 
+
+If `PM = SwitchingPeriodicMatrix` or `PM = SwitchingPeriodicArray`, the integer vector `ns` specifies the switching moments (default: `ns = [period]).
 The type  `T` of matrix elements can be specified using, e.g. `PeriodicMatrix{:d,T}` instead `PeriodicMatrix`, 
 which assumes by default `T = Float64`.
 """
-function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Int = 10) where {PM <: Union{PeriodicMatrix,PeriodicArray}}
-    if PM <: PeriodicMatrix 
-        PeriodicMatrix([rand(n,m) for i in 1:ns], period) 
-    else
-        PeriodicArray(rand(n,m,ns), period) 
-    end
-end    
 function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Int = 10) where {T,PM <: Union{PeriodicMatrix{:d,T},PeriodicArray{:d,T}}}
     if PM <: PeriodicMatrix 
         PeriodicMatrix{:d,T}([rand(T,n,m) for i in 1:ns], period) 
     else
         PeriodicArray{:d,T}(rand(T,n,m,ns), period) 
     end
-end    
+end 
+pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; kwargs...) where {PM <: Union{PeriodicMatrix,PeriodicArray,SwitchingPeriodicMatrix,SwitchingPeriodicArray}} =
+    pmrand(PM{:d,Float64}, n, m, period; kwargs...)
+function pmrand(::Type{PM},m::Vector{Int},n::Vector{Int}, period::Real = 10) where {PM <: PeriodicMatrix}
+    lm = length(m)
+    ln = length(n)
+    return PeriodicMatrix{:d,Float64}([rand(m[mod(i-1,lm)+1], n[mod(i-1,ln)+1]) for i in 1:lcm(lm,ln)],period)
+end
+
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Vector{Int} = [period]) where {T,PM <: Union{SwitchingPeriodicMatrix{:d,T},SwitchingPeriodicArray{:d,T}}}
+    if PM <: SwitchingPeriodicMatrix
+        SwitchingPeriodicMatrix{:d,T}([rand(T,n,m) for i in 1:length(ns)], ns, period) 
+    else
+        SwitchingPeriodicArray{:d,T}(rand(T,n,m,length(ns)), ns, period) 
+    end
+end 
+
+"""
+    pmrand([::Type{T},] m::Vector{Int},n::Vector{Int}[, period = 10])
+ 
+Generate a random discrete-time periodic matrix of type  `PeriodicMatrix` with period  `period ` (default:  `period = 10`). 
+The time-varying row and column dimensions of component matrices are specified by the integer vectors `m` and `n`, respectively.
+`T` is the type of matrix elements, which assumes by default value `T = Float64` if omitted.
+"""
+function pmrand(::Type{T},m::Vector{Int},n::Vector{Int}, period::Real = 10) where {T}
+    lm = length(m)
+    ln = length(n)
+    return PeriodicMatrix{:d,T}([rand(T,m[mod(i-1,lm)+1], n[mod(i-1,ln)+1]) for i in 1:lcm(lm,ln)],period)
+end
+pmrand(m::Vector{Int},n::Vector{Int}, period::Real = 10) = pmrand(Float64,m,n,period)
 """
     pmderiv(A::HarmonicArray) 
 

@@ -45,7 +45,8 @@ pmshift
 pmsymadd!
 pmata
 pmaat
-pmrand(::Type{PM}, n::Int64, m::Int64, period::Real; ns) where PM<:Union{PeriodicArray, PeriodicMatrix}
+pmrand(::Type{PM}, n::Int64, m::Int64, period::Real; ns) where {T, PM<:Union{PeriodicArray{:d, T}, PeriodicMatrix{:d, T}}} 
+pmrand(::Type{T}, m::Vector{Int64}, n::Vector{Int64}, period::Real) where T
 ```
 
 ## Operations with symmetric periodic matrices

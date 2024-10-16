@@ -185,3 +185,11 @@ function Base.isapprox(A::PeriodicSymbolicMatrix, J::UniformScaling{<:Real}; kwa
     isapprox(Symbolics.unwrap.(substitute.(A.F, (Dict(t => ts),))), J; kwargs...) 
 end
 Base.isapprox(J::UniformScaling{<:Real}, A::PeriodicSymbolicMatrix; kwargs...) = isapprox(A, J; kwargs...)
+
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {T,PM <: PeriodicSymbolicMatrix{:c,T}}
+   convert(PM,HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period))
+end 
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {PM <:PeriodicSymbolicMatrix}
+   pmrand(PM{:c,Float64}, n, m, period; nh)
+end 
+

@@ -15,8 +15,8 @@ println("Test_pmutils")
 
 
 # SwitchingPeriodicMatrix      
-n = 2; pa = 3; px = 6; T = 10; 
-Ad = 0.5*SwitchingPeriodicMatrix([rand(Float64,n,n) for i in 1:pa],[10,15,20],T);
+n = 2; T = 10; 
+Ad = 0.5*pmrand(SwitchingPeriodicMatrix,n,n,T, ns = [10,15,20])
 @test pseig(Ad) ≈ pseig(Ad,fast=true)
 @test PeriodicMatrices.peigvals(convert(PeriodicArray,Ad).M,rev = false) ≈ PeriodicMatrices.peigvals(convert(PeriodicArray,Ad).M,fast=true, rev = false)
 ad = rand(2,2); A1d = PeriodicArray(ad,2)

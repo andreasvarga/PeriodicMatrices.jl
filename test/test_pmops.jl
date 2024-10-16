@@ -29,6 +29,7 @@ b(t) = [cos(t)]
 
 # PeriodicFunctionMatrix
 @show "periodic function matrix operations"
+tm = pmrand(PeriodicFunctionMatrix,2,2)
 At = PeriodicFunctionMatrix(A,2*pi)
 Ct = PeriodicFunctionMatrix(C,2*pi)
 At1 = pmcopy(At)
@@ -164,6 +165,9 @@ D = rand(2,2)
 
 # HarmonicArray
 @show "Harmonic array operations"
+tm = pmrand(HarmonicArray,2,2)
+tm1 = pmrand(2,2)
+
 A0 = rand(2,2); Acos = [rand(2,2)]; Asin = [rand(2,2),rand(2,2)]
 HarmonicArray(A0,Acos,Asin,pi)
 @test iszero(imag(HarmonicArray(A0,Acos,pi).values))
@@ -275,6 +279,9 @@ t = rand();
 
 # PeriodicSymbolicMatrix
 @show "symbolic operations"
+
+tm = pmrand(PeriodicSymbolicMatrix,2,2)
+
 @variables t
 A11 = [0  1; -10*cos(t)-1 -24-19*sin(t)]
 X1 =  [1+cos(t) 0; 0 1+sin(t)] 
@@ -364,6 +371,9 @@ t = rand();
 
 # FourierFunctionMatrix
 @show "Fourier series operations"
+
+tm = pmrand(FourierFunctionMatrix,2,2)
+
 @time Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,2*pi));
 @time Af1 = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A1,2*pi));
 @time Af2 = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,4*pi));
@@ -472,6 +482,8 @@ t = rand();
 @test blockdiag(Af,Cf)(t) ≈ bldiag(Af(t),Cf(t))
 
 # PeriodicTimeSeriesMatrix
+tm = pmrand(PeriodicTimeSeriesMatrix,2,2)
+
 t1 = -rand(Float32,2,2); t2 = rand(Float32,2,2); Ats1 = PeriodicTimeSeriesMatrix{:c,Float64}([t1,t2],2)
 @test Ats1.ts == [0.,1.]
 Ats = convert(PeriodicTimeSeriesMatrix,PeriodicFunctionMatrix(A,2*pi));
@@ -592,6 +604,8 @@ t = rand();
 
 
 # PeriodicSwitchingMatrix
+tm = pmrand(PeriodicSwitchingMatrix,2,2,5.,ts=[0.,2.5])
+
 t1 = -rand(2,2); t2 = rand(2,2); Asw = PeriodicSwitchingMatrix([t1,t2],[0.,1.],2)
 t1 = -rand(Float32,2,2); t2 = rand(Float32,2,2); Asw1 = PeriodicSwitchingMatrix{:c,Float64}([t1,t2],[0.,1.],2)
 Asw2 = PeriodicSwitchingMatrix(rand(2,2,2),[0.,1.],2)
@@ -675,14 +689,14 @@ Aswt = transpose(Asw)
 
 # PeriodicArray
 n = 5; pa = 3; px = 6;   
-Ad = 0.5*PeriodicArray(rand(Float64,n,n,pa),pa);
+Ad = 0.5*pmrand(PeriodicArray,n,n,pa,ns=pa);
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[:,:,1]
 @test getpm(Ad,4) == getpm(Ad,1)
 x = rand(n,n,px); [x[:,:,i] = x[:,:,i]'+x[:,:,i] for i in 1:px];
 Xd = PeriodicArray(x,px);
-Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
-Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
+Qdf = -Ad*Xd*Ad'+pmshift(Xd); pmsymadd!(Qdf,0.5) 
+Qdr = -Ad'*pmshift(Xd)*Ad+Xd; pmsymadd!(Qdr,0.5) 
 
 @test set_period(set_period(Ad,2*pa),pa) == Ad
 @test propertynames(Ad) == (:dperiod, :Ts, :M, :period, :nperiod)
@@ -762,8 +776,8 @@ D = rand(n,n)
 Ad1 = PeriodicArray(Ad.M,2*pa;nperiod=2);
 Ad2 = set_period(Ad,2*pa)
 Xd1 = PeriodicArray(x,3*px; nperiod = 3);
-Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); Qdf1 = (Qdf1+transpose(Qdf1))/2
-Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
+Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); pmsymadd!(Qdf1,0.5) 
+Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; pmsymadd!(Qdr1,0.5) 
 
 @test Ad1 == Ad2 && (Ad1+Ad)/3 ≈ 2*Ad2/3 && issymmetric(Qdf1+Qdr1)
 # Xf1 = pfdlyap(Ad1, Qdf1);
@@ -778,14 +792,14 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 
 # PeriodicMatrix
 n = 5; pa = 3; px = 6;   
-Ad = 0.5*PeriodicMatrix([rand(Float64,n,n) for i in 1:pa],pa);
+Ad = 0.5*pmrand(PeriodicMatrix,n,n,pa,ns=pa);
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[1]
 @test getpm(Ad,4) == getpm(Ad,1)
 x = [rand(n,n) for i in 1:px]
 Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
-Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
-Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
+Qdf = -Ad*Xd*Ad'+pmshift(Xd); pmsymadd!(Qdf,0.5) 
+Qdr = -Ad'*pmshift(Xd)*Ad+Xd; pmsymadd!(Qdr,0.5) 
 
 @test set_period(set_period(Ad,2*pa),pa) == Ad
 @test propertynames(Ad) == (:dperiod, :Ts, :M, :period, :nperiod)
@@ -870,8 +884,8 @@ D = rand(n,n)
 
 Ad1 = PeriodicMatrix(Ad.M,2*pa;nperiod=2);
 Xd1 = PeriodicMatrix(Xd.M,3*px; nperiod = 3);
-Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); Qdf1 = (Qdf1+transpose(Qdf1))/2
-Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
+Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); pmsymadd!(Qdf1,0.5) 
+Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; pmsymadd!(Qdr1,0.5) 
 
 @test Ad1 !== Ad && (Ad1+Ad)/3 ≈ 2*Ad1/3 && issymmetric(Qdf1+Qdr1)
 # Xf1 = pfdlyap(Ad1, Qdf1);
@@ -887,13 +901,13 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 
 
 # time-varying dimensions
-na = [5, 3, 3, 4, 1]; ma = [3, 3, 4, 1, 5]; pa = 5; px = 5;   
-#na = 5*na; ma = 5*ma;
-Ad = PeriodicMatrix([rand(Float64,ma[i],na[i]) for i in 1:pa],pa);  
-x = [rand(na[i],na[i]) for i in 1:px]
-Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
-Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
-Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
+na = [5, 3, 3, 4, 1]; ma = [3, 3, 4, 1, 5]; pa = 5; px = 5;    
+Ad = pmrand(ma,na,pa);
+# x = [rand(na[i],na[i]) for i in 1:px]
+# Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
+Xd = pmrand(PeriodicMatrix,na,na,px); pmsymadd!(Xd)
+Qdf = -Ad*Xd*Ad'+pmshift(Xd); pmsymadd!(Qdf,0.5) 
+Qdr = -Ad'*pmshift(Xd)*Ad+Xd; pmsymadd!(Qdr,0.5)
 
 @test Ad.M + pmzeros(ma,na) == Ad.M
 
@@ -916,8 +930,8 @@ Qds = pmshift(Qdf);
 
 Ad1 = PeriodicMatrix(Ad.M,2*pa;nperiod=2);
 Xd1 = PeriodicMatrix(Xd.M,3*px; nperiod = 3);
-Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); Qdf1 = (Qdf1+transpose(Qdf1))/2
-Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
+Qdf1 = -Ad1*Xd1*Ad1'+pmshift(Xd1); pmsymadd!(Qdf1,0.5) 
+Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; pmsymadd!(Qdr1,0.5) 
 
 @test Ad1 !== Ad && (Ad1+Ad)/3 ≈ 2*Ad1/3 && issymmetric(Qdf1)&& issymmetric(Qdr1)
 # Xf1 = pfdlyap(Ad1, Qdf1);
@@ -932,12 +946,12 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; Qdr1 = (Qdr1+transpose(Qdr1))/2
 
 # SwitchingPeriodicMatrix
 n = 2; pa = 3; px = 6; T = 10; 
-Ad = 0.5*SwitchingPeriodicMatrix([rand(Float64,n,n) for i in 1:pa],[10,15,20],T);
+Ad = 0.5*pmrand(SwitchingPeriodicMatrix,n,n,T, ns = [10,15,20])
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[1]
 
-x = [rand(n,n) for i in 1:px]
-Xd = SwitchingPeriodicMatrix([ x[i]+x[i]' for i in 1:px],[2, 3, 5,7, 9, 10],T;nperiod=2);
+X1 = pmrand(n*ones(Int,px),n*ones(Int,px),T)
+Xd = SwitchingPeriodicMatrix(pmsymadd!(X1).M,[2, 3, 5,7, 9, 10],T;nperiod=2);
 @test Ad.Ts == Xd.Ts
 
 @test set_period(set_period(Ad,2*T),T) == Ad
@@ -948,8 +962,8 @@ Xd = SwitchingPeriodicMatrix([ x[i]+x[i]' for i in 1:px],[2, 3, 5,7, 9, 10],T;np
 @test Ad == pmshift(pmshift(Ad),-1)
 @test Ad == pmshift(pmshift(Ad,10),-10)
 
-Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
-Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
+Qdf = -Ad*Xd*Ad'+pmshift(Xd); pmsymadd!(Qdf,0.5) 
+Qdr = -Ad'*pmshift(Xd)*Ad+Xd; pmsymadd!(Qdr,0.5) 
 
 # Xf = pfdlyap(Ad, Qdf);
 @test norm(Ad*Xd*Ad' + Qdf - pmshift(Xd)) < 1.e-7 
@@ -1003,7 +1017,7 @@ D = rand(n,n)
 
 # SwitchingPeriodicArray
 n = 2; pa = 3; px = 6; T = 10; 
-Ad = 0.5*SwitchingPeriodicArray(rand(Float64,n,n,pa),[10,15,20],T);
+Ad = 0.5*pmrand(SwitchingPeriodicArray,n,n,T,ns = [10,15,20])
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[:,:,1]
 
@@ -1020,8 +1034,8 @@ Xd = SwitchingPeriodicArray(x.M,[2, 3, 5,7, 9, 10],T;nperiod=2);
 @test Ad == pmshift(pmshift(Ad),-1)
 @test Ad == pmshift(pmshift(Ad,10),-10)
 
-Qdf = -Ad*Xd*Ad'+pmshift(Xd); Qdf = (Qdf+transpose(Qdf))/2
-Qdr = -Ad'*pmshift(Xd)*Ad+Xd; Qdr = (Qdr+transpose(Qdr))/2
+Qdf = -Ad*Xd*Ad'+pmshift(Xd); pmsymadd!(Qdf,0.5) 
+Qdr = -Ad'*pmshift(Xd)*Ad+Xd; pmsymadd!(Qdr,0.5) 
 
 #Xf = pfdlyap(Ad, Qdf);
 @test norm(Ad*Xd*Ad' + Qdf - pmshift(Xd)) < 1.e-7
