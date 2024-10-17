@@ -224,8 +224,7 @@ end
 # SwitchingPeriodicMatrix{:d,T}(A::Vector{Matrix{T}}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {T} = 
 #    SwitchingPeriodicMatrix{:d,T}(A, ns, period, nperiod)
 function SwitchingPeriodicMatrix(A::Vector{<:Array}, ns::Vector{Int}, period::Real; nperiod::Int = 1)
-   @show promote_type(eltype.(A)...), A
-    SwitchingPeriodicMatrix{:d,promote_type(eltype.(A)...)}(A, ns, period; nperiod)
+   SwitchingPeriodicMatrix{:d,promote_type(eltype.(A)...)}(A, ns, period; nperiod)
 end
 
 # SwitchingPeriodicMatrix(M::Vector{Matrix{T}}, ns::Vector{Int}, period::Real; nperiod::Int = 1) where {T <: Real} = 
@@ -727,6 +726,7 @@ function HarmonicArray{:c,T}(A::HA, period::Real) where {HA <: HarmonicArray} wh
       HarmonicArray{:c,T}(convert(Array{Complex{T},3},A.values), Aperiod/n; nperiod)
    end
 end
+HarmonicArray(A::HA, period::Real) where {HA <: HarmonicArray} = HarmonicArray{:c,eltype(A)}(A,period)
 set_period(A::HarmonicArray, period::Real) = HarmonicArray{:c,eltype(A)}(A,period)
 
 """
@@ -844,6 +844,7 @@ function PeriodicSwitchingMatrix{:c,T}(A::PeriodicSwitchingMatrix{:c,T1}, period
       PeriodicSwitchingMatrix{:c,T}([T.(A.values[i]) for i in 1:length(A)], A.ts, Aperiod/n; nperiod)
    end
 end
+PeriodicSwitchingMatrix(A::PeriodicSwitchingMatrix, period::Real) = PeriodicSwitchingMatrix{:c,eltype(A)}(A,period)
 set_period(A::PeriodicSwitchingMatrix, period::Real) = PeriodicSwitchingMatrix{:c,eltype(A)}(A,period)
 function  PeriodicSwitchingMatrix(M::AbstractArray{T,3}, ts::Vector{T1}, period::Real; nperiod::Int = 1) where {T <: Real, T1 <: Real} 
    period > 0 || error("period must be positive")       

@@ -241,6 +241,7 @@ bc = rand(2,2); bct = copy(transpose(bc))
 @test vertcat(Ah,aa)(1) ≈ [Ah(1); aa] && vertcat(aa,Ah)(1) ≈ [aa; Ah(1)]
 @test blockut(Ah,Ah,Ah)(1) ≈ [Ah(1) Ah(1); zeros(2,2) Ah(1)]
 @test blockut(Ac,Ac,Ac)(1) ≈ [aa aa; zeros(2,2) aa]
+@test blockut(Ah,HarmonicArray(Ah,2*Ah.period),Ah)(1) ≈ [Ah(1) Ah(1); zeros(2,2) Ah(1)]
 
 Ah1 = convert(HarmonicArray,PeriodicFunctionMatrix(A1,2*pi));
 D = rand(2,2)
@@ -605,6 +606,7 @@ t = rand();
 
 # PeriodicSwitchingMatrix
 tm = pmrand(PeriodicSwitchingMatrix,2,2,5.,ts=[0.,2.5])
+td = pmderiv(tm)
 
 t1 = -rand(2,2); t2 = rand(2,2); Asw = PeriodicSwitchingMatrix([t1,t2],[0.,1.],2)
 t1 = -rand(Float32,2,2); t2 = rand(Float32,2,2); Asw1 = PeriodicSwitchingMatrix{:c,Float64}([t1,t2],[0.,1.],2)
@@ -640,9 +642,12 @@ D = rand(2,2)
 @test norm(Asw-Asw,1) == norm(Asw-Asw,2) == norm(Asw-Asw,Inf) == 0
 @test iszero(opnorm(Asw-Asw,1)) && iszero(opnorm(Asw-Asw,2)) && iszero(opnorm(Asw-Asw,Inf)) && 
       iszero(opnorm(Asw-Asw)) 
+@test_throws ArgumentError norm(Asw,3)      
 @test trace(Asw-Asw) == 0 && iszero(tr(Asw-Asw))
 t = rand(); 
 @test blockdiag(Asw,Csw)(t) ≈ bldiag(Asw(t),Csw(t))
+Csw1 = PeriodicSwitchingMatrix(Csw.values,0.5*Csw.ts,Csw.period;nperiod=2*Csw.nperiod)
+@test blockdiag(Asw,Csw1)(t) ≈ bldiag(Asw(t),Csw1(t))
 
 aa = rand(2,2); Ac = PeriodicSwitchingMatrix(aa,2)
 bb = rand(2,2); Bc = PeriodicSwitchingMatrix(bb,2)
@@ -658,6 +663,15 @@ Asw1 = (Asw+Asw')/2
 @test (Asw*aa)(1) ≈ Asw(1)*aa && (aa*Asw)(1) ≈ aa*Asw(1)
 @test Asw*I == I*Asw
 Aswt = transpose(Asw)
+Att = pmrand(PeriodicFunctionMatrix,2,2,2.)
+@test (Asw+Csw1)(1) ≈ Asw(1)+Csw1(1)
+@test (Asw+Att)(1) ≈ Asw(1)+Att(1)
+@test (Att+Asw)(1) ≈ Att(1)+Asw(1)
+@test (Asw-Att)(1) ≈ Asw(1)-Att(1)
+@test (Att-Asw)(1) ≈ Att(1)-Asw(1)
+@test (Asw*Att)(1) ≈ Asw(1)*Att(1)
+@test (Att*Asw)(1) ≈ Att(1)*Asw(1)
+
 # @test pmmuladdsym(Asw1, Asw, Aswt, 1, 1) ≈ Asw1+Asw*Aswt
 # @test pmmultraddsym(Asw1, Asw, Asw, 1, 1) ≈ Asw1+Aswt*Asw
 # @test pmmuladdtrsym(Asw1, Asw, Asw, 1, 1) ≈ Asw1+Asw*Aswt
@@ -676,9 +690,12 @@ Aswt = transpose(Asw)
 # @test pmtrmulsym(Asw, Asw, 1) ≈ Aswt*Asw
 # @test pmmultrsym(Asw, Asw, 1) ≈ Asw*Aswt
 
-@test [Asw Asw]  ≈ horzcat(Asw,Asw)
+@test [Asw Csw]  ≈ horzcat(Asw,Csw)
+@test [Asw Csw1]  ≈ horzcat(Asw,Csw1)
+
 @test [Ac Ac]  ≈ horzcat(Ac,Ac)
-@test [Asw; Asw]  ≈ vertcat(Asw,Asw)
+@test [Asw; Csw]  ≈ vertcat(Asw,Csw)
+@test [Asw; Csw1]  ≈ vertcat(Asw,Csw1)
 @test [Ac; Ac]  ≈ vertcat(Ac,Ac)
 @test [Asw aa](1) ≈ [Asw(1) aa] && [aa Asw](1) ≈ [aa Asw(1)]
 @test [Asw; aa](1) ≈ [Asw(1); aa] && [aa; Asw](1) ≈ [aa; Asw(1)]

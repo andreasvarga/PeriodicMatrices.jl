@@ -2736,7 +2736,6 @@ LinearAlgebra.eigvals(A::PeriodicSwitchingMatrix) = eigvals.(A.values)
 function LinearAlgebra.opnorm(A::PeriodicSwitchingMatrix, p::Union{Real,Missing} = missing)
     if ismissing(p)
         return PeriodicSwitchingMatrix([[norm(A.values[i])] for i in 1:length(A)], A.ts, A.period; nperiod = A.nperiod)
-        return PeriodicSwitchingMatrix([[norm(A.values[i])] for i in 1:length(A)], A.ts, A.period; nperiod = A.nperiod)
     else
         return PeriodicSwitchingMatrix([[opnorm(A.values[i],p)] for i in 1:length(A)], A.ts, A.period; nperiod = A.nperiod)
     end
