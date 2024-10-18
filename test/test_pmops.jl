@@ -256,6 +256,10 @@ bc = rand(2,2); bct = copy(transpose(bc))
 @test [Att Ah](1) ≈ [Att(1) Ah(1)]
 @test [Ah; Att](1) ≈ [Ah(1); Att(1)]
 @test [Att; Ah](1) ≈ [Att(1); Ah(1)]
+@test [Ah Att] ≈ horzcat(Ah, Att)
+@test [Att Ah] ≈ horzcat(Att,Ah)
+@test [Ah; Att] ≈ vertcat(Ah, Att)
+@test [Att; Ah] ≈ vertcat(Att,Ah)
 
 
 Ah1 = convert(HarmonicArray,PeriodicFunctionMatrix(A1,2*pi));
@@ -680,6 +684,8 @@ D = rand(2,2)
       iszero(opnorm(Asw-Asw)) 
 @test_throws ArgumentError norm(Asw,3)      
 @test trace(Asw-Asw) == 0 && iszero(tr(Asw-Asw))
+Aswt = transpose(Asw)
+@test Asw == transpose(Aswt)
 t = rand(); 
 @test blockdiag(Asw,Csw)(t) ≈ bldiag(Asw(t),Csw(t))
 Csw1 = PeriodicSwitchingMatrix(Csw.values,0.5*Csw.ts,Csw.period;nperiod=2*Csw.nperiod)
@@ -698,7 +704,7 @@ Asw1 = (Asw+Asw')/2
 @test issymmetric(Asw1)
 @test (Asw*aa)(1) ≈ Asw(1)*aa && (aa*Asw)(1) ≈ aa*Asw(1)
 @test Asw*I == I*Asw
-Aswt = transpose(Asw)
+@test Asw/0.5 ≈ 2*Asw
 Att = pmrand(PeriodicFunctionMatrix,2,2,2.)
 @test (Asw+Csw1)(1) ≈ Asw(1)+Csw1(1)
 @test (Asw*Csw1)(1) ≈ Asw(1)*Csw1(1)
@@ -787,6 +793,7 @@ aa = rand(5,5)
 @test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
 @test Ad*I == I*Ad
 Adt = transpose(Ad)
+@test Ad == transpose(Adt)
 @test pmmuladdsym(Ad1, Ad, Adt, 1, 1) ≈ Ad1+Ad*Adt
 @test pmmultraddsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Adt*Ad
 @test pmmuladdtrsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Ad*Adt
@@ -884,6 +891,7 @@ aa = rand(5,5)
 @test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
 @test Ad*I == I*Ad
 Adt = transpose(Ad)
+@test Ad == transpose(Adt)
 @test pmmuladdsym(Ad1, Ad, Adt, 1, 1) ≈ Ad1+Ad*Adt
 @test pmmultraddsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Adt*Ad
 @test pmmuladdtrsym(Ad1, Ad, Ad, 1, 1) ≈ Ad1+Ad*Adt
@@ -1040,7 +1048,9 @@ aa = rand(2,2)
 @test Ad-I ≈ -(I-Ad)
 @test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
 @test Ad*I == I*Ad
-
+Adt = transpose(Ad)
+@test Ad == transpose(Adt)
+@test Ad/0.5 ≈ 2*Ad
 Bd = SwitchingPeriodicMatrix([rand(Float64,n,n) for i in 1:2],[10,20],T);
 @test [Ad Ad]  ≈ horzcat(Ad,Ad)
 @test [Ad Bd]  ≈ horzcat(Ad,Bd)
@@ -1115,7 +1125,9 @@ aa = rand(2,2)
 @test Ad-I ≈ -(I-Ad)
 @test (Ad*aa)(1) ≈ Ad(1)*aa && (aa*Ad)(1) ≈ aa*Ad(1)
 @test Ad*I == I*Ad
-
+Adt = transpose(Ad)
+@test Ad == transpose(Adt)
+@test Ad/0.5 ≈ 2*Ad
 Bd = SwitchingPeriodicArray(rand(Float64,n,n,2),[10,20],T);
 @test [Ad Ad]  ≈ horzcat(Ad,Ad)
 @test [Ad Bd]  ≈ horzcat(Ad,Bd)
