@@ -2093,13 +2093,8 @@ function Base.isapprox(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix; kwa
     end
     return true
 end
-function Base.isapprox(A::PeriodicFunctionMatrix, J::UniformScaling{<:Real}; kwargs...)
-    isconstant(A) && (return isapprox(A.f(0), J; kwargs...))
-    tsi = rand(10)*A.period/A.nperiod
-    for ts in tsi
-        isapprox(A.f(ts), J; kwargs...)  || (return false)
-    end
-    return true
+function Base.isapprox(A::PeriodicFunctionMatrix, J::UniformScaling{<:Real}; atol::Real=0, rtol::Real=atol>0 ? 0 : sqrt(eps(eltype(A))))
+    return isconstant(A) && isapprox(A.f(0), J; atol, rtol)
 end
 Base.isapprox(J::UniformScaling{<:Real}, A::PeriodicFunctionMatrix; kwargs...) = isapprox(A, J; kwargs...)
 
@@ -2394,10 +2389,8 @@ function Base.isapprox(A::HarmonicArray, B::HarmonicArray; rtol::Real = sqrt(eps
                all([norm(B.values[:,:,i],1) < tol for i in na+1:nb])  
     end
 end
-function Base.isapprox(A::HarmonicArray, J::UniformScaling{<:Real}; kwargs...)
-    isconstant(A) && (return isapprox(tpmeval(A,0), J; kwargs...))
-    ts = rand()*A.period
-    isapprox(tpmeval(A,ts), J; kwargs...) 
+function Base.isapprox(A::HarmonicArray, J::UniformScaling{<:Real}; atol::Real=0, rtol::Real=atol>0 ? 0 : sqrt(eps(eltype(A))))
+    return isconstant(A) && isapprox(tpmeval(A,0), J; atol, rtol)
 end
 Base.isapprox(J::UniformScaling{<:Real}, A::HarmonicArray; kwargs...) = isapprox(A, J; kwargs...)
 
@@ -2709,11 +2702,8 @@ end
 #     PeriodicSwitchingMatrix{:c,T}([zeros(T,size(A,1),size(A,2)) for i in 1:length(A)], A.ts, A.period, A.nperiod)
 # end
 function pmderiv(A::PeriodicSwitchingMatrix{:c,T}; kwargs...) where {T}
-    # N = length(A)
-    # #tvmdereval(A, (0:N-1)*A.period/A.nperiod/N)
-    # PeriodicSwitchingMatrix{:c,T}(tvmeval(pmderiv(convert(HarmonicArray,A)), collect((0:N-1)*A.period/A.nperiod/N)), A.ts, A.period, A.nperiod)
-    # #PeriodicSwitchingMatrix{:c,T}(tvmeval(pmderiv(convert(PeriodicFunctionMatrix,A)), collect((0:N-1)*A.period/A.nperiod/N)), A.ts, A.period, A.nperiod)
-    convert(PeriodicSwitchingMatrix,pmderiv(convert(PeriodicFunctionMatrix,A);kwargs...))
+    @warn "No derivative function available for a periodic switching matrix"
+    #convert(PeriodicSwitchingMatrix,pmderiv(convert(PeriodicFunctionMatrix,A);kwargs...))
 end
 
 LinearAlgebra.inv(A::PeriodicSwitchingMatrix) = PeriodicSwitchingMatrix(inv.(A.values), A.ts, A.period; nperiod = A.nperiod)
