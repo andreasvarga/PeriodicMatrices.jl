@@ -630,7 +630,7 @@ function pschur(A::AbstractVector{Matrix{T}}; rev::Bool = true, withZ::Bool = tr
    SIND = ones(BlasInt,p)
 
    SLICOTtools.mb03vw!(compQ, QIND, 'A', n, p, hc, ilo, ihi, SIND, St, Zt, LIWORK, LDWORK)
-   
+
    # reduce to periodic Schur form
    LDWORK = p + max( 2*n, 8*p )
    LIWORK = 2*p + n
@@ -646,13 +646,12 @@ function pschur(A::AbstractVector{Matrix{T}}; rev::Bool = true, withZ::Bool = tr
    ev = α .* γ
 
    if rev
+      # return back shifted matrices
       imap1 = mod.(p+sind:-1:sind+1,p).+1
       return [St[1:mp[i],1:np[i],imap[i]] for i in 1:p], 
              withZ ? [Zt[1:np[i],1:np[i],imap1[i]] for i in 1:p] : nothing, ev, sind, α, γ
    else
-      # return back shifted matrices
-      imap1 = mod.(imap.+(sind+1),p).+1
-      return [St[1:mp[i],1:np[i],i] for i in 1:p], 
+       return [St[1:mp[i],1:np[i],i] for i in 1:p], 
              withZ ? [Zt[1:mp[i],1:mp[i],i] for i in 1:p] : nothing, ev, sind, α, γ
    end
 end
@@ -691,8 +690,6 @@ function pschur1(A::AbstractVector{Matrix{T}}; rev::Bool = true, withZ::Bool = t
       imap = mod.(Vector(sind-1:sind+p-2),p) .+ 1
       [(k = imap[i]; St[1:mp[k],1:np[k],i] = A[k]) for i in 1:p]
    end
-
-   # reduce to periodic Hessenberg form
    SLICOTtools.mb03vd!(n, p, ilo, ihi,  St, TAUt)
    for i in 1:p
        withZ && (Zt[:,:,i] .= tril(view(St,:,:,i)) )   
@@ -722,15 +719,16 @@ function pschur1(A::AbstractVector{Matrix{T}}; rev::Bool = true, withZ::Bool = t
    γ = 2. .^SCAL
    ev = α .* γ
 
+   # @show check_psim(S1,Zt,St; rev)
+
    if rev
+      # return back shifted matrices
       imap1 = mod.(p+sind:-1:sind+1,p).+1
       return [St[1:mp[i],1:np[i],imap[i]] for i in 1:p], 
              withZ ? [Zt[1:np[i],1:np[i],imap1[i]] for i in 1:p] : nothing, ev, sind, α, γ
    else
-      # return back shifted matrices
-      imap1 = mod.(imap.+(sind+1),p).+1
-      return [St[1:mp[i],1:np[i],imap1[i]] for i in 1:p], 
-             withZ ? [Zt[1:mp[i],1:mp[i],imap1[i]] for i in 1:p] : nothing, ev, sind, α, γ
+      return [St[1:mp[i],1:np[i],i] for i in 1:p], 
+             withZ ? [Zt[1:mp[i],1:mp[i],i] for i in 1:p] : nothing, ev, sind, α, γ
    end
 end
 

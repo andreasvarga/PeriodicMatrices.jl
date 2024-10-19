@@ -155,11 +155,42 @@ A = reshape(hcat([rand()*A1 for i in 1:K]...), n, n, K);
 @time H, Z, ihess = phess1(A; hind, rev);
 @test check_psim(A,Z,H; rev) && istriu(H[:,:,ihess],-1) && ihess == hind
 
+@time H, Z, ihess = phess1(A; hind = 1, rev = true);
+@test check_psim(A,Z,H; rev = true) && istriu(H[:,:,ihess],-1) && ihess == 1
+
+@time H, Z, ihess = phess1(A; hind = 1, rev = false);
+@test check_psim(A,Z,H; rev = false) && istriu(H[:,:,ihess],-1) && ihess == 1
+
 @time S, Z, eigs, ischur, = pschur(A; sind = hind, rev);
 @test check_psim(A,Z,S; rev)
 
 @time S, Z, eigs, ischur, = pschur1(A; sind = hind, rev);
 @test check_psim(A,Z,S; rev)
+
+@time S, Z, eigs, ischur, = pschur1(A; sind = 1, rev = false);
+@test check_psim(A,Z,S; rev = false)
+
+@time S, Z, eigs1, ischur, = pschur1(A; sind = 1, rev = false, withZ = false);
+@test eigs ≈ eigs1
+
+@time S, Z, eigs, ischur, = pschur1(A; sind = 1, rev = true);
+@test check_psim(A,Z,S; rev = true)
+
+
+As = copy(A); Z = copy(A)
+@time eigs, ischur, = pschur!(As,Z; rev = false, sind = hind)
+@test check_psim(A,Z,As; rev = false) 
+
+As = copy(A); Z = copy(A)
+@time eigs, ischur, = pschur!(As,Z; rev = true, sind = hind)
+@test check_psim(A,Z,As; rev = true) 
+
+As = copy(A); Z = copy(A)
+@time eigs, ischur, = pschur!(PeriodicMatrices.ws_pschur(n, K), As,Z; rev = false, sind = hind)
+@test check_psim(A,Z,As; rev = false) 
+
+
+
 
 # this would fail
 # n =4; K = 19; hind = 10; rev = false; 
@@ -197,6 +228,26 @@ A = reshape(hcat([rand()*A1 for i in 1:K]...), n, n, K);
 @test check_psim(A,Z,S; rev)
 
 
+@time S, Z, eigs, ischur, = pschur2(A; sind = 1, rev = false);
+@test check_psim(A,Z,S; rev = false)
+
+@time S, Z, eigs1, ischur, = pschur2(A; sind = 1, rev = false, withZ = false);
+@test eigs ≈ eigs1
+
+@time S, Z, eigs, ischur, = pschur2(A; sind = 1, rev = true);
+@test check_psim(A,Z,S; rev = true)
+
+@time S, Z, eigs, ischur, = pschur2(A; sind = 10, rev = false);
+@test check_psim(A,Z,S; rev = false)
+
+@time S, Z, eigs1, ischur, = pschur2(A; sind = 10, rev = false, withZ = false);
+@test eigs ≈ eigs1
+
+@time S, Z, eigs, ischur, = pschur2(A; sind = 10, rev = true);
+@test check_psim(A,Z,S; rev = true)
+
+
+
 A1 = [1.5 -.7 3.5 -.7; 1.  0.  2.  3.; 1.5 -.7 2.5 -.3]; 
 A2 = [1.5 -.7 3.5; 1.  0.  2.; 1.5 -.7 2.5 ; 1.  0.  2.];
 Ai=[A1,A2]; 
@@ -210,9 +261,14 @@ rev = true;
 @time S, Z, eigs, ischur, = pschur(A; rev);
 @test check_psim(A,Z,S; rev)
 
-# @time S1, Z1, eigs1, ischur1 = pschurw(A; rev = false);
-# @test check_psim(A,Z1,S1; rev = false)
 
+rev = false; 
+@time S1, Z1, eigs1, ischur1, = pschur1(A; rev);
+@test check_psim(A,Z1,S1; rev)
+
+rev = true; 
+@time S, Z, eigs, ischur, = pschur1(A; rev);
+@test check_psim(A,Z,S; rev)
 
 # modified MB03VD example
 A1 = [1.5 -.7 3.5 -.7; 1.  0.  2.  3.; 1.5 -.7 2.5 -.3; 1.  0.  2.  1.]; 

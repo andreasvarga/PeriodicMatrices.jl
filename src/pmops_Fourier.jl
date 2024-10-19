@@ -154,9 +154,9 @@ function Base.isapprox(A::FourierFunctionMatrix, J::UniformScaling{<:Real}; kwar
 end
 Base.isapprox(J::UniformScaling{<:Real}, A::FourierFunctionMatrix; kwargs...) = isapprox(A, J; kwargs...)
 
-function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {T,PM <: FourierFunctionMatrix{:c,T}}
-    convert(FourierFunctionMatrix,HarmonicArray(rand(n,m), [rand(n,m) for i in 1:nh], [rand(n,m) for i in 1:nh], period))
-end 
+# function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {T,PM <: FourierFunctionMatrix{:c,T}}
+#     convert(FourierFunctionMatrix,HarmonicArray(rand(n,m), [rand(n,m) for i in 1:nh], [rand(n,m) for i in 1:nh], period))
+# end 
 function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {PM <:FourierFunctionMatrix}
     convert(PM,HarmonicArray(rand(n,m), [rand(n,m) for i in 1:nh], [rand(n,m) for i in 1:nh], period))
 end 
