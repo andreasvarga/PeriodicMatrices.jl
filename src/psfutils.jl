@@ -891,7 +891,7 @@ function pschur(A::AbstractVector{Matrix{T}}, E::AbstractVector{Matrix{T}}; rev:
    return St[1:2:p2], St[2:2:p2], withZ ? Zt[(rev ? 2 : 1):2:p2] : nothing, withZ ? Zt[(rev ? 1 : 2):2:p2] : nothing, ev, sind, α, γ 
 end
 """
-     pgschur(A::Vector{Matrix}, s::Union{Vector{Bool},BitVector}; rev = true, withQ = true) -> (S, Z, ev, ischur, α, γ)
+     pgschur(A::Vector{Matrix}, s::Union{Vector{Bool},BitVector}; rev = true, withZ = true) -> (S, Z, ev, ischur, α, γ)
 
 Compute the generalized real periodic Schur decomposition of a formal product of square matrices 
 `A(p)^s(p)*...A(2)^s(2)*A(1)^s(1)`, if `rev = true` (default), or 
@@ -1134,7 +1134,7 @@ end
 
 Reorder the eigenvalues of the product `Π = S[p]*...*S[2]*S[1]`, if `rev = true` (default) or `Π = S[1]*S[2]*...*S[p]`
 if `rev = false`, where `Π` is in real Schur form, such that the selected eigenvalues in the logical array `select` are moved into the leading positions. 
-The `p`-vectors `S` and `Z` contain, respectively, the square matrices `S[1]`, `...`, `S[p]` in a periodic Schur form, with `S[schurindex` in real Schur form, 
+The `p`-vectors `S` and `Z` contain, respectively, the square matrices `S[1]`, `...`, `S[p]` in a periodic Schur form, with `S[schurindex]` in real Schur form, 
 and the corresponding orthogonal transformation matrices `Z[1]`, `...`, `Z[p]`, respectively.  `S` and `Z` are overwritten by the updated matrices. 
 A conjugate pair of eigenvalues must be either both included or both excluded via `select`.    
 """

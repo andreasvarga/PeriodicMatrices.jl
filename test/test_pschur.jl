@@ -185,9 +185,14 @@ As = copy(A); Z = copy(A)
 @time eigs, ischur, = pschur!(As,Z; rev = true, sind = hind)
 @test check_psim(A,Z,As; rev = true) 
 
-As = copy(A); Z = copy(A)
-@time eigs, ischur, = pschur!(PeriodicMatrices.ws_pschur(n, K), As,Z; rev = false, sind = hind)
+As = copy(A); Z = copy(A); wspace = PeriodicMatrices.ws_pschur(n, K)
+@time eigs, ischur, = pschur!(wspace, As,Z; rev = false, sind = hind)
 @test check_psim(A,Z,As; rev = false) 
+
+As = copy(A); Z = copy(A)
+@time eigs, ischur, = pschur!(wspace, As,Z; rev = true, sind = hind)
+@test check_psim(A,Z,As; rev = true) 
+
 
 
 
@@ -215,6 +220,10 @@ hind = 14; rev = true;
 
 @time S, Z, eigs, ischur, = pschur1(A; sind = hind, rev);
 @test check_psim(A,Z,S; rev)
+
+@time S, Z, eigs1, ischur, = pschur1(A; sind = hind, rev, withZ = false);
+@test eigs ≈ eigs1
+
 
 # this would fail
 # n =4; K = 19; hind = 10; rev = false; 
@@ -437,12 +446,23 @@ select =  (real(eigs) .< 0)[1:3]
 @test check_psim(A, Z, S; rev = false)  
 MatrixPencils.ordeigvals(S[1]*S[2]*S[3]) 
 
+A1 = [1 3 2 3 0; -3 0 -4 0 -2; -2 0 -4 2 1; 2 1 0 -2 0; -4 -2 4 -4 0];
+A2 = [-2 -1 2 5 0; -1 -2 2 0 1; -1 -5 0 5 -1; 0 -1 2 -2 1; 0 -2 2 0 5];
+A3 = [-4 3 5 2 2; 2 -5 -2 0 2; -1 -2 5 3 0; 0 1 -3 -5 0; 0 0 4 -4 3];
+
 A = [A1, A2, A3];
 @time S, Z, eigs, ischur, α, γ = pschur(A; rev = true);
 select =  (real(eigs) .< 0)[1:3]
 @time psordschur!(S,Z,select; schurindex=ischur, rev = true)  
 @test check_psim(A,Z,S; rev = true)  
-MatrixPencils.ordeigvals(S[3]*S[2]*S[1])  
+ev=MatrixPencils.ordeigvals(S[3]*S[2]*S[1])  
+
+@time S, Z, eigs, ischur, α, γ = pschur(A; rev = true);
+select =  (real(eigs) .< 0)[1:3]
+@time psordschur1!(S,Z,select; schurindex=ischur, rev = true)  
+@test check_psim(A,Z,S; rev = true)  
+ev1=MatrixPencils.ordeigvals(S[3]*S[2]*S[1])  
+@test ev ≈ ev1
 
 
 # Example Hench & Laub IEETAC 1994
@@ -598,6 +618,12 @@ PeriodicMatrices.pgordschur!(As, [trues(3) falses(3)]'[:], Qt, select; rev=true,
       Qt[6]'*A[5]*Qt[5] ≈ As[5] && Qt[6]'*A[6]*Qt[1] ≈ As[6]
 evp2 = ordeigvals(inv(As[6])*As[5]*inv(As[4])*As[3]*inv(As[2])*As[1])
 @test all((real(evp2) .< 0)[1:count(select)])
+
+ev = 1. ./ eigvals(prod(A))
+As, Qt, evp, sind, α, γ = PeriodicMatrices.pgschur(A, falses(6); rev=true); 
+@test sort(ev) ≈ sort(evp,by=real)
+As, Qt, evp1, sind, α, γ = PeriodicMatrices.pgschur(copy(A), falses(6); rev=true,withZ = false);
+@test evp ≈ evp1 
 
 
 
