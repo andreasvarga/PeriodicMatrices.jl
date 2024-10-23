@@ -100,6 +100,10 @@ end
     mb03vw!(compq::AbstractChar, triu::AbstractChar, qind::AbstractVector{Int64}, k::Integer, n::Integer, h::Integer, 
             ilo::Integer, ihi::Integer, s::AbstractVector{Int64}, a::Array{Float64, 3}, q::Array{Float64, 3}, 
             liwork::Integer, ldwork::Integer) -> info::Int64
+            
+    mb03vw!(compq::AbstractChar, triu::AbstractChar, qind::AbstractVector{Int64}, k::Integer, n::Integer, h::Integer, 
+            ilo::Integer, ihi::Integer, s::AbstractVector{Int64}, a::Array{Float64, 3}, q::Array{Float64, 3}, 
+            iwork::AbstractVector{Int64}, dwork::AbstractVector{Float64}) -> info::Int64
 
 Reduce the generalized matrix product
 
@@ -193,7 +197,13 @@ end
 """
     mb03bd!(job::AbstractChar, defl::AbstractChar, compq::AbstractChar, qind::AbstractVector{Int64}, k::Integer, n::Integer, h::Integer, 
             ilo::Integer, ihi::Integer, s::AbstractVector{Int64}, a::Array{Float64, 3}, q::Array{Float64, 3}, alphar::AbstractVector{Float64}, 
-            alphai::AbstractVector{Float64}, beta::AbstractVector{Float64}, scal::AbstractVector{Int64}, liwork::Integer, ldwork::Integer) -> (info::Int64, iwarn::Int64)
+            alphai::AbstractVector{Float64}, beta::AbstractVector{Float64}, scal::AbstractVector{Int64}, 
+            liwork::Integer, ldwork::Integer) -> (info::Int64, iwarn::Int64)
+
+    mb03bd!(job::AbstractChar, defl::AbstractChar, compq::AbstractChar, qind::AbstractVector{Int64}, k::Integer, n::Integer, h::Integer, 
+            ilo::Integer, ihi::Integer, s::AbstractVector{Int64}, a::Array{Float64, 3}, q::Array{Float64, 3}, alphar::AbstractVector{Float64}, 
+            alphai::AbstractVector{Float64}, beta::AbstractVector{Float64}, scal::AbstractVector{Int64}, 
+            iwork::AbstractVector{Int64}, dwork::AbstractVector{Float64}) -> (info::Int64, iwarn::Int64)
 
 Find the eigenvalues of the generalized matrix product
 
@@ -386,8 +396,6 @@ end
     mb03kd!(compq::AbstractChar, strong::AbstractChar, k::Integer, nc::Integer, kschur::Integer, n::AbstractVector{Int64}, ni::AbstractVector{Int64}, 
             s::AbstractVector{Int64}, select::AbstractVector{BlasInt}, t::AbstractVector{Float64}, ldt::AbstractVector{Int64}, ixt::AbstractVector{Int64}, 
             q::AbstractVector{Float64}, ldq::AbstractVector{Int64}, ixq::AbstractVector{Int64}, tol::Float64, ldwork::Integer) -> (m::Int64, info::Int64)
-
-
 
 Reorder the diagonal blocks of the formal matrix product
 

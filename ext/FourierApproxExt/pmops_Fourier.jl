@@ -1,5 +1,4 @@
-#FourierFunctionMatrices
-pmderiv(A::FourierFunctionMatrix{:c,T}) where {T} = FourierFunctionMatrix{:c,T,Fun}(differentiate(A.M), A.period, A.nperiod)
+PeriodicMatrices.pmderiv(A::FourierFunctionMatrix{:c,T}) where {T} = FourierFunctionMatrix{:c,T,Fun}(differentiate(A.M), A.period, A.nperiod)
 LinearAlgebra.inv(A::FourierFunctionMatrix) = FourierFunctionMatrix(inv(A.M), A.period)
 LinearAlgebra.transpose(A::FourierFunctionMatrix{:c,T}) where {T}  = FourierFunctionMatrix{:c,T,Fun}(transpose(A.M), A.period, A.nperiod)
 LinearAlgebra.adjoint(A::FourierFunctionMatrix) = transpose(A)
@@ -15,10 +14,10 @@ function LinearAlgebra.tr(V::Fun)
     return temp
 end
 LinearAlgebra.tr(A::FourierFunctionMatrix) = FourierFunctionMatrix([tr(A.M);], A.period)
-function trace(A::FourierFunctionMatrix; rtol = sqrt(eps())) 
-    isconstant(A) && (return tr(tpmeval(A, 0)))
+function PeriodicMatrices.trace(A::FourierFunctionMatrix; rtol = sqrt(eps())) 
+    PeriodicMatrices.isconstant(A) && (return tr(PeriodicMatrices.tpmeval(A, 0)))
     tsub = A.period/A.nperiod
-    tt, = quadgk(t -> tr(tpmeval(A,t)), 0., tsub; rtol)
+    tt, = quadgk(t -> tr(PeriodicMatrices.tpmeval(A,t)), 0., tsub; rtol)
     return tt/tsub
 end
 function LinearAlgebra.opnorm(A::FourierFunctionMatrix, p::Real=2) 
@@ -26,15 +25,15 @@ function LinearAlgebra.opnorm(A::FourierFunctionMatrix, p::Real=2)
     throw(ArgumentError("Only 2-opnom supported"))
 end
 function LinearAlgebra.norm(A::FourierFunctionMatrix, p::Real = 2; rtol = sqrt(eps())) 
-    isconstant(A) && (return norm(tpmeval(A,0)))
+    PeriodicMatrices.isconstant(A) && (return norm(PeriodicMatrices.tpmeval(A,0)))
     tsub = A.period/A.nperiod
     if p == 2
-       nrm, = quadgk(t -> norm(tpmeval(A,t))^2, 0., tsub; rtol)
+       nrm, = quadgk(t -> norm(PeriodicMatrices.tpmeval(A,t))^2, 0., tsub; rtol)
        return sqrt(nrm*A.nperiod)
     elseif isinf(p)
-        return -optimize(t->-norm(tpmeval(A,t)),0.,tsub,Optim.Brent(),rel_tol = rtol).minimum
+        return -optimize(t->-norm(PeriodicMatrices.tpmeval(A,t)),0.,tsub,Optim.Brent(),rel_tol = rtol).minimum
     elseif p == 1    
-        nrm, = quadgk(t -> norm(tpmeval(A,t)), 0., tsub; rtol)
+        nrm, = quadgk(t -> norm(PeriodicMatrices.tpmeval(A,t)), 0., tsub; rtol)
         return nrm*A.nperiod
     else
         throw(ArgumentError("only p-norms for p = 1, 2, or Inf are supported"))
@@ -68,7 +67,7 @@ end
 #     end
 # end
 function +(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
-    period = promote_period(A, B)
+    period = PeriodicMatrices.promote_period(A, B)
     #nperiod = numerator(rationalize(period/A.period))*A.nperiod
     domain(A.M) == domain(B.M) && (return FourierFunctionMatrix(A.M+B.M, period))
     FourierFunctionMatrix(Fun(t-> A.M(t),Fourier(0..period)),period)+FourierFunctionMatrix(Fun(t-> B.M(t),Fourier(0..period)),period)
@@ -94,7 +93,7 @@ end
 
 
 function *(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
-    period = promote_period(A, B)
+    period = PeriodicMatrices.promote_period(A, B)
     domain(A.M) == domain(B.M)  && (return FourierFunctionMatrix(A.M*B.M, period))
     convert(FourierFunctionMatrix,convert(PeriodicFunctionMatrix,A) * convert(PeriodicFunctionMatrix,B))
 end
@@ -109,55 +108,54 @@ end
 *(A::PeriodicFunctionMatrix, C::FourierFunctionMatrix) = *(A, convert(PeriodicFunctionMatrix,C))
 
 
-function horzcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
+function PeriodicMatrices.horzcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
     A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->[A.M(t) B.M(t)],Fourier(0..A.period)), A.period))
     convert(FourierFunctionMatrix,[convert(PeriodicFunctionMatrix,A) convert(PeriodicFunctionMatrix,B)])
 end
-hcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix) = horzcat(A,B)
-hcat(A::FourierFunctionMatrix, C::AbstractMatrix) = horzcat(A, FourierFunctionMatrix(C, A.period))
-hcat(A::AbstractMatrix, C::FourierFunctionMatrix) = horzcat(FourierFunctionMatrix(A, C.period), C)
-horzcat(A::FourierFunctionMatrix, C::AbstractMatrix) = horzcat(A, FourierFunctionMatrix(C, A.period))
-horzcat(A::AbstractMatrix, C::FourierFunctionMatrix) = horzcat(FourierFunctionMatrix(A, C.period), C)
+hcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix) = PeriodicMatrices.horzcat(A,B)
+hcat(A::FourierFunctionMatrix, C::AbstractMatrix) = PeriodicMatrices.horzcat(A, FourierFunctionMatrix(C, A.period))
+hcat(A::AbstractMatrix, C::FourierFunctionMatrix) = PeriodicMatrices.horzcat(FourierFunctionMatrix(A, C.period), C)
+PeriodicMatrices.horzcat(A::FourierFunctionMatrix, C::AbstractMatrix) = PeriodicMatrices.horzcat(A, FourierFunctionMatrix(C, A.period))
+PeriodicMatrices.horzcat(A::AbstractMatrix, C::FourierFunctionMatrix) = PeriodicMatrices.horzcat(FourierFunctionMatrix(A, C.period), C)
 
 
-function vertcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
+function PeriodicMatrices.vertcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
     A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->[A.M(t); B.M(t)],Fourier(0..A.period)), A.period))
     convert(FourierFunctionMatrix,[convert(PeriodicFunctionMatrix,A); convert(PeriodicFunctionMatrix,B)])
 end
-vcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix) = vertcat(A,B)
-vcat(A::FourierFunctionMatrix, C::AbstractMatrix) = vertcat(A, FourierFunctionMatrix(C, A.period))
-vcat(A::AbstractMatrix, C::FourierFunctionMatrix) = vertcat(FourierFunctionMatrix(A, C.period), C)
-vertcat(A::FourierFunctionMatrix, C::AbstractMatrix) = vertcat(A, FourierFunctionMatrix(C, A.period))
-vertcat(A::AbstractMatrix, C::FourierFunctionMatrix) = vertcat(FourierFunctionMatrix(A, C.period), C)
+vcat(A::FourierFunctionMatrix, B::FourierFunctionMatrix) = PeriodicMatrices.vertcat(A,B)
+vcat(A::FourierFunctionMatrix, C::AbstractMatrix) = PeriodicMatrices.vertcat(A, FourierFunctionMatrix(C, A.period))
+vcat(A::AbstractMatrix, C::FourierFunctionMatrix) = PeriodicMatrices.vertcat(FourierFunctionMatrix(A, C.period), C)
+PeriodicMatrices.vertcat(A::FourierFunctionMatrix, C::AbstractMatrix) = PeriodicMatrices.vertcat(A, FourierFunctionMatrix(C, A.period))
+PeriodicMatrices.vertcat(A::AbstractMatrix, C::FourierFunctionMatrix) = PeriodicMatrices.vertcat(FourierFunctionMatrix(A, C.period), C)
 
 
-function blockdiag(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
+function PeriodicMatrices.blockdiag(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
     A.period == B.period && A.nperiod == B.nperiod && (return FourierFunctionMatrix(Fun(t->bldiag(A.M(t), B.M(t)),Fourier(0..A.period)), A.period))
-    convert(FourierFunctionMatrix,blockdiag(convert(PeriodicFunctionMatrix,A), convert(PeriodicFunctionMatrix,B)))
+    convert(FourierFunctionMatrix,PeriodicMatrices.blockdiag(convert(PeriodicFunctionMatrix,A), convert(PeriodicFunctionMatrix,B)))
 end
 
 Base.iszero(A::FourierFunctionMatrix) = all(iszero,coefficients(A.M))
 LinearAlgebra.issymmetric(A::FourierFunctionMatrix) = iszero(A.M-transpose(A.M))
 function ==(A::FourierFunctionMatrix, B::FourierFunctionMatrix)
-    isconstant(A) && isconstant(B) && (return iszero(A.M(0)-B.M(0)))
+    PeriodicMatrices.isconstant(A) && PeriodicMatrices.isconstant(B) && (return iszero(A.M(0)-B.M(0)))
     A.period*B.nperiod ≈ B.period*A.nperiod && domain(A.M) == domain(B.M) && iszero(A-B) #iszero(t->A.M(t)-B.M(t), A.period/A.nperiod) 
 end
 function Base.isapprox(A::FourierFunctionMatrix, B::FourierFunctionMatrix; rtol::Real = sqrt(eps(Float64)), atol::Real = 0)
-    isconstant(A) && isconstant(B) && (return isapprox(A.M(0), B.M(0); rtol, atol))
+    PeriodicMatrices.isconstant(A) && PeriodicMatrices.isconstant(B) && (return isapprox(A.M(0), B.M(0); rtol, atol))
     ts = rand()*A.period
     A.period*B.nperiod ≈ B.period*A.nperiod && domain(A.M) == domain(B.M) && isapprox(A.M(ts), B.M(ts); rtol, atol) 
 end
 function Base.isapprox(A::FourierFunctionMatrix, J::UniformScaling{<:Real}; kwargs...)
-    isconstant(A) && (return isapprox(A.M(0), J; kwargs...))
+    PeriodicMatrices.isconstant(A) && (return isapprox(A.M(0), J; kwargs...))
     ts = rand()*A.period
-    isapprox(tpmeval(A,ts), J; kwargs...) 
+    isapprox(PeriodicMatrices.tpmeval(A,ts), J; kwargs...) 
 end
 Base.isapprox(J::UniformScaling{<:Real}, A::FourierFunctionMatrix; kwargs...) = isapprox(A, J; kwargs...)
 
 # function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {T,PM <: FourierFunctionMatrix{:c,T}}
 #     convert(FourierFunctionMatrix,HarmonicArray(rand(n,m), [rand(n,m) for i in 1:nh], [rand(n,m) for i in 1:nh], period))
 # end 
-function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {PM <:FourierFunctionMatrix}
+function PeriodicMatrices.pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {PM <:FourierFunctionMatrix}
     convert(PM,HarmonicArray(rand(n,m), [rand(n,m) for i in 1:nh], [rand(n,m) for i in 1:nh], period))
 end 
- 

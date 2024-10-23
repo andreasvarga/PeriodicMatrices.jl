@@ -22,7 +22,7 @@ pseig(A::PeriodicMatrix{:d, T}, k::Int64; fast) where T
 psceig
 pseigsm
 psceighr
-psceigfr
+PeriodicMatrices.psceigfr
 psceigsm
 monodromy
 tvstm

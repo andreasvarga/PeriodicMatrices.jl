@@ -16,6 +16,7 @@ phess
 phess!
 pschur
 pschur!
+PeriodicMatrices.ws_pschur
 psordschur!
 psordschur1!
 pgschur

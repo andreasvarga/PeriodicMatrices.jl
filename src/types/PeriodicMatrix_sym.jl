@@ -1,4 +1,5 @@
 
+
 """
     PeriodicSymbolicMatrix(F, T; nperiod = k) -> A::PeriodicSymbolicMatrix
 
@@ -12,18 +13,6 @@ It is assumed that  `F(t) = F(t+T/k)` for any real time value `t`.
 The symbolic matrix `F`, the period `T` and the number of subperiods `k` 
 can be accessed via `A.F`, `A.period` and `A.nperiod`, respectively.
 """
-struct PeriodicSymbolicMatrix{Domain,T,X} <: AbstractPeriodicArray{Domain,T} 
-   F::X
-   period::Float64
-   nperiod::Int
-end 
-# struct PeriodicSymbolicMatrix{Domain,T} <: AbstractPeriodicArray{Domain,T} 
-#    F::Matrix{<:Num}
-#    period::Float64
-#    nperiod::Int
-# end 
-
-# additional constructors
 function  PeriodicSymbolicMatrix{:c,T}(F::VecOrMat{T}, period::Real; nperiod::Int = 1) where {T <: Num} 
    period > 0 || error("period must be positive")       
    nperiod > 0 || error("number of subperiods must be positive") 

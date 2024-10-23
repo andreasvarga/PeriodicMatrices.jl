@@ -37,7 +37,7 @@ function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol
    n = size(A,1)
    n == size(A,2) || error("the function matrix must be square")
 
-   isconstant(A) && ( return exp(tpmeval(A,t0)*(tf-t0)) )
+   isconstant(A) && ( return exp(PeriodicMatrices.tpmeval(A,t0)*(tf-t0)) )
    
    T1 = promote_type(typeof(t0), typeof(tf))
 
@@ -45,7 +45,7 @@ function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol
    u0 = Matrix{eltype(A) == Num ? Float64 : T}(I,n,n)
    tspan = (T1(t0),T1(tf))
    if solver != "linear" 
-      LPVODE!(du,u,p,t) = mul!(du,tpmeval(A,t),u)
+      LPVODE!(du,u,p,t) = mul!(du,PeriodicMatrices.tpmeval(A,t),u)
       prob = ODEProblem(LPVODE!, u0, tspan)
    end
    if solver == "stiff" 
@@ -70,7 +70,7 @@ function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol
       end
       DEop = DiffEqArrayOperator(ones(T,n,n),update_func=update_func!)     
       #prob = ODEProblem(DEop, u0, tspan, A.f)
-      prob = ODEProblem(DEop, u0, tspan, t-> tpmeval(A,t))
+      prob = ODEProblem(DEop, u0, tspan, t-> PeriodicMatrices.tpmeval(A,t))
       sol = solve(prob,MagnusGL6(), dt = dt, save_everystep = false)
    elseif solver == "symplectic" 
       # high accuracy symplectic
@@ -116,7 +116,7 @@ by starting Julia with several execution threads.
 The number of execution threads is controlled either by using the `-t/--threads` command line argument 
 or by using the `JULIA_NUM_THREADS` environment variable.  
 """
-function monodromy(A::PM, K::Int = 1; solver = "non-stiff", reltol = 1e-3, abstol = 1e-7, dt = A.period/max(K,100)) where
+function PeriodicMatrices.monodromy(A::PM, K::Int = 1; solver = "non-stiff", reltol = 1e-3, abstol = 1e-7, dt = A.period/max(K,100)) where
          {T, PM <: FourierFunctionMatrix{:c,T}}
    n = size(A,1)
    n == size(A,2) || error("the periodic matrix must be square")
@@ -126,7 +126,7 @@ function monodromy(A::PM, K::Int = 1; solver = "non-stiff", reltol = 1e-3, absto
    M = Array{float(T),3}(undef, n, n, K) 
 
    # compute the matrix exponential for K = 1 and constant matrix
-   K == 1 && isconstant(A) && ( M[:,:,1] = exp(tpmeval(A,0)*Ts); return PeriodicArray(M, A.period; nperiod) )
+   K == 1 && isconstant(A) && ( M[:,:,1] = exp(PeriodicMatrices.tpmeval(A,0)*Ts); return PeriodicArray(M, A.period; nperiod) )
 
    K >= 100 ? dt = Ts : dt = Ts*K/100/nperiod
 
@@ -169,7 +169,7 @@ _References_
     Systems and Control Letters, 50:371-381, 2003.
 
 """
-function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", reltol = 1e-3, abstol = 1e-7, dt = at.period/100/at.nperiod) where 
+function PeriodicMatrices.pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", reltol = 1e-3, abstol = 1e-7, dt = at.period/100/at.nperiod) where 
    {T, PM <: FourierFunctionMatrix{:c,T}}
    n = size(at,1)
    n == size(at,2) || error("the periodic matrix must be square")
@@ -193,19 +193,19 @@ function pseig(at::PM, K::Int = 1; lifting::Bool = false, solver = "non-stiff", 
          end
          ev = -eigvals(si,ti)
       end
-      sorteigvals!(ev)
+      PeriodicMatrices.sorteigvals!(ev)
    else
-      M = monodromy(at, K; solver, reltol, abstol, dt) 
+      M = PeriodicMatrices.monodromy(at, K; solver, reltol, abstol, dt) 
       ev = K == 1 ? eigvals(view(M.M,:,:,1)) : pschur(M.M; withZ = false)[3]
       isreal(ev) && (ev = real(ev))
    end
    return nperiod == 1 ? ev : ev.^nperiod
 end
-function psceig(at::PM, K::Int = 1; kwargs...) where {T, PM <:FourierFunctionMatrix{:c,T}} 
+function PeriodicMatrices.psceig(at::PM, K::Int = 1; kwargs...) where {T, PM <:FourierFunctionMatrix{:c,T}} 
    if isconstant(at)
       ce = eigvals(at(0))
    else
-      ce = log.(complex(pseig(at, K; kwargs...)))/at.period
+      ce = log.(complex(PeriodicMatrices.pseig(at, K; kwargs...)))/at.period
    end
    return isreal(ce) ? real(ce) : ce
 end
@@ -226,7 +226,7 @@ The default value used for `N` is `N = max(10,p-1)`, where `p` the number of har
 The keyword argument `atol` (default: `atol = 1.e-10`) is a tolerance on the magnitude of the trailing components of the 
 associated eigenvectors used to validate their asymptotic (exponential) decay. Only eigenvalues satisfying this check are returned in `ce`. 
 """
-function psceigfr(Afun::FourierFunctionMatrix{:c,T}, N::Int = max(10,maximum(ncoefficients.(Matrix(Afun.M)))); P::Int = 1, atol::Real = 1.e-10) where T
+function PeriodicMatrices.psceigfr(Afun::FourierFunctionMatrix{:c,T}, N::Int = max(10,maximum(ncoefficients.(Matrix(Afun.M)))); P::Int = 1, atol::Real = 1.e-10) where T
    n = size(Afun,1)
    n == size(Afun,2) || error("the periodic matrix must be square") 
    (N == 0 || isconstant(Afun)) && (return eigvals(getindex.(coefficients.(Matrix(Afun.M)),1)))
@@ -292,7 +292,7 @@ are `atol = 0` and `rtol = √ϵ`, where `ϵ` is the working machine precision.
 The resulting harmonic approximation `Ahr(t)` is returned in the harmonic array object `Ahr` 
 (see [`HarmonicArray`](@ref)). 
 """
-function ffm2hr(A::FourierFunctionMatrix{:c,T}; atol::Real = 0, rtol::Real = 0, squeeze::Bool = true) where  {T}
+function PeriodicMatrices.ffm2hr(A::FourierFunctionMatrix{:c,T}; atol::Real = 0, rtol::Real = 0, squeeze::Bool = true) where  {T}
    lens = length.(coefficients.(Matrix(A.M)))
    #n = max(div(maximum(lens)-1,2),0)
    n = max(div(maximum(lens)-1,2),0)+1
@@ -353,11 +353,11 @@ Evaluate the time response of a periodic function matrix.
 For the periodic matrix `A(t)`, in a Fourier Function Matrix representation, and the vector of time values `t`, 
 `Aval[i] = A(t[i])` is evaluated for each time value `t[i]`. 
 """
-function tvmeval(A::FourierFunctionMatrix, t::Union{Real,Vector{<:Real}} )
+function PeriodicMatrices.tvmeval(A::FourierFunctionMatrix, t::Union{Real,Vector{<:Real}} )
    te = isa(t,Real) ? [mod(t,A.period)] : mod.(t,A.period)
    return (A.M).(te)
 end
-function tpmeval(A::FourierFunctionMatrix, t::Real )
+function PeriodicMatrices.tpmeval(A::FourierFunctionMatrix, t::Real )
     (A.M)(t)
 end
 (F::FourierFunctionMatrix)(t) = (F.M)(t)
@@ -368,8 +368,8 @@ end
 Compute for the continuous-time periodic matrix `A(t)` 
 the corresponding time averaged matrix `Am` over one period.  
 """
-function pmaverage(A::FourierFunctionMatrix)
+function PeriodicMatrices.pmaverage(A::FourierFunctionMatrix)
    typeof(size(A.M)) == Tuple{} ? (return coefficients(A.M)[1]) : (return get.(coefficients.(Matrix(A.M)),1,0.0))
 end
-pmcopy(A::FourierFunctionMatrix) = FourierFunctionMatrix(A.M)
+PeriodicMatrices.pmcopy(A::FourierFunctionMatrix) = FourierFunctionMatrix(A.M)
 

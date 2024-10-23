@@ -1,15 +1,4 @@
 
-struct FourierFunctionMatrix{Domain,T,X} <: AbstractPeriodicArray{Domain,T} 
-   M::X
-   period::Float64
-   nperiod::Int
-end 
-# struct FourierFunctionMatrix{Domain,T} <: AbstractPeriodicArray{Domain,T} 
-#    M::Fun
-#    period::Float64
-#    nperiod::Int
-# end
-# additional constructors
 """
      FourierFunctionMatrix(Afun, T) -> A::FourierFunctionMatrix
 
@@ -60,13 +49,13 @@ function FourierFunctionMatrix{:c,T}(A::FourierFunctionMatrix, period::Real) whe
       FourierFunctionMatrix{:c,T,Fun}(A.M, Aperiod/n, nperiod)
    end
 end
-set_period(A::FourierFunctionMatrix, period::Real) = FourierFunctionMatrix{:c,eltype(A)}(A,period)
+PeriodicMatrices.set_period(A::FourierFunctionMatrix, period::Real) = FourierFunctionMatrix{:c,eltype(A)}(A,period)
 
 FourierFunctionMatrix{:c,T}(A0::VecOrMat, period::Real) where {T <: Real}  = 
     FourierFunctionMatrix{:c,float(T)}(Fun(t->float(T).(A0),Fourier(0..period)), period) 
 FourierFunctionMatrix(A0::VecOrMat{T}, period::Real) where {T <: Real}  = 
     FourierFunctionMatrix{:c,float(T)}(A0, period) 
-function isconstant(A::FourierFunctionMatrix)
+function PeriodicMatrices.isconstant(A::FourierFunctionMatrix)
    for i = 1:size(A,1)
        for j = 1: size(A,2)
            ncoefficients(chop(A.M[i,j])) <= 1 || (return false)
@@ -99,7 +88,7 @@ Base.eltype(A::FourierFunctionMatrix{:c,T}) where T = T
 function Base.getindex(A::PM, inds...) where PM <: FourierFunctionMatrix
    size(inds, 1) != 2 &&
        error("Must specify 2 indices to index a periodic matrix")
-   rows, cols = index2range(inds...) 
+   rows, cols = PeriodicMatrices.index2range(inds...) 
    FourierFunctionMatrix{:c,eltype(A),Fun}(A.M[rows,cols], A.period, A.nperiod)
 end
 function Base.lastindex(A::PM, dim::Int) where PM <: FourierFunctionMatrix
@@ -108,7 +97,7 @@ end
 
 # conversion to periodic function matrix
 function Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, A::FourierFunctionMatrix) where T
-   return PeriodicFunctionMatrix{:c,T}(x -> T.(A.M(T(x))), A.period, size(A), A.nperiod, isconstant(A))
+   return PeriodicFunctionMatrix{:c,T}(x -> T.(A.M(T(x))), A.period, size(A), A.nperiod, PeriodicMatrices.isconstant(A))
 end
 Base.convert(::Type{PeriodicFunctionMatrix}, A::FourierFunctionMatrix) = convert(PeriodicFunctionMatrix{:c,eltype(A)}, A)
 
@@ -135,12 +124,12 @@ function Base.convert(::Type{FourierFunctionMatrix}, A::PeriodicTimeSeriesMatrix
 end
 
 # conversion to continuous-time HarmonicArray
-Base.convert(::Type{HarmonicArray}, A::FourierFunctionMatrix) = ffm2hr(A)
+Base.convert(::Type{HarmonicArray}, A::FourierFunctionMatrix) = PeriodicMatrices.ffm2hr(A)
 
 # conversions to PeriodicTimeSeriesMatrix
 function Base.convert(::Type{PeriodicTimeSeriesMatrix}, A::FourierFunctionMatrix; ns::Int = 128)
    ns > 0 || throw(ArgumentError("number of samples must be positive, got $ns"))
    ts = (0:ns-1)*A.period/ns/A.nperiod
-   PeriodicTimeSeriesMatrix(tpmeval.(Ref(A),ts), A.period; nperiod = A.nperiod)
+   PeriodicTimeSeriesMatrix(PeriodicMatrices.tpmeval.(Ref(A),ts), A.period; nperiod = A.nperiod)
    #convert(PeriodicTimeSeriesMatrix,convert(PeriodicFunctionMatrix,A);ns)
 end

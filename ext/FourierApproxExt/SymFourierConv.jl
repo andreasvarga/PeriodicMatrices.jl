@@ -3,14 +3,13 @@
 function Base.convert(::Type{FourierFunctionMatrix}, A::PeriodicSymbolicMatrix) 
     # tA = convert(PeriodicFunctionMatrix,A)
     # return FourierFunctionMatrix{:c,eltype(tA),Fun}(Fun(x -> tA.f(x), Fourier(0..tA.period/tA.nperiod)), Float64(tA.period), tA.nperiod)
-    return FourierFunctionMatrix{:c,Float64,Fun}(Fun(x -> tpmeval(A,x), Fourier(0..A.period/A.nperiod)), Float64(A.period), A.nperiod)
+    return FourierFunctionMatrix{:c,Float64,Fun}(Fun(x -> PeriodicMatrices.tpmeval(A,x), Fourier(0..A.period/A.nperiod)), Float64(A.period), A.nperiod)
 end  
 
 function Base.convert(::Type{PeriodicSymbolicMatrix}, A::FourierFunctionMatrix)
     #convert(PeriodicSymbolicMatrix,convert(HarmonicArray,A))
-    return PeriodicSymbolicMatrix{:c,Float64,Matrix{Num}}(ffm2psm(A), Float64(A.period), A.nperiod)
+    return PeriodicSymbolicMatrix{:c,Float64,Matrix{Num}}(PeriodicMatrices.ffm2psm(A), Float64(A.period), A.nperiod)
 end
-function ffm2psm(Af::FourierFunctionMatrix, nrange::Union{UnitRange,Missing} = missing; atol::Real = 0, rtol::Real = 0)  
 """
      ffm2psm(Af::FourierFunctionMatrix, nrange atol = 0, rtol = 10*n*ϵ,) -> A::Matrix{Num}
 
@@ -20,6 +19,7 @@ The tolerance used to assess nonzero coefficients is `tol = max(atol, rtol*maxno
 `maxnorm` is the maximum absolute value of the coefficients `ac_i` and `as_i` in `Af(t)`. The default values of tolerances
 are `atol = 0` and `rtol = 10*n*ϵ`, where `ϵ` is the working machine precision.
 """
+function PeriodicMatrices.ffm2psm(Af::FourierFunctionMatrix, nrange::Union{UnitRange,Missing} = missing; atol::Real = 0, rtol::Real = 0)  
    T = eltype(Af) 
    Symbolics.@variables t   
    Period = Af.period

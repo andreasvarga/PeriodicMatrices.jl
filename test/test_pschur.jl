@@ -42,20 +42,20 @@ DWORK = Array{Float64,1}(undef, LDWORK)
 
 mb03bd!('T','C','I',QIND,3,3,ihess,1,3,S,A,Q,ALPHAR, ALPHAI, BETA, SCAL, LIWORK, LDWORK)
 
-poles = (ALPHAR+im*ALPHAI) ./ BETA .* (2. .^SCAL)
+eigs = (ALPHAR+im*ALPHAI) ./ BETA .* (2. .^SCAL)
 
-@test sort(real(poles)) ≈ sort(real(ev)) && 
-      sort(imag(poles)) ≈ sort(imag(ev))
+@test sort(real(eigs)) ≈ sort(real(ev)) && 
+      sort(imag(eigs)) ≈ sort(imag(ev))
 
 ev1 = eigvals(inv(A[:,:,1])*A[:,:,2]*inv(A[:,:,3]))
 
 Aw = reshape([A2 inv(E3) inv(E1)],3,3,3);
 mb03wd!('S','I',3,3,1,3,1,3,Aw,Q,ALPHAR, ALPHAI, LDWORK)
 
-poles = (ALPHAR+im*ALPHAI) 
+eigs = (ALPHAR+im*ALPHAI) 
 
-@test sort(real(poles)) ≈ sort(real(ev)) && 
-      sort(imag(poles)) ≈ sort(imag(ev))
+@test sort(real(eigs)) ≈ sort(real(ev)) && 
+      sort(imag(eigs)) ≈ sort(imag(ev))
 
 
 k = 3; nc = 3; kschur = ihess; n = [3,3,3]; ni = [0,0,0]; s = S; select = [0,0,1]; 
@@ -68,8 +68,8 @@ tol = 20.; ldwork = max(42*k + max(nc,10), 80*k - 48)
 m, info = mb03kd!('U','S', k, nc, kschur, n, ni, s, select, t, ldt, ixt, q, ldq, ixq, tol, ldwork)
 T = zeros(3,3,3); [T[:,:,k-i+1] = reshape(t[ixt[i]:ixt[i]+nn-1],nc,nc) for i in 1:k]
 ev2 = eigvals(inv(T[:,:,1])*T[:,:,2]*inv(T[:,:,3]))
-@test sort(real(poles)) ≈ sort(real(ev2)) && 
-      sort(imag(poles)) ≈ sort(imag(ev2))
+@test sort(real(eigs)) ≈ sort(real(ev2)) && 
+      sort(imag(eigs)) ≈ sort(imag(ev2))
 
 # MB03VD example
 A1 = [1.5 -.7 3.5 -.7; 1.  0.  2.  3.; 1.5 -.7 2.5 -.3; 1.  0.  2.  1.]; 
@@ -185,7 +185,7 @@ As = copy(A); Z = copy(A)
 @time eigs, ischur, = pschur!(As,Z; rev = true, sind = hind)
 @test check_psim(A,Z,As; rev = true) 
 
-As = copy(A); Z = copy(A); wspace = PeriodicMatrices.ws_pschur(n, K)
+As = copy(A); Z = copy(A); wspace = PeriodicMatrices.ws_pschur(As)
 @time eigs, ischur, = pschur!(wspace, As,Z; rev = false, sind = hind)
 @test check_psim(A,Z,As; rev = false) 
 

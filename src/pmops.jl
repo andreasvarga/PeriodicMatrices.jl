@@ -2122,6 +2122,9 @@ For `PM = PeriodicTimeSeriesMatrix`, `ns` specifies the number of component matr
 
 For `PM = PeriodicSwitchingMatrix`, the vector `ts` specifies the switching times. 
 """
+function pmrand(n::Int, m::Int, period::Real = 2*pi; nh::Int = 1)
+    pmrand(HarmonicArray{:c,Float64}, n, m, period; nh)
+end
 function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where 
           {T,PM <: Union{HarmonicArray{:c,T},PeriodicFunctionMatrix{:c,T}}}
     A = HarmonicArray(rand(T,n,m), [rand(T,n,m) for i in 1:nh], [rand(T,n,m) for i in 1:nh], period) 
@@ -2132,7 +2135,6 @@ function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; kwargs...) wher
          {PM <: Union{HarmonicArray,PeriodicFunctionMatrix}}
     pmrand(PM{:c,Float64}, n, m, period; kwargs...)
 end 
-pmrand(n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) = pmrand(HarmonicArray{:c,Float64}, n, m, period; nh)
 function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; ns::Int = 1) where {T,PM <: PeriodicTimeSeriesMatrix{:c,T}}
     return PeriodicTimeSeriesMatrix{:c,T}([rand(T,n,m) for i in 1:ns], period) 
 end 
@@ -2163,6 +2165,11 @@ If `PM = SwitchingPeriodicMatrix` or `PM = SwitchingPeriodicArray`, the integer 
 The type  `T` of matrix elements can be specified using, e.g. `PeriodicMatrix{:d,T}` instead `PeriodicMatrix`, 
 which assumes by default `T = Float64`.
 """
+function pmrand(::Type{PM},m::Vector{Int},n::Vector{Int}, period::Real = 10) where {PM <: PeriodicMatrix}
+    lm = length(m)
+    ln = length(n)
+    return PeriodicMatrix{:d,Float64}([rand(m[mod(i-1,lm)+1], n[mod(i-1,ln)+1]) for i in 1:lcm(lm,ln)],period)
+end
 function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Int = 10) where {T,PM <: Union{PeriodicMatrix{:d,T},PeriodicArray{:d,T}}}
     if PM <: PeriodicMatrix 
         PeriodicMatrix{:d,T}([rand(T,n,m) for i in 1:ns], period) 
@@ -2172,11 +2179,6 @@ function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Int = 10) whe
 end 
 pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; kwargs...) where {PM <: Union{PeriodicMatrix,PeriodicArray,SwitchingPeriodicMatrix,SwitchingPeriodicArray}} =
     pmrand(PM{:d,Float64}, n, m, period; kwargs...)
-function pmrand(::Type{PM},m::Vector{Int},n::Vector{Int}, period::Real = 10) where {PM <: PeriodicMatrix}
-    lm = length(m)
-    ln = length(n)
-    return PeriodicMatrix{:d,Float64}([rand(m[mod(i-1,lm)+1], n[mod(i-1,ln)+1]) for i in 1:lcm(lm,ln)],period)
-end
 
 function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Vector{Int} = [period]) where {T,PM <: Union{SwitchingPeriodicMatrix{:d,T},SwitchingPeriodicArray{:d,T}}}
     if PM <: SwitchingPeriodicMatrix
