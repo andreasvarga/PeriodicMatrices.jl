@@ -1,8 +1,8 @@
 module Test_pmutils
 
+using PeriodicMatrices
 using ApproxFun
 using Symbolics
-using PeriodicMatrices
 using Test
 using LinearAlgebra
 using MatrixPencils

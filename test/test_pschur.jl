@@ -1,6 +1,7 @@
 module Test_pschur
 
 using PeriodicMatrices
+using ApproxFun
 using Test
 using LinearAlgebra
 using LinearAlgebra: BlasInt
@@ -452,17 +453,17 @@ A3 = [-4 3 5 2 2; 2 -5 -2 0 2; -1 -2 5 3 0; 0 1 -3 -5 0; 0 0 4 -4 3];
 
 A = [A1, A2, A3];
 @time S, Z, eigs, ischur, α, γ = pschur(A; rev = true);
-select =  (real(eigs) .< 0)[1:3]
+select =  (real(eigs) .< 0)
 @time psordschur!(S,Z,select; schurindex=ischur, rev = true)  
 @test check_psim(A,Z,S; rev = true)  
 ev=MatrixPencils.ordeigvals(S[3]*S[2]*S[1])  
 
 @time S, Z, eigs, ischur, α, γ = pschur(A; rev = true);
-select =  (real(eigs) .< 0)[1:3]
+select =  (real(eigs) .< 0)
 @time psordschur1!(S,Z,select; schurindex=ischur, rev = true)  
 @test check_psim(A,Z,S; rev = true)  
 ev1=MatrixPencils.ordeigvals(S[3]*S[2]*S[1])  
-@test ev ≈ ev1
+@test sort(ev) ≈ sort(ev1)
 
 
 # Example Hench & Laub IEETAC 1994

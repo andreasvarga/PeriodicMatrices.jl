@@ -1154,6 +1154,7 @@ function psordschur!(S::AbstractVector{Matrix{Float64}}, Z::AbstractVector{Matri
    rev || (reverse!(m); reverse!(n))
    ldq = rev ? n : [m[end];m[1:end-1]]
    nc = minimum(n)
+   nc == length(select) || throw(ArgumentError("Dimension of select must be equal to the number of core eigenvalues $nc"))
    kschur = rev ? schurindex : k-schurindex+1
    ni = zeros(Int,k)
    s = ones(Int,k)
@@ -1195,6 +1196,7 @@ function psordschur1!(S::AbstractVector{Matrix{Float64}}, Z::AbstractVector{Matr
    (all(m .== nc) && all(n .== nc)) || error("all elements of S must be square matrices of same dimension")
    k == length(Z) || error("S and Z must have the same length")
    (all(size.(Z,1) .== nc) && all(size.(Z,2) .== nc)) || error("all elements of Z must be square matrices of same dimension as S")
+   nc == length(select) || throw(ArgumentError("Dimension of select must be equal to the number of core eigenvalues $nc"))
    kschur = rev ? schurindex : k-schurindex+1
    ni = zeros(Int,k)
    s = ones(Int,k)
