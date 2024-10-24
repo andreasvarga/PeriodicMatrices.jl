@@ -37,7 +37,7 @@ function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol
    n = size(A,1)
    n == size(A,2) || error("the function matrix must be square")
 
-   isconstant(A) && ( return exp(PeriodicMatrices.tpmeval(A,t0)*(tf-t0)) )
+   PeriodicMatrices.isconstant(A) && ( return exp(PeriodicMatrices.tpmeval(A,t0)*(tf-t0)) )
    
    T1 = promote_type(typeof(t0), typeof(tf))
 
@@ -126,7 +126,7 @@ function PeriodicMatrices.monodromy(A::PM, K::Int = 1; solver = "non-stiff", rel
    M = Array{float(T),3}(undef, n, n, K) 
 
    # compute the matrix exponential for K = 1 and constant matrix
-   K == 1 && isconstant(A) && ( M[:,:,1] = exp(PeriodicMatrices.tpmeval(A,0)*Ts); return PeriodicArray(M, A.period; nperiod) )
+   K == 1 && PeriodicMatrices.isconstant(A) && ( M[:,:,1] = exp(PeriodicMatrices.tpmeval(A,0)*Ts); return PeriodicArray(M, A.period; nperiod) )
 
    K >= 100 ? dt = Ts : dt = Ts*K/100/nperiod
 
@@ -202,7 +202,7 @@ function PeriodicMatrices.pseig(at::PM, K::Int = 1; lifting::Bool = false, solve
    return nperiod == 1 ? ev : ev.^nperiod
 end
 function PeriodicMatrices.psceig(at::PM, K::Int = 1; kwargs...) where {T, PM <:FourierFunctionMatrix{:c,T}} 
-   if isconstant(at)
+   if PeriodicMatrices.isconstant(at)
       ce = eigvals(at(0))
    else
       ce = log.(complex(PeriodicMatrices.pseig(at, K; kwargs...)))/at.period
@@ -229,7 +229,7 @@ associated eigenvectors used to validate their asymptotic (exponential) decay. O
 function PeriodicMatrices.psceigfr(Afun::FourierFunctionMatrix{:c,T}, N::Int = max(10,maximum(ncoefficients.(Matrix(Afun.M)))); P::Int = 1, atol::Real = 1.e-10) where T
    n = size(Afun,1)
    n == size(Afun,2) || error("the periodic matrix must be square") 
-   (N == 0 || isconstant(Afun)) && (return eigvals(getindex.(coefficients.(Matrix(Afun.M)),1)))
+   (N == 0 || PeriodicMatrices.isconstant(Afun)) && (return eigvals(getindex.(coefficients.(Matrix(Afun.M)),1)))
    Af = P == 1 ? Afun :  FourierFunctionMatrix(Fun(t -> Afun.M(t),Fourier(0..P*Afun.period)))
    D = Derivative(domain(Af.M))
 
