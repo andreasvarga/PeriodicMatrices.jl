@@ -138,7 +138,7 @@ function monodromy(A::PM, K::Int = 1; solver = "non-stiff", reltol = 1e-3, absto
    return PeriodicArray(M,A.period; nperiod)
 end
 """ 
-     monodromy(A) -> Ψ::PeriodicArray 
+     monodromy(A::PeriodicTimeSeriesMatrix) -> Ψ::PeriodicArray 
 
 Compute the monodromy matrix for a continuous-time time series matrix. 
 
@@ -148,8 +148,8 @@ the monodromy matrix `Ψ = Φ(T′,0)` is computed, where `Φ(t,τ)` is the stat
 
     dΦ(t,τ)/dt = A(t)Φ(t,τ),  Φ(τ,τ) = I. 
 
-`A` is a [`PeriodicTimeSeriesMatrix`](@ref) with `K` component matrices.  
-The resulting monodromy matrix `Ψ` is stored as a discrete time periodic array with `K` component matrices, of period `T` and `k` subperiods. 
+`A` is a [`PeriodicTimeSeriesMatrix`](@ref) with `K` component matices and the resulting monodromy matrix `Ψ` 
+is stored as a discrete-time periodic array with `K` component matrices, of period `T` and `k` subperiods. 
 
 `Ψ = Φ(T′,0)` is determined as a product of `K` matrices 
 `Ψ = Ψ_K*...*Ψ_1`, where for `Δ := T′/K`, `Ψ_i = Φ(iΔ,(i-1)Δ)` is the 
