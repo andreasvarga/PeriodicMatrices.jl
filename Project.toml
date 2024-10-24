@@ -1,5 +1,5 @@
 name = "PeriodicMatrices"
-uuid = "7a052949-c101-4ca3-9a7e-43a2532b2fa8"
+uuid = "dd9cd634-6083-4ae5-8f2e-b983833de2bb"
 authors = ["Andreas Varga <varga.andreas@gmail.com>"]
 version = "0.1.0"
 
