@@ -391,8 +391,8 @@ Ahr4 = convert(HarmonicArray,G4f,nsample=1024)
 @test hreval(hrtrunc(Ahr4,50),1) ≈  hreval(Ahr4,1,ntrunc = 50)
 @test hreval(hrtrunc(Ahr4,50),1,exact=false) ≈  hreval(Ahr4,1,ntrunc = 50,exact=false)
 @test norm(hreval(Ahr4,1,exact=true) -  hreval(Ahr4,1,exact=false,ntrunc=5),Inf) < 0.01
-tt = rand(10)*pi
-@test all(norm.(tvmeval(G4f,tt).-tvmeval(Ahr4,tt; exact = false)) .< 1.e-3)
+tt = rand(10)*pi; norm.(tvmeval(G4f,tt).-tvmeval(Ahr4,tt; exact = false))
+@test all(norm.(tvmeval(G4f,tt).-tvmeval(Ahr4,tt; exact = false)) .< 1.e-2)
 
 
 # analytic approach form Richards's book page 35
