@@ -21,7 +21,6 @@ permissions:
   security-events: read
   statuses: read
 jobs:
-jobs:
   TagBot:
     if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
     runs-on: ubuntu-latest
