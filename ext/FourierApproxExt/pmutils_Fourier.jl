@@ -253,7 +253,7 @@ function PeriodicMatrices.psceigfr(Afun::FourierFunctionMatrix{:c,T}, N::Int = m
    ce = nv > n ? σ[sortperm(imag(σ),rev=true)][1:n] : σ[1:nv]
    return isreal(ce) ? real(ce) : ce
 end
-function PeriodicMatrices.DiagDerOp(D::Union{ApproxFunBase.DerivativeWrapper,ApproxFunBase.ConstantTimesOperator}, n::Int) 
+function DiagDerOp(D::Union{ApproxFunBase.DerivativeWrapper,ApproxFunBase.ConstantTimesOperator}, n::Int) 
    Z = tuple(D,ntuple(n->0I,n-1)...)
    for i = 2:n
        Z1 = tuple(ntuple(n->0I,i-1)...,D,ntuple(n->0I,n-i)...)

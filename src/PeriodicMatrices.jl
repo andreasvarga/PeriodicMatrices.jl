@@ -29,7 +29,7 @@ export PeriodicArray, PeriodicMatrix, SwitchingPeriodicArray, SwitchingPeriodicM
 export PeriodicTimeSeriesMatrix, PeriodicSwitchingMatrix, HarmonicArray, PeriodicFunctionMatrix
 export isconstant, iscontinuous, isdiscrete, set_period, promote_period, promote_period2, getpm
 export mb03vd!, mb03vy!, mb03bd!, mb03wd!, mb03kd! 
-export ps2fls, hr2bt, hr2btupd, phasemat, ps2frls, DiagDerOp, ps2ls, ps2spls
+export hr2bt, hr2btupd
 export pmshift, trace, pmzeros, pmcopy
 export pmderiv, pmrand, horzcat, vertcat, pmsymadd!
 export bldiag, blockdiag, blockut
@@ -50,6 +50,5 @@ include("pmutils.jl")
 include("pmutils_sym.jl")
 include("pmutilities.jl")
 include("docstrings.jl")
-function DiagDerOp end
 
 end
