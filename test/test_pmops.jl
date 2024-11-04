@@ -647,6 +647,7 @@ t = rand();
 tm = pmrand(PeriodicSwitchingMatrix{:c,Float32},2,2,5.,ts=[0.,2.5])
 tm = pmrand(PeriodicSwitchingMatrix,2,2,5.,ts=[0.,2.5])
 td = pmderiv(tm)
+tm1 = pmcopy(tm)
 
 t1 = -rand(2,2); t2 = rand(2,2); Asw = PeriodicSwitchingMatrix([t1,t2],[0.,1.],2)
 t1 = -rand(Float32,2,2); t2 = rand(Float32,2,2); Asw1 = PeriodicSwitchingMatrix{:c,Float64}([t1,t2],[0.,1.],2)
