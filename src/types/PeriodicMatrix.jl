@@ -456,6 +456,7 @@ function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicArray
 end
 
 iscontinuous(A::AbstractPeriodicArray) = typeof(A).parameters[1] == :c 
+isdiscrete(A::AbstractPeriodicArray) = !iscontinuous(A)
 #iscontinuous(A) = typeof(A).parameters[1] == :c 
 #iscontinuous(A::Type) = A.parameters[1] == :c 
 

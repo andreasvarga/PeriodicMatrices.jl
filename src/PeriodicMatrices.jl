@@ -50,5 +50,6 @@ include("pmutils.jl")
 include("pmutils_sym.jl")
 include("pmutilities.jl")
 include("docstrings.jl")
+function DiagDerOp end
 
 end

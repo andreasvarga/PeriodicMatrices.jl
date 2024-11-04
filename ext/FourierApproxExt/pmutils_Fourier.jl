@@ -32,7 +32,7 @@ The following solvers from the [OrdinaryDiffEq.jl](https://github.com/SciML/Ordi
 
 `solver = ""` - use the default solver, which automatically detects stiff problems (`AutoTsit5(Rosenbrock23())` or `AutoVern9(Rodas5())`). 
 """
-function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol = 1e-7, dt = (tf-t0)/10) where 
+function PeriodicMatrices.tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol = 1e-7, dt = (tf-t0)/10) where 
          {T, PM <: FourierFunctionMatrix{:c,T}} 
    n = size(A,1)
    n == size(A,2) || error("the function matrix must be square")

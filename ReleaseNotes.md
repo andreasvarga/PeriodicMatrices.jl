@@ -1,6 +1,10 @@
 # Release Notes
 
 
+## Version 0.1.2
+
+Minor fixes and extensions. 
+
 ## Version 0.1.1
 
 Version bump to use a new Tagbot setting

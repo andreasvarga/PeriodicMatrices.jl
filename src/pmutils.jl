@@ -913,22 +913,26 @@ function pmaverage(A::PM; rtol = sqrt(eps())) where {PM <: Union{PeriodicSwitchi
 end
 pmaverage(A::HarmonicArray; rtol = missing) = real(A.values[:,:,1])
 
-function getpm(A::PeriodicMatrix, k, dperiod::Union{Int,Missing} = missing)
-"""
-     getpm(A::PM, k[, kper]) -> B::Matrix 
+# function getpm(A::PeriodicMatrix, k, dperiod::Union{Int,Missing} = missing)
+# """
+#      getpm(A::PM, k[, kper]) -> B::Matrix 
 
-Select the `i := mod(k-1,kper)+1`-th component matrix of the discrete-time periodic matrix `A`. 
-If `kper` is missing, then by default `kper = A.dperiod` is used.  
-"""
-   i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
-   return A.M[i]
-end
-function getpm(A::PeriodicArray, k, dperiod::Union{Int,Missing} = missing)
-   i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
-   return A.M[:,:,i]
-   #return view(A.M,:,:,i)
-end
-# function getpm(A::SwitchingPeriodicMatrix, k, dperiod::Union{Int,Missing} = missing)
+# Select the `i := mod(k-1,kper)+1`-th component matrix of the discrete-time periodic matrix `A`. 
+# If `kper` is missing, then by default `kper = A.dperiod` is used.  
+# """
+#    # i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
+#    # return A.M[i]
+#    return A[k]
+# end
+# function getpm(A::PeriodicArray, k, dperiod::Union{Int,Missing} = missing)
+#    # i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
+#    # return A.M[:,:,i]
+#    return A[k]
+# end
+# function getpm(A::SPM, k, dperiod::Union{Int,Missing} = missing) where {SPM <: SwitchingPeriodicMatrix}
+#    return A[k]
+# end
+# function getpm(A::SPM, k, dperiod::Union{Int,Missing} = missing) where {SPM <: SwitchingPeriodicArray}
 #    # i = ismissing(dperiod) ? mod(k-1,A.dperiod)+1 : mod(k-1,dperiod)+1
 #    return A[k]
 #    #return view(A.M,i)

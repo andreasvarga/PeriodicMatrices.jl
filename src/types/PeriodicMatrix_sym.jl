@@ -45,6 +45,7 @@ function PeriodicSymbolicMatrix{:c,T}(A::PeriodicSymbolicMatrix, period::Real) w
    end
 end
 set_period(A::PeriodicSymbolicMatrix, period::Real) = PeriodicSymbolicMatrix{:c,eltype(A)}(A,period)
+set_period(A::PeriodicSymbolicMatrix{:c, Num, Matrix{Num}}, period::Real) = PeriodicSymbolicMatrix{:c,Num}(A,period)
 
 # properties 
 isconstant(A::PeriodicSymbolicMatrix) = all(length.(Symbolics.get_variables.(A.F)) .== 0)

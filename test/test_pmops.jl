@@ -752,7 +752,8 @@ n = 5; pa = 3; px = 6;
 Ad = 0.5*pmrand(PeriodicArray,n,n,pa,ns=pa);
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[:,:,1]
-@test getpm(Ad,4) == getpm(Ad,1)
+#@test getpm(Ad,Ad.dperiod+1) == getpm(Ad,1)
+@test isdiscrete(Ad)
 x = rand(n,n,px); [x[:,:,i] = x[:,:,i]'+x[:,:,i] for i in 1:px];
 Xd = PeriodicArray(x,px);
 Qdf = -Ad*Xd*Ad'+pmshift(Xd); pmsymadd!(Qdf,0.5) 
@@ -856,7 +857,7 @@ n = 5; pa = 3; px = 6;
 Ad = 0.5*pmrand(PeriodicMatrix,n,n,pa,ns=pa);
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[1]
-@test getpm(Ad,4) == getpm(Ad,1)
+#@test getpm(Ad,Ad.dperiod+1) == getpm(Ad,1)
 x = [rand(n,n) for i in 1:px]
 Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
 Qdf = -Ad*Xd*Ad'+pmshift(Xd); pmsymadd!(Qdf,0.5) 
@@ -1011,6 +1012,8 @@ n = 2; pa = 3; px = 6; T = 10;
 Ad = 0.5*pmrand(SwitchingPeriodicMatrix,n,n,T, ns = [10,15,20])
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[1]
+#@test getpm(Ad,Ad.dperiod+1) == getpm(Ad,1)
+
 
 X1 = pmrand(n*ones(Int,px),n*ones(Int,px),T)
 Xd = SwitchingPeriodicMatrix(pmsymadd!(X1).M,[2, 3, 5,7, 9, 10],T;nperiod=2);
@@ -1084,6 +1087,7 @@ n = 2; pa = 3; px = 6; T = 10;
 Ad = 0.5*pmrand(SwitchingPeriodicArray,n,n,T,ns = [10,15,20])
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[:,:,1]
+#@test getpm(Ad,Ad.dperiod+1) == getpm(Ad,1)
 
 x = pmsymadd!(PeriodicArray(rand(n,n,px),T));
 Xd = SwitchingPeriodicArray(x.M,[2, 3, 5,7, 9, 10],T;nperiod=2);
