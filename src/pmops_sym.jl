@@ -193,3 +193,12 @@ function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) wh
    pmrand(PM{:c,Float64}, n, m, period; nh)
 end 
 
+for PMF in (:pmmulsym, :pmtrmulsym, :pmmultrsym)
+    for PM in (:PeriodicSymbolicMatrix,)
+        @eval begin
+            $PMF(B::$PM,C::$PM, β = true) = convert($PM,$PMF(convert(PeriodicFunctionMatrix,B), convert(PeriodicFunctionMatrix,C), β))
+        end
+    end
+end
+
+

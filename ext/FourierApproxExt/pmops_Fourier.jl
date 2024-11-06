@@ -159,3 +159,11 @@ Base.isapprox(J::UniformScaling{<:Real}, A::FourierFunctionMatrix; kwargs...) = 
 function PeriodicMatrices.pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; nh::Int = 1) where {PM <:FourierFunctionMatrix}
     convert(PM,HarmonicArray(rand(n,m), [rand(n,m) for i in 1:nh], [rand(n,m) for i in 1:nh], period))
 end 
+for PMF in (:pmmulsym, :pmtrmulsym, :pmmultrsym)
+    for PM in (:FourierFunctionMatrix,)
+        @eval begin
+            PeriodicMatrices.$PMF(B::$PM,C::$PM, β = true) = convert($PM,PeriodicMatrices.$PMF(convert(PeriodicFunctionMatrix,B), convert(PeriodicFunctionMatrix,C), β))
+        end
+    end
+end
+

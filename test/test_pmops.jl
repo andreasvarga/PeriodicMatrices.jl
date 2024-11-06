@@ -346,7 +346,7 @@ At1=PeriodicFunctionMatrix(A11,2pi)
 @test As*Xs+Xs*As'+Cs ≈  pmderiv(Xs) ≈ Xders
 @test As'*Xs+Xs*As+Cds ≈ -pmderiv(Xs) 
 @test transpose(As) == As'
-ac = rand(2,2)
+ac = rand(2,2); Ac = PeriodicSymbolicMatrix(ac,2.)
 @test As+ac ≈ ac+As
 @test As-ac ≈ -(ac-As)
 @test As-I == -(I-As)
@@ -362,6 +362,13 @@ ac = rand(2,2)
 @test [As; ac](1) == [As(1); ac] && [ac; As](1) == [ac; As(1)]
 @test horzcat(As,ac)(1) == [As(1) ac] && horzcat(ac,As)(1) == [ac As(1)]
 @test vertcat(As,ac)(1) == [As(1); ac] && vertcat(ac,As)(1) == [ac; As(1)]
+
+Ast = transpose(As)
+@test pmmulsym(As, Ast, 1) ≈ As*Ast
+@test pmmulsym(Ac, Ac', 1) ≈ Ac*Ac'
+@test pmtrmulsym(As, As, 1) ≈ Ast*As
+@test pmmultrsym(As, As, 1) ≈ As*Ast
+
 
 
 D = rand(2,2)
@@ -445,7 +452,7 @@ As = PeriodicSymbolicMatrix(A11,2*pi)
 @test ≈(As,PeriodicSymbolicMatrix(ffm2psm(Af,0:0)+ffm2psm(Af,1:1),As.period))
 @test domain((Af+Af2).M).b ≈ 4pi && domain((Af*Af2).M).b ≈ 4pi
 
-ac = rand(2,2)
+ac = rand(2,2); Ac = FourierFunctionMatrix(ac,2)
 @test Af+ac ≈ ac+Af
 @test Af-ac ≈ -(ac-Af)
 @test Af-I == -(I-Af)
@@ -461,6 +468,13 @@ ac = rand(2,2)
 @test [Af; ac](1) ≈ [Af(1); ac] && [ac; Af](1) ≈ [ac; Af(1)]
 @test horzcat(Af,ac)(1) ≈ [Af(1) ac] && horzcat(ac,Af)(1) ≈ [ac Af(1)]
 @test vertcat(Af,ac)(1) ≈ [Af(1); ac] && vertcat(ac,Af)(1) ≈ [ac; Af(1)]
+
+Aft = transpose(Af)
+@test pmmulsym(Af, Aft, 1) ≈ Af*Aft
+@test pmmulsym(Ac, Ac', 1) ≈ Ac*Ac'
+@test pmtrmulsym(Af, Af, 1) ≈ Aft*Af
+@test pmmultrsym(Af, Af, 1) ≈ Af*Aft
+
 
 
 @test issymmetric(Cf) && issymmetric(Cdf) && issymmetric(Xf) && issymmetric(Xderf)
