@@ -667,7 +667,7 @@ t1 = -rand(2,2); t2 = rand(2,2); Asw = PeriodicSwitchingMatrix([t1,t2],[0.,1.],2
 t1 = -rand(Float32,2,2); t2 = rand(Float32,2,2); Asw1 = PeriodicSwitchingMatrix{:c,Float64}([t1,t2],[0.,1.],2)
 Asw2 = PeriodicSwitchingMatrix(rand(2,2,2),[0.,1.],2)
 
-@test set_period(set_period(Asw,4),2) == Asw
+@test set_period(set_period(Asw,4),2) == Asw &&  PeriodicSwitchingMatrix(Asw,2) == Asw
 @test Asw[:,:] == Asw
 @test lastindex(Asw,1) == size(Asw,1) && lastindex(Asw,2) == size(Asw,2)
 
