@@ -646,6 +646,7 @@ function PeriodicFunctionMatrix{:c,T}(at::PeriodicFunctionMatrix, period::Real) 
 end
 PeriodicFunctionMatrix(at::PeriodicFunctionMatrix, period::Real) = PeriodicFunctionMatrix{:c,eltype(at)}(at, period) 
 set_period(A::PeriodicFunctionMatrix, period::Real) = PeriodicFunctionMatrix{:c,eltype(A)}(A,period)
+set_period(A::AbstractMatrix, period::Real) = PeriodicFunctionMatrix(A,period)
 
 # function PeriodicFunctionMatrix(at::PeriodicFunctionMatrix, period::Real = at.period; isconst::Bool = isconstant(at))
 #    # at.period = period
