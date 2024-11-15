@@ -1125,17 +1125,23 @@ function +(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix)
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([A.M[1]+B.M[i] for i in 1:length(B.M)], B.ns, B.period, B.nperiod))
     isconstant(B) && 
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([A.M[i]+B.M[1] for i in 1:length(A.M)], A.ns, A.period, A.nperiod))
-    A.period == B.period || error("periods must be equal for addition")
-    nperiod = A.nperiod
-    if  nperiod == B.nperiod
-        ns = unique(sort([A.ns;B.ns]))
-    else
-        nperiod = gcd(A.nperiod,B.nperiod)
-        ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
+    if A.period == B.period 
+       nperiod = A.nperiod
+       if nperiod == B.nperiod
+          ns = unique(sort([A.ns;B.ns]))
+       else
+          nperiod = gcd(A.nperiod,B.nperiod)
+          ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
                           vcat([(i-1)*B.dperiod .+ B.ns for i in 1:div(B.nperiod,nperiod)]...)]))
+       end
+       N = length(ns)                  
+       return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([kpmeval(A,ns[i])+kpmeval(B,ns[i]) for i in 1:N], ns, A.period, nperiod)   
+    else
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return set_period(A,period)+set_period(B,period)
+        #error("periods must be equal for addition")
     end
-    N = length(ns)                  
-    return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([kpmeval(A,ns[i])+kpmeval(B,ns[i]) for i in 1:N], ns, A.period, nperiod)   
 end
 +(A::SwitchingPeriodicMatrix, C::AbstractMatrix) = +(A, SwitchingPeriodicMatrix([C], [A.dperiod], A.period))
 +(A::AbstractMatrix, C::SwitchingPeriodicMatrix) = +(SwitchingPeriodicMatrix([A], [C.dperiod], C.period), C)
@@ -1161,17 +1167,23 @@ function *(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix)
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([A.M[1]*B.M[i] for i in 1:length(B.M)], B.ns, B.period, B.nperiod))
     isconstant(B) && 
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([A.M[i]*B.M[1] for i in 1:length(A.M)], A.ns, A.period, A.nperiod))
-    A.period == B.period || error("periods must be equal for multiplication")
-    nperiod = A.nperiod
-    if  nperiod == B.nperiod
-        ns = unique(sort([A.ns;B.ns]))
-    else
-        nperiod = gcd(A.nperiod,B.nperiod)
-        ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
+    if A.period == B.period 
+       nperiod = A.nperiod
+       if nperiod == B.nperiod
+          ns = unique(sort([A.ns;B.ns]))
+       else
+          nperiod = gcd(A.nperiod,B.nperiod)
+          ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
                           vcat([(i-1)*B.dperiod .+ B.ns for i in 1:div(B.nperiod,nperiod)]...)]))
+       end
+       N = length(ns)                  
+       return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([kpmeval(A,ns[i])*kpmeval(B,ns[i]) for i in 1:N], ns, A.period, nperiod)   
+    else
+       # TODO: implement explicit computations
+       period = promote_period(A,B)
+       return set_period(A,period)*set_period(B,period)
+       #error("periods must be equal for multiplication")
     end
-    N = length(ns)                  
-    return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([kpmeval(A,ns[i])*kpmeval(B,ns[i]) for i in 1:N], ns, A.period, nperiod)   
 end
 *(A::SwitchingPeriodicMatrix, C::AbstractMatrix) = SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(C))}([A.M[i]*C for i in 1:length(A.M)], A.ns, A.period, A.nperiod)
 *(A::AbstractMatrix, C::SwitchingPeriodicMatrix) = SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(C))}([A*C.M[i] for i in 1:length(C.M)], C.ns, C.period, C.nperiod)
@@ -1188,17 +1200,23 @@ function horzcat(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix)
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([[A.M[1] B.M[i]] for i in 1:length(B.M)], B.ns, B.period, B.nperiod))
     isconstant(B) && 
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([[A.M[i] B.M[1]] for i in 1:length(A.M)], A.ns, A.period, A.nperiod))
-    A.period == B.period || error("periods must be equal for horizontal concatenation")
-    nperiod = A.nperiod
-    if  nperiod == B.nperiod
-        ns = unique(sort([A.ns;B.ns]))
-    else
-        nperiod = gcd(A.nperiod,B.nperiod)
-        ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
+    if A.period == B.period 
+       nperiod = A.nperiod
+       if  nperiod == B.nperiod
+           ns = unique(sort([A.ns;B.ns]))
+       else
+           nperiod = gcd(A.nperiod,B.nperiod)
+           ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
                           vcat([(i-1)*B.dperiod .+ B.ns for i in 1:div(B.nperiod,nperiod)]...)]))
+       end
+       N = length(ns)                  
+       return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([[kpmeval(A,ns[i]) kpmeval(B,ns[i])] for i in 1:N], ns, A.period, nperiod)   
+    else 
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return horzcat(set_period(A,period),set_period(B,period))
+        #error("periods must be equal for horizontal concatenation")
     end
-    N = length(ns)                  
-    return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([[kpmeval(A,ns[i]) kpmeval(B,ns[i])] for i in 1:N], ns, A.period, nperiod)   
 end
 Base.hcat(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix) = horzcat(A,B)
 horzcat(A::SwitchingPeriodicMatrix, B::AbstractMatrix) = horzcat(A, SwitchingPeriodicMatrix([B], [A.dperiod], A.period))
@@ -1214,17 +1232,23 @@ function vertcat(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix)
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([[A.M[1]; B.M[i]] for i in 1:length(B.M)], B.ns, B.period, B.nperiod))
     isconstant(B) && 
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([[A.M[i]; B.M[1]] for i in 1:length(A.M)], A.ns, A.period, A.nperiod))
-    A.period == B.period || error("periods must be equal for vertical concatenation")
-    nperiod = A.nperiod
-    if  nperiod == B.nperiod
-        ns = unique(sort([A.ns;B.ns]))
-    else
-        nperiod = gcd(A.nperiod,B.nperiod)
-        ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
+    if A.period == B.period 
+       nperiod = A.nperiod
+       if  nperiod == B.nperiod
+           ns = unique(sort([A.ns;B.ns]))
+       else
+           nperiod = gcd(A.nperiod,B.nperiod)
+           ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
                           vcat([(i-1)*B.dperiod .+ B.ns for i in 1:div(B.nperiod,nperiod)]...)]))
+       end
+       N = length(ns)                  
+       return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([[kpmeval(A,ns[i]); kpmeval(B,ns[i])] for i in 1:N], ns, A.period, nperiod)   
+    else
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return vertcat(set_period(A,period),set_period(B,period))
+        #error("periods must be equal for vertical concatenation")
     end
-    N = length(ns)                  
-    return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([[kpmeval(A,ns[i]); kpmeval(B,ns[i])] for i in 1:N], ns, A.period, nperiod)   
 end
 Base.vcat(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix) = vertcat(A,B)
 vertcat(A::SwitchingPeriodicMatrix, B::AbstractMatrix) = vertcat(A, SwitchingPeriodicMatrix([B], [A.dperiod], A.period))
@@ -1240,17 +1264,23 @@ function blockdiag(A::SwitchingPeriodicMatrix, B::SwitchingPeriodicMatrix)
     isconstant(B) && 
        (return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([bldiag(A.M[i], B.M[1]) for i in 1:length(A.M)], A.ns, A.period, A.nperiod))
 
-    A.period == B.period || error("periods must be equal for block-diagonal appending")
-    nperiod = A.nperiod
-    if  nperiod == B.nperiod
-        ns = unique(sort([A.ns;B.ns]))
-    else
-        nperiod = gcd(A.nperiod,B.nperiod)
-        ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
+    if A.period == B.period 
+       nperiod = A.nperiod
+       if  nperiod == B.nperiod
+           ns = unique(sort([A.ns;B.ns]))
+       else
+           nperiod = gcd(A.nperiod,B.nperiod)
+           ns = unique(sort([vcat([(i-1)*A.dperiod .+ A.ns for i in 1:div(A.nperiod,nperiod)]...);
                           vcat([(i-1)*B.dperiod .+ B.ns for i in 1:div(B.nperiod,nperiod)]...)]))
+       end
+       N = length(ns)                  
+       return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([bldiag(kpmeval(A,ns[i]), kpmeval(B,ns[i])) for i in 1:N], ns, A.period, nperiod)   
+    else
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return blockdiag(set_period(A,period),set_period(B,period))
+        #error("periods must be equal for bloc diagonal appending")
     end
-    N = length(ns)                  
-    return SwitchingPeriodicMatrix{:d,promote_type(eltype(A),eltype(B))}([bldiag(kpmeval(A,ns[i]), kpmeval(B,ns[i])) for i in 1:N], ns, A.period, nperiod)   
 end
 
 #  SwitchingPeriodicArray
@@ -1357,8 +1387,7 @@ function +(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             X[:,:,i] = A.M[:,:,i]+B.M[:,:,1]
         end
         return SwitchingPeriodicArray{:d,T}(X, A.ns, A.period, A.nperiod)
-    else
-        A.period == B.period || error("periods must be equal for addition")
+    elseif A.period == B.period 
         nperiod = A.nperiod
         if nperiod == B.nperiod
            ns = unique(sort([A.ns;B.ns]))
@@ -1373,6 +1402,11 @@ function +(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             X[:,:,i] = kpmeval(A,ns[i])+kpmeval(B,ns[i])
         end
         return SwitchingPeriodicArray{:d,promote_type(eltype(A),eltype(B))}(X, ns, A.period, nperiod)   
+    else
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return set_period(A,period)+set_period(B,period)
+        #error("periods must be equal for addition")
     end              
 end
 +(A::SwitchingPeriodicArray, C::AbstractMatrix) = +(A, SwitchingPeriodicArray(reshape(C,size(C,1),size(C,2),1), [A.dperiod], A.period))
@@ -1420,8 +1454,7 @@ function *(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             mul!(view(X,:,:,i),view(A.M,:,:,i),view(B.M,:,:,1))
         end
         return SwitchingPeriodicArray{:d,T}(X, A.ns, A.period, A.nperiod)
-    else
-        A.period == B.period || error("periods must be equal for addition")
+    elseif A.period == B.period 
         nperiod = A.nperiod
         if nperiod == B.nperiod
            ns = unique(sort([A.ns;B.ns]))
@@ -1436,6 +1469,11 @@ function *(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             mul!(view(X,:,:,i),kpmeval(A,ns[i]),kpmeval(B,ns[i]))
         end
         return SwitchingPeriodicArray{:d,promote_type(eltype(A),eltype(B))}(X, ns, A.period, nperiod)   
+    else
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return set_period(A,period)*set_period(B,period)
+        #error("periods must be equal for multiplication")
     end
 end
 *(A::SwitchingPeriodicArray, C::AbstractMatrix) = *(A, SwitchingPeriodicArray(reshape(C,size(C,1),size(C,2),1), [A.dperiod], A.period))
@@ -1485,8 +1523,7 @@ function horzcat(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             copyto!(view(X,:,j2,i),view(B.M,:,:,1))
         end
         return SwitchingPeriodicArray{:d,T}(X, A.ns, A.period, A.nperiod)
-    else
-        A.period == B.period || error("periods must be equal for addition")
+    elseif A.period == B.period 
         nperiod = A.nperiod
         if nperiod == B.nperiod
            ns = unique(sort([A.ns;B.ns]))
@@ -1502,7 +1539,12 @@ function horzcat(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             copyto!(view(X,:,j1,i),kpmeval(A,ns[i]))
             copyto!(view(X,:,j2,i),kpmeval(B,ns[i]))
         end
-        return SwitchingPeriodicArray{:d,promote_type(eltype(A),eltype(B))}(X, ns, A.period, nperiod)   
+        return SwitchingPeriodicArray{:d,promote_type(eltype(A),eltype(B))}(X, ns, A.period, nperiod)  
+    else 
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return horzcat(set_period(A,period),set_period(B,period))
+        #error("periods must be equal for horizontal concatenation")
     end
 end
 Base.hcat(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray) = horzcat(A,B)
@@ -1553,8 +1595,7 @@ function vertcat(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             copyto!(view(X,i2,:,i),view(B.M,:,:,1))
         end
         return SwitchingPeriodicArray{:d,T}(X, A.ns, A.period, A.nperiod)
-    else
-        A.period == B.period || error("periods must be equal for addition")
+    elseif A.period == B.period 
         nperiod = A.nperiod
         if nperiod == B.nperiod
            ns = unique(sort([A.ns;B.ns]))
@@ -1571,6 +1612,11 @@ function vertcat(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             copyto!(view(X,i2,:,i),kpmeval(B,ns[i]))
         end
         return SwitchingPeriodicArray{:d,promote_type(eltype(A),eltype(B))}(X, ns, A.period, nperiod)   
+    else
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return vertcat(set_period(A,period),set_period(B,period))
+        #error("periods must be equal for vertical concatenation")
     end
 end
 Base.vcat(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray) = vertcat(A,B)
@@ -1617,8 +1663,7 @@ function blockdiag(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             copyto!(view(X,i2,j2,i),view(B.M,:,:,1))
         end
         return SwitchingPeriodicArray{:d,T}(X, A.ns, A.period, A.nperiod)
-    else
-        A.period == B.period || error("periods must be equal for addition")
+    elseif A.period == B.period 
         nperiod = A.nperiod
         if nperiod == B.nperiod
            ns = unique(sort([A.ns;B.ns]))
@@ -1636,6 +1681,11 @@ function blockdiag(A::SwitchingPeriodicArray, B::SwitchingPeriodicArray)
             copyto!(view(X,i2,j2,i),kpmeval(B,ns[i]))
         end
         return SwitchingPeriodicArray{:d,promote_type(eltype(A),eltype(B))}(X, ns, A.period, nperiod)   
+    else
+        # TODO: implement explicit computations
+        period = promote_period(A,B)
+        return blockdiag(set_period(A,period),set_period(B,period))
+        #error("periods must be equal for bloc diagonal appending")
     end
 end
 
@@ -1656,7 +1706,7 @@ This approach generally leads to lower accuracy estimations at `t = 0` and `t = 
 
 _Note:_ To allow the application of the finite difference approximations to periodic matrices of types `PeriodicTimeSeriesMatrix` and `PeriodicSwitchingMatrix`, 
 these are converted to `PeriodicFunctionMatrix` type. Due to inherent discountinuities of these representations, the accuracy of derivate estimations is usualy poor.
-To increase the accuracy, it is recommended to perform these conversions before calling the `pmder` function, by employing splines based interpolation formulas, 
+To increase the accuracy, it is recommended to perform these conversions before calling the `pmderiv` function, by employing splines based interpolation formulas, 
 as provided by the function [`ts2pfm`](@ref).  
 """
 function pmderiv(A::PeriodicFunctionMatrix{:c,T};  h::Union{Missing,Real} = missing,  method = "cd", discont = false) where {T}
