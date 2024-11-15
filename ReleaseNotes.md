@@ -1,6 +1,10 @@
 # Release Notes
 
 
+## Version 0.1.3
+
+Minor extensions. 
+
 ## Version 0.1.2
 
 Minor fixes and extensions. 
