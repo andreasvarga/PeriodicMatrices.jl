@@ -1720,7 +1720,7 @@ function pmderiv(A::PeriodicFunctionMatrix{:c,T};  h::Union{Missing,Real} = miss
           return PeriodicFunctionMatrix{:c,T}(t -> t+h >= tsub ? (tpmeval(A,t)-tpmeval(A,t-h/4))/(h/4) : 
               (t-h < 0 ? (tpmeval(A,t+h/4)-tpmeval(A,t))/(h/4) : (tpmeval(A,t+h)-tpmeval(A,t-h))/(2*h)), A.period, A.dims, A.nperiod, false)
        else
-           return PeriodicFunctionMatrix{:c,T}(t -> (tpmeval(A,t+h)-tpmeval(A,t-h))/(2*h), A.period, A.dims, A.nperiod, false)
+          return PeriodicFunctionMatrix{:c,T}(t -> (tpmeval(A,t+h)-tpmeval(A,t-h))/(2*h), A.period, A.dims, A.nperiod, false)
        end
     end
     # fourth-order differences
@@ -1779,58 +1779,32 @@ function LinearAlgebra.opnorm(A::PeriodicFunctionMatrix, p::Union{Real, Missing}
     end
 end
 """
-    norm(A, p::Real=2; rtol=sqrt(eps)) 
+    norm(A, p::Real=2) 
+    norm(A::PeriodicFunctionMatrix, p::Real=2; rtol=sqrt(eps()), atol = 1000*eps()) 
 
 Compute the `p`-norm of the time-dependent Frobenius-norm of a continuous-time periodic matrix over one period. 
 For a continuous-time periodic matrix `A(t)`, the resulting `Anorm` is the `p`-norm of the time-varying Frobenius norm of `A(t)`. 
-The involved time integrals are evaluated using the adaptive Gauss-Kronrod quadrature with a relative error tolerance `rtol`.
-For `p = Inf`, the computation involves the minimization of Frobenius norm of `A(t)` using Brent's method.   
+The involved time integrals are evaluated using the adaptive Gauss-Kronrod quadrature with a relative error tolerance `rtol`
+and an absolute tolerance `atol`. For `p = Inf`, the computation involves the minimization of the Frobenius norm of `A(t)` using Brent's method.   
 
 _Note:_ For periodic matrices of `PeriodicTimeSeriesMatrix` and `PeriodicSwitchingMatrix` types, 
 the existing implicit time griding is employed to evaluate the involved time integrals using the rectangle method. 
 """
-function LinearAlgebra.norm(A::Union{HarmonicArray,PeriodicFunctionMatrix}, p::Real = 2; rtol = sqrt(eps())) 
-    isconstant(A) && (return norm(tpmeval(A,0)))
+function LinearAlgebra.norm(A::Union{HarmonicArray,PeriodicFunctionMatrix}, p::Real = 2; rtol = sqrt(eps()), atol = 1000. *eps()) 
+    isconstant(A) && (return norm(tpmeval(A,0),p))
     tsub = A.period/A.nperiod
     if p == 2
-       nrm, = quadgk(t -> norm(tpmeval(A,t))^2, 0., tsub; rtol)
+       nrm, = quadgk(t -> norm(tpmeval(A,t))^2, 0., tsub; rtol, atol)
        return sqrt(nrm*A.nperiod)
     elseif isinf(p)
-        return -optimize(t->-norm(tpmeval(A,t)),0.,tsub,Optim.Brent(),rel_tol = rtol).minimum
+        return -optimize(t->-norm(tpmeval(A,t)),0.,tsub,Optim.Brent(),rel_tol = rtol, abs_tol = atol).minimum
     elseif p == 1    
-        nrm, = quadgk(t -> norm(tpmeval(A,t)), 0., tsub; rtol)
+        nrm, = quadgk(t -> norm(tpmeval(A,t)), 0., tsub; rtol, atol)
         return nrm*A.nperiod
     else
         throw(ArgumentError("only p-norms for p = 1, 2, or Inf are supported"))
     end
 end
-    # function normt(A::PeriodicFunctionMatrix, p::Real = 2; K = 128) 
-    #     isconstant(A) && (return norm(A.f(0)))
-    #     nrm = zero(eltype(A))
-    #     Δ = A.period/A.nperiod/K
-    #     ts = zero(eltype(Δ))
-    #     if p == 2
-    #        for i = 1:K
-    #            nrm += norm(tpmeval(A,ts))^2*Δ
-    #            ts += Δ
-    #        end 
-    #        return sqrt(nrm*A.nperiod)
-    #     elseif isinf(p)
-    #         for i = 1:K
-    #             nrm = max(nrm,norm(tpmeval(A,ts)))
-    #             ts += Δ
-    #         end 
-    #         return nrm
-    #     elseif p == 1    
-    #         for i = 1:K
-    #             nrm += norm(tpmeval(A,ts))*Δ
-    #             ts += Δ
-    #         end 
-    #         return nrm*A.nperiod
-    #     else
-    #         throw(ArgumentError("only p-norms for p = 1, 2, or Inf are supported"))
-    #     end
-    # end
 function +(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix)
     A.dims == B.dims || throw(DimensionMismatch("A and B must have the same dimensions"))
     # nta = numerator(rationalize(period/A.period))
@@ -2199,14 +2173,14 @@ function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 2*pi; ts::Vector{<:Re
 end 
 
 """
-    pmrand(::Type{PM}, n::Int, m::Int[, period = 10]; ns = 10) 
-    pmrand(::Type{PM{:d,T}}, n::Int, m::Int[, period = 10]; ns = 10) 
-    pmrand(::Type{PM}, n::Vector{Int}, m::Vector{Int}[, period = 10]) 
+    pmrand(::Type{PM}, n::Int, m::Int[, period = 10]; ns = 1) 
+    pmrand(::Type{PM{:d,T}}, n::Int, m::Int[, period = 10]; ns = 1) 
+    pmrand(::Type{PM}, n::Vector{Int}, m::Vector{Int}[, period = 1]) 
     pmrand(SwitchingPeriodicMatrix, n, m[, period = 10]; ns = [period]) 
     pmrand(SwitchingPeriodicArray, n, m[, period = 10]; ns = [period]) 
 
 Generate a random `n×m` discrete-time periodic matrix of type `PM` or `PM{:d,T}` with period  `period ` (default:  `period = 10`)
-with  `ns` component matrices (default: `ns = 10`). 
+with  `ns` component matrices (default: `ns = 1`). 
 If `PM = PeriodicMatrix` or `PM = PeriodicArray`, `ns` specifies the number of component matrices (default: `ns = 10`).
 If `PM = PeriodicMatrix`, then two integer vectors `n` and `m` containing the row and column dimensions of the
 the component matrices, respectively, can be used to specify periodic matrices with time-varying dimensions. 
@@ -2220,7 +2194,7 @@ function pmrand(::Type{PM},m::Vector{Int},n::Vector{Int}, period::Real = 10) whe
     ln = length(n)
     return PeriodicMatrix{:d,Float64}([rand(m[mod(i-1,lm)+1], n[mod(i-1,ln)+1]) for i in 1:lcm(lm,ln)],period)
 end
-function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Int = 10) where {T,PM <: Union{PeriodicMatrix{:d,T},PeriodicArray{:d,T}}}
+function pmrand(::Type{PM}, n::Int, m::Int, period::Real = 10; ns::Int = 1) where {T,PM <: Union{PeriodicMatrix{:d,T},PeriodicArray{:d,T}}}
     if PM <: PeriodicMatrix 
         PeriodicMatrix{:d,T}([rand(T,n,m) for i in 1:ns], period) 
     else

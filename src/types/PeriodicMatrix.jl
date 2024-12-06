@@ -580,8 +580,6 @@ struct PeriodicFunctionMatrix{Domain,T} <: AbstractPeriodicArray{Domain,T}
    function PeriodicFunctionMatrix{Domain,T}(f::Function, period::Real, dims::Tuple{Int,Int}, nperiod::Int, isconst::Bool) where {T, Domain}
       period > 0 || error("period must be positive") 
       nperiod > 0 || error("number of subperiods must be positive") 
-      #isperiodic(f,period/nperiod) || error("non-periodic function matrix")
-      isc = PeriodicMatrices.isconstant(f,period/nperiod)
       # if isconst 
       #    isc == isconst || @warn "non-constant function matrix detected: isconst has been reset to false"
       # else
@@ -592,27 +590,28 @@ struct PeriodicFunctionMatrix{Domain,T} <: AbstractPeriodicArray{Domain,T}
       nd <= 2 || error("two-dimensional function array expected, got an $nd -dimensional array")
       m, n = size(F0,1),size(F0,2)
       dims == (m, n) || error("expected dimensions $((m,n)), got $dims")  
-      new{:c,T}(f,period,dims,nperiod,isc)
+      new{:c,T}(f,period,dims,nperiod,isconst)
    end
 end 
 
 # additional constructors
-function PeriodicFunctionMatrix{:c,Tf}(f::Function, period::Real; isconst::Bool = false, nperiod::Int = 1) where {Tf} 
+function PeriodicFunctionMatrix{:c,Tf}(f::Function, period::Real; isconst::Bool = false, nperiod::Int = 1, check_const::Bool = false) where {Tf} 
    period > 0 || error("period must be positive") 
    nperiod > 0 || error("number of subperiods must be positive") 
    F0 = f(zero(period))
+   isc = check_const ? PeriodicMatrices.isconstant(f,period/nperiod) : isconst
    if typeof(F0) <: Real 
-      return eltype(F0) == Tf ? PeriodicFunctionMatrix{:c,Tf}(t -> [f(t)], Float64(period), (1,1), nperiod, isconst) :
-                                PeriodicFunctionMatrix{:c,Tf}(t -> [Tf(f(Tf(t)))], Float64(period), (1,1), nperiod, isconst)
+      return eltype(F0) == Tf ? PeriodicFunctionMatrix{:c,Tf}(t -> [f(t)], Float64(period), (1,1), nperiod, isc) :
+                                PeriodicFunctionMatrix{:c,Tf}(t -> [Tf(f(Tf(t)))], Float64(period), (1,1), nperiod, isc)
    end
    nd = ndims(F0)
    nd <= 2 || error("two-dimensional function array expected, got an $nd -dimensional array")
    m, n = size(F0,1),size(F0,2)
-   eltype(F0) == Tf ? PeriodicFunctionMatrix{:c,Tf}(t -> n == 1 ? reshape(f(t),m,n) : f(t), Float64(period), (m,n), nperiod, isconst) :
-                      PeriodicFunctionMatrix{:c,Tf}(t -> n == 1 ? convert(Matrix{Tf},reshape(f(Tf(t)),m,n)) : convert(Matrix{Tf},f(Tf(t))), Float64(period), (m,n), nperiod, isconst)
+   eltype(F0) == Tf ? PeriodicFunctionMatrix{:c,Tf}(t -> n == 1 ? reshape(f(t),m,n) : f(t), Float64(period), (m,n), nperiod, isc) :
+                      PeriodicFunctionMatrix{:c,Tf}(t -> n == 1 ? convert(Matrix{Tf},reshape(f(Tf(t)),m,n)) : convert(Matrix{Tf},f(Tf(t))), Float64(period), (m,n), nperiod, isc)
 end
-PeriodicFunctionMatrix(f::F, period::Real; isconst::Bool = false, nperiod::Int = 1) where {F<:Function}  = 
-             PeriodicFunctionMatrix{:c,eltype(f(zero(period)))}(f, period; isconst, nperiod)
+PeriodicFunctionMatrix(f::F, period::Real; isconst::Bool = false, nperiod::Int = 1, check_const::Bool = false) where {F<:Function}  = 
+             PeriodicFunctionMatrix{:c,eltype(f(zero(period)))}(f, period; isconst, nperiod, check_const)
 # function PeriodicFunctionMatrix(A::VecOrMat{T}, period::Real) where {T <: Real}
 #    if T == Num
 #       @variables t
@@ -655,7 +654,9 @@ set_period(A::AbstractMatrix, period::Real) = PeriodicFunctionMatrix(A,period)
 #    return PeriodicFunctionMatrix(at.f, period; isconst)
 # end
 # properties
-isconstant(A::PeriodicFunctionMatrix) = A._isconstant || PeriodicMatrices.isconstant(A.f,A.period/A.nperiod)
+function isconstant(A::PeriodicFunctionMatrix; check_const::Bool = false)
+    check_const ? PeriodicMatrices.isconstant(A.f,A.period/A.nperiod) : A._isconstant 
+end
 
 # function isperiodic(f::Function, period::Real)  
 #    t = rand(typeof(period))*period
@@ -871,6 +872,9 @@ PeriodicSwitchingMatrix(At::Union{Vector{Vector{T}},Vector{Matrix{T}}}, ts::Vect
 PeriodicSwitchingMatrix{:c,T}(A::Union{Vector{Vector{T1}},Vector{Matrix{T1}}}, ts::Vector{T2}, period::Real; nperiod::Int = 1) where {T<: Real, T1 <: Real,T2 <: Real} = 
      PeriodicSwitchingMatrix([T.(A[i]) for i in 1:length(A)], ts, period; nperiod)
 function PeriodicSwitchingMatrix(At::VecOrMat{T}, period::Real; ts::Vector{T1} = [0.0], nperiod::Int = 1) where {T <: Real, T1 <: Real}
+   PeriodicSwitchingMatrix([reshape(At,size(At,1),size(At,2))], ts, period; nperiod)
+end
+function PeriodicSwitchingMatrix{:c, T}(At::VecOrMat{T}, period::Real; ts::Vector{T1} = [0.0], nperiod::Int = 1) where {T <: Real, T1 <: Real}
    PeriodicSwitchingMatrix([reshape(At,size(At,1),size(At,2))], ts, period; nperiod)
 end
 function PeriodicSwitchingMatrix{:c,T}(A::PeriodicSwitchingMatrix{:c,T1}, period::Real) where {T<: Real, T1 <: Real}

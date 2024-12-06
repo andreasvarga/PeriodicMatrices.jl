@@ -827,7 +827,7 @@ Evaluate the time value of a periodic matrix.
 
 For the periodic matrix `A(t)` and the time value `tval`, `Aval = A(tval)` is evaluated for `t = tval`. 
 """
-   return reshape((A.f).(mod(t,A.period/A.nperiod)),size(A,1),size(A,2))
+   return reshape((A.f).(mod(t,A.period/A.nperiod)),A.dims...)
 end
 
 tpmeval(A::HarmonicArray, t::Real ) = hreval(A, t; exact = true) 
