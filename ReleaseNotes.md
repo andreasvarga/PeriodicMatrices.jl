@@ -2,7 +2,7 @@
 
 ## Version 0.1.4
 
-Minor correction in `pmrand`, `norm` and `isconstant`.
+Minor corrections in `pmrand`, `norm` and `isconstant`.
 
 ## Version 0.1.3
 

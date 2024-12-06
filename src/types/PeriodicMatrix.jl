@@ -132,8 +132,11 @@ end
 Base.propertynames(A::PeriodicMatrix) = (:dperiod, :Ts, fieldnames(typeof(A))...)
 """
     isconstant(A)
+    isconstant(A::PeriodicFunctionMatrix; check_const = false, atol = 1000*eps(), rtol = sqrt(eps()) )
 
-Constancy check of a periodic matrix.     
+Constancy check of a periodic matrix. For a periodic function matrix `A(t)`, 
+an optional optimization-based constancy check can be performed using `check_const = true`, with the
+absolute and relative tolerances `atol` and `rtol`, respectively.   
 """
 function isconstant(A::PeriodicMatrix)
     (A.dperiod == 1) || all([A.M[1] == A.M[i] for i in 2:A.dperiod])
@@ -654,16 +657,16 @@ set_period(A::AbstractMatrix, period::Real) = PeriodicFunctionMatrix(A,period)
 #    return PeriodicFunctionMatrix(at.f, period; isconst)
 # end
 # properties
-function isconstant(A::PeriodicFunctionMatrix; check_const::Bool = false)
-    check_const ? PeriodicMatrices.isconstant(A.f,A.period/A.nperiod) : A._isconstant 
+function isconstant(A::PeriodicFunctionMatrix; check_const::Bool = false, atol::Float64 = 1000*eps(), rtol::Float64 = sqrt(eps()))
+    check_const ? PeriodicMatrices.isconstant(A.f,A.period/A.nperiod; atol, rtol) : A._isconstant 
 end
 
 # function isperiodic(f::Function, period::Real)  
 #    t = rand(typeof(period))*period
 #    return f(t) ≈ f(t+period) || isapprox(f(t),f(t+period),rtol = 100*sqrt(eps(period)))
 # end
-function PeriodicMatrices.isconstant(f::Function, period::Real; rtol::Float64 = eps(), atol::Float64 = sqrt(eps()))  
-   return abs(optimize(t->-norm(f(t)-f(0),Inf),0,period,Optim.Brent(),rel_tol = rtol).minimum) < atol 
+function PeriodicMatrices.isconstant(f::Function, period::Real; atol::Float64 = 1000*eps(), rtol::Float64 = sqrt(eps()))  
+   return abs(optimize(t->-norm(f(t)-f(0),Inf),0,period,Optim.Brent(),rel_tol = rtol,abs_tol=atol).minimum) < atol+rtol*norm(f(period*rand()),Inf)
 end
 
 #isperiodic(A::PeriodicFunctionMatrix) = isconstant(A) ? true : isperiodic(A.f,A.period/A.nperiod)

@@ -2117,8 +2117,8 @@ function Base.isapprox(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix; kwa
     end
     return true
 end
-function Base.isapprox(A::PeriodicFunctionMatrix, J::UniformScaling{<:Real}; atol::Real=0, rtol::Real=atol>0 ? 0 : sqrt(eps(eltype(A))))
-    return isconstant(A) && isapprox(A.f(0), J; atol, rtol)
+function Base.isapprox(A::PeriodicFunctionMatrix, J::UniformScaling{<:Real}; atol::Real=0., rtol::Real=atol>0 ? 0. : sqrt(eps(eltype(A))))
+    return isconstant(A;check_const=true,atol, rtol) && isapprox(A.f(0), J; atol, rtol)
 end
 Base.isapprox(J::UniformScaling{<:Real}, A::PeriodicFunctionMatrix; kwargs...) = isapprox(A, J; kwargs...)
 
@@ -2415,8 +2415,8 @@ function Base.isapprox(A::HarmonicArray, B::HarmonicArray; rtol::Real = sqrt(eps
                all([norm(B.values[:,:,i],1) < tol for i in na+1:nb])  
     end
 end
-function Base.isapprox(A::HarmonicArray, J::UniformScaling{<:Real}; atol::Real=0, rtol::Real=atol>0 ? 0 : sqrt(eps(eltype(A))))
-    return isconstant(A) && isapprox(tpmeval(A,0), J; atol, rtol)
+function Base.isapprox(A::HarmonicArray, J::UniformScaling{<:Real}; atol::Real=0., rtol::Real=atol>0 ? 0. : sqrt(eps(eltype(A))))
+    return (isconstant(A) || norm(view(A.values,:,:,2:size(A.values,3)),Inf) < atol+rtol) && isapprox(tpmeval(A,0), J; atol, rtol)
 end
 Base.isapprox(J::UniformScaling{<:Real}, A::HarmonicArray; kwargs...) = isapprox(A, J; kwargs...)
 
