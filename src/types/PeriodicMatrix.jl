@@ -566,7 +566,8 @@ end
 
 Continuous-time periodic function matrix representation.
 
-The continuous-time periodic real matrix function `f(t)` of real time variable `t`, 
+The continuous-time periodic function matrix object `A` is built from
+the real matrix function `f(t)` of real time variable `t`, 
 the associated time period `T` and the associated number of subperiods
 specified via the keyword argument `nperiod = k`. 
 It is assumed that  `f(t) = f(t+T/k)` for any real time value `t`.

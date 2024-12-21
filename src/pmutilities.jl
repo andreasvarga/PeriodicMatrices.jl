@@ -135,7 +135,7 @@ end
 
 Compute the function matrix corresponding to an interpolated matrix time series. 
 For the given matrix time series `A`, a function matrix `A(t)` is defined as the 
-mapping `A(t) = t -> etpf(t)`, where `etpf(t)` is an interpolation object,  
+mapping `A(t) = t -> Aint(t)`, where `Aint(t)` is an array of interpolation objects,  
 as provided in the [`Interpolations.jl`](https://github.com/JuliaMath/Interpolations.jl)  package. 
 The keyword parameter `method` specifies the interpolation method to be used as follows:
 
@@ -155,6 +155,9 @@ function ts2fm(A::Vector{<:AbstractMatrix}, T; method = "linear")
    d = T/(N-1)
    ts = (0:N-1)*d
    n1, n2 = size(A[1])
+   for i = 2:N
+       n1, n2 == size(A[i]) || throw(ArgumentError("all component matrices must have the same dimesnions"))
+   end
    intparray = Array{Any,2}(undef, n1, n2)
    if method == "constant"     
       # use simple function evaluation
