@@ -156,7 +156,7 @@ function ts2fm(A::Vector{<:AbstractMatrix}, T; method = "linear")
    ts = (0:N-1)*d
    n1, n2 = size(A[1])
    for i = 2:N
-       n1, n2 == size(A[i]) || throw(ArgumentError("all component matrices must have the same dimesnions"))
+      (n1, n2) == size(A[i]) || throw(ArgumentError("all component matrices must have the same dimesnions"))
    end
    intparray = Array{Any,2}(undef, n1, n2)
    if method == "constant"     
