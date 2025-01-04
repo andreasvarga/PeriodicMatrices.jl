@@ -39,22 +39,21 @@ A continuous-time periodic matrix can be specified in one of the following forms
 
   where `ω = 2π/T` and `A_0`, `Ac_i`, `As_i` for `i = 1,..., p` are real matrices;  
 
-- _periodic matrix time series with constant dimensions on a uniform time grid_, with a vector of component matrices `[A_1, ..., A_p]`, such that `A(t) = A_i` for `t ∈ [Δ*(i-1),Δ*i)`, `i = 1,..., p` and `Δ = T/p`; 
+- _periodic matrix time series with constant dimensions on a uniform time grid_; 
 
-- _periodic matrix time series with constant dimensions on a non-uniform time grid_, with a vector of component matrices `[A_1, ..., A_p]`, such that  `A(t) = A_i` for `t ∈ [ts[i],ts[i+1])`, if `i < p`, or `t ∈ [ts[i],T′)`, if `i = p`, where 
-  `ts` is a `p`-vector  of increasingly ordered switching time values and  `ts[1] = 0`;
+- _periodic matrix time series with constant dimensions on a non-uniform time grid_;
 
 - _Fourier matrix series approximation_, with `A(t)` a Fourier series representation (similar to the harmonic matrix series representation) as defined in the [`ApproxFun.jl`](https://github.com/JuliaApproximation/ApproxFun.jl) package.    
 
 A discrete-time periodic matrix can be specified in the following forms:
 
-- _periodic matrix time series on a uniform time grid_, with a vector of component matrices `[A_1, ..., A_p]`, such that `A(i) = A_i`, for `i = 1,..., p`; 
+- _periodic matrix time series with time-varying dimensions on a uniform time grid_; 
 
-- _periodic matrix time series on a non-uniform time grid_, with a vector of component matrices `[A_1, ..., A_p]`, such that `A(j) = A_i`, for `i = 1,..., p` and `j ∈ [ns[i-1]+1, ..., ns[i]]`, where `ns` is a `p`-vector  of increasing positive integers representing the discrete switching moments and `ns[0] := 0`;
+- _periodic matrix time series with time-varying dimensions on a non-uniform time grid_;
 
-- _periodic matrix time series with constant dimensions on a uniform time grid_, with a 3-dimensional array of component matrices `M`, such that `A(i) = M[:,:,i]`, for `i = 1,..., p`;
+- _periodic matrix time series with constant dimensions on a uniform time grid_;
 
-- _periodic matrix time series with constant dimensions on a non-uniform time grid_, with a 3-dimensional array of component matrices `M`, such that `A(j) = M[:,:,i]`, for `i = 1,..., p` and `j ∈ [ns[i-1]+1, ..., ns[i]]`, where `ns` is a `p`-vector  of increasing positive integers representing the discrete switching moments and `ns[0] := 0`.
+- _periodic matrix time series with constant dimensions on a non-uniform time grid_.
 
 All possible conversions between the above representations are supported. The provided classes of periodic representations significantly extend the classes used in the _Periodic Systems Toolbox for Matlab_ (see [1]).  
 
