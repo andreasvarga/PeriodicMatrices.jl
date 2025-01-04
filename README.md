@@ -42,7 +42,7 @@ A continuous-time periodic matrix can be specified in one of the following forms
 - _periodic matrix time series with constant dimensions on a uniform time grid_, with a vector of component matrices `[A_1, ..., A_p]`, such that `A(t) = A_i` for `t ∈ [Δ*(i-1),Δ*i)`, `i = 1,..., p` and `Δ = T/p`; 
 
 - _periodic matrix time series with constant dimensions on a non-uniform time grid_, with a vector of component matrices `[A_1, ..., A_p]`, such that `A(t) = A_i` for `t ∈ [ts[i],ts[i+1])`, if `i < p`, or `t ∈ [ts[i],T′)`, if `i = p`, where 
-  `ts` is a `p`-vector  of increasingly ordered switching time values and  `ts[1] = 0`;
+`ts` is a `p`-vector  of increasingly ordered switching time values and  `ts[1] = 0`;
 
 - _Fourier matrix series approximation_, with `A(t)` a Fourier series representation (similar to the harmonic matrix series representation) as defined in the [`ApproxFun.jl`](https://github.com/JuliaApproximation/ApproxFun.jl) package.    
 
