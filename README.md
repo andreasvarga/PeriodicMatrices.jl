@@ -39,12 +39,12 @@ A continuous-time periodic matrix can be specified in one of the following forms
 
   where `ω = 2π/T` and `A_0`, `Ac_i`, `As_i` for `i = 1,..., p` are real matrices;  
 
-- _periodic matrix time series on a uniform time grid_, with `A(t) = A_i` for t ∈ [Δ*(i-1),Δ*i), `i = 1,..., p` and Δ = T/p; 
+- _periodic matrix time series on a uniform time grid_, with `A(t) = A_i` for `t ∈ [Δ*(i-1),Δ*i)`, `i = 1,..., p` and `Δ = T/p`; 
 
-- _periodic matrix time series on a non-uniform time grid_, with `A(t) = A_i` for t ∈ [ts[i],ts[i+1])`, if `i < p`, or `t ∈ [ts[i],T′)`, if `i = p`, where 
+- _periodic matrix time series on a non-uniform time grid_, with `A(t) = A_i` for `t ∈ [ts[i],ts[i+1])`, if `i < p`, or `t ∈ [ts[i],T′)`, if `i = p`, where 
   `ts` is a `p`-vector  of increasingly ordered switching time values and  `ts[1] = 0`;
 
-- _Fourier matrix series approximation_, with `A(t)` a Fourier series representation (similar to the harmonic matrix series representation) as defined in the [`ApproxFun.jl`](https://github.com/JuliaApproximation/ApproxFun.jl) package    
+- _Fourier matrix series approximation_, with `A(t)` a Fourier series representation (similar to the harmonic matrix series representation) as defined in the [`ApproxFun.jl`](https://github.com/JuliaApproximation/ApproxFun.jl) package.    
 
 A discrete-time periodic matrix can be specified in the following forms:
 
@@ -54,24 +54,24 @@ A discrete-time periodic matrix can be specified in the following forms:
 
 - _periodic matrix time series with constant dimensions on a uniform time grid_, with a 3-dimensional array of component matrices `M`, such that `A(i) = M[:,:,i]`, for `i = 1,..., p`;
 
-- _periodic matrix time series with constant dimensions on a non-uniform time grid_, with a 3-dimensional array of component matrices `M`, such that `A(i) = M[:,:,i]`, for `i = 1,..., p` and `j ∈ [ns[i-1]+1, ..., ns[i]]`, where `ns` is a `p`-vector  of increasing positive integers representing the discrete switching moments and `ns[0] := 0`.
+- _periodic matrix time series with constant dimensions on a non-uniform time grid_, with a 3-dimensional array of component matrices `M`, such that `A(j) = M[:,:,i]`, for `i = 1,..., p` and `j ∈ [ns[i-1]+1, ..., ns[i]]`, where `ns` is a `p`-vector  of increasing positive integers representing the discrete switching moments and `ns[0] := 0`.
 
-All possible conversions between the above representations are supported. 
+All possible conversions between the above representations are supported. The provided classes of periodic representations significantly extend the classes used in the _Periodic Systems Toolbox for Matlab_ (see [1]).  
+
 
 For a periodic matrix `A(t)` of period `T` the periodicity condition `A(t) = A(t+T)` is assumed for all values of `t`, but 
-it is _not_ assumed that `T` is the minimum value for which this condition holds. For each periodic matrix object a subperiod `Tsub := T/n` can be also defined, 
+it is _not_ assumed that `T` is the minimum value for which this condition holds. For each periodic matrix object a subperiod `Tsub := T/n` can also be defined, 
 such that `A(t) = A(t+Tsub)` for all `t`, whhere `n` is the number of subperiods. Usually `n = 1` and thus `Tsub = T`, but in some cases values `n > 1` allow substantial memory saving for some classes of periodic representations. 
 
-The provided classes of periodic representation extend the classes used in the _Periodic Systems Toolbox for Matlab_ (see [1]).  
 
 Several operations on periodic matrices are implemented, such as, inversion, transposing, norms, derivative/shifting, trace.
 All operations with two periodic matrices such as addition/substraction, multiplication, horizontal/vertical concatenation, block-diagonal appending,
 allow different, but commensurate, periods/subperiods.  
 
-Several advanced computational functions are provided to compute the characteristic multipliers and characteristic exponents of periodic matrices, using methods based on the periodic Schur decomposition of matrix products (provided in the [`SLICOT`](https://github.com/SLICOT/SLICOT-Reference/) library or [`PeriodicSchurDecompositions.jl`](https://github.com/RalphAS/PeriodicSchurDecompositions.jl) package)
+Several advanced computational functions are provided to compute the characteristic multipliers and characteristic exponents of periodic matrices, using methods based on the periodic Schur decomposition of matrix products (provided in the [`SLICOT`](https://github.com/SLICOT/SLICOT-Reference/) library or in the [`PeriodicSchurDecompositions.jl`](https://github.com/RalphAS/PeriodicSchurDecompositions.jl) package)
 or structure exploitung fast algorithms requiring no external supporting packages. 
 These functions are instrumental to apply [Floquet theory](https://en.wikipedia.org/wiki/Floquet_theory) to study the properties of solutions of 
-various classes of differential equations (Mathieu, Hill, Meissner) and the stability of linear periodic systems (see [`PeriodicSystems.jl`](https://github.com/andreasvarga/PeriodicSystems.jl) package). The implementations of several functions rely on the high performance ODE solvers available in the [`OrdinaryDiffEq`](https://github.com/SciML/OrdinaryDiffEq.jl) and [`IRKGaussLegendre`](https://github.com/SciML/IRKGaussLegendre.jl) packages. 
+various classes of differential equations (e.g., Mathieu, Hill, Meissner) and the stability of linear periodic systems (see [`PeriodicSystems.jl`](https://github.com/andreasvarga/PeriodicSystems.jl) package). The implementations of several functions rely on the high performance ODE solvers available in the [`OrdinaryDiffEq`](https://github.com/SciML/OrdinaryDiffEq.jl) and [`IRKGaussLegendre`](https://github.com/SciML/IRKGaussLegendre.jl) packages. 
 
 Examples of using some functions are available [here](Examples.md).
 
