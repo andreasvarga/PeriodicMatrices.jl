@@ -24,6 +24,9 @@ pkg> test PeriodicMatrices
 `PeriodicMatrices.jl` provides the basic tools to handle periodic time-varying matrices. 
 
 For a real periodic matrix `A(t)` with period `T`, the dependence of the time variable `t` can be either continuous or discrete. 
+The periodicity condition `A(t) = A(t+T)` is assumed for all values of `t`, but 
+it is _not_ assumed that `T` is the minimum value for which this condition holds. For each periodic matrix representation a subperiod `Tsub := T/n` can also be defined, 
+such that `A(t) = A(t+Tsub)` for all `t`, where `n` is the number of subperiods. Usually `n = 1` and thus `Tsub = T`, but in some cases values `n > 1` allow substantial memory saving for some classes of periodic representations. 
 
 A continuous-time periodic matrix can be specified in one of the following forms:
 
@@ -56,12 +59,6 @@ A discrete-time periodic matrix can be specified in the following forms:
 - _periodic matrix time series with constant dimensions on a non-uniform time grid_.
 
 All possible conversions between the above representations are supported. The provided classes of periodic representations significantly extend the classes used in the _Periodic Systems Toolbox for Matlab_ (see [1]).  
-
-
-For a periodic matrix `A(t)` of period `T` the periodicity condition `A(t) = A(t+T)` is assumed for all values of `t`, but 
-it is _not_ assumed that `T` is the minimum value for which this condition holds. For each periodic matrix object a subperiod `Tsub := T/n` can also be defined, 
-such that `A(t) = A(t+Tsub)` for all `t`, whhere `n` is the number of subperiods. Usually `n = 1` and thus `Tsub = T`, but in some cases values `n > 1` allow substantial memory saving for some classes of periodic representations. 
-
 
 Several operations on periodic matrices are implemented, such as, inversion, transposing, norms, derivative/shifting, trace.
 All operations with two periodic matrices such as addition/substraction, multiplication, horizontal/vertical concatenation, block-diagonal appending,
