@@ -22,7 +22,6 @@ pkg> test PeriodicMatrices
 ## About
 
 `PeriodicMatrices.jl` provides the basic tools to handle periodic time-varying matrices. 
-The time dependence can be either continuous or discrete. 
 
 For a real periodic matrix `A(t)` with period `T`, the dependence of the time variable `t` can be either continuous or discrete. 
 
@@ -34,9 +33,9 @@ A continuous-time periodic matrix can be specified in one of the following forms
 
 - _harmonic matrix series_, with `A(t)` defined as 
 
-                   p
-     A(t) = A_0 +  ∑ ( Ac_i*cos(iωt)+As_i*sin(iωt) ) ,
-                  i=1 
+                         p
+           A(t) = A_0 +  ∑ ( Ac_i*cos(iωt)+As_i*sin(iωt) ) ,
+                        i=1 
 
   where `ω = 2π/T` and `A_0`, `Ac_i`, `As_i` for `i = 1,..., p` are real matrices;  
 
