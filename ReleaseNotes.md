@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 0.1.6
+
+Correct `hrtrunc` to accomodate several subperiods. 
+
 ## Version 0.1.5
 
 Minor corrections in documentation.

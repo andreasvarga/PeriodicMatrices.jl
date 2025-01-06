@@ -32,9 +32,9 @@ The following solvers from the [OrdinaryDiffEq.jl](https://github.com/SciML/Ordi
 
 `solver = "symplectic"` - use a symplectic Hamiltonian structure preserving solver (`IRKGL16()`);
 
-`solver = ""` - use the default solver, which automatically detects stiff problems (`AutoTsit5(Rosenbrock23())` or `AutoVern9(Rodas5())`). 
+`solver = "auto"` - use the default solver, which automatically detects stiff problems (`AutoTsit5(Rosenbrock23())` or `AutoVern9(Rodas5())`). 
 """
-function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol = 1e-7, dt = (tf-t0)/10) where 
+function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "auto", reltol = 1e-3, abstol = 1e-7, dt = (tf-t0)/10) where 
          {T, PM <: Union{PeriodicFunctionMatrix{:c,T},HarmonicArray{:c,T}}} 
    n = size(A,1)
    n == size(A,2) || error("the function matrix must be square")
@@ -635,8 +635,9 @@ end
 Truncate a harmonic representation by deleting the trailing terms whose indices exceed certain number `n` of harmonics. 
 
 """
-function hrtrunc(ahr::HarmonicArray, n::Int = size(ahr.values,3)-1) 
-   return HarmonicArray(ahr.values[:,:,1:max(1,min(n+1,size(ahr.values,3)))], ahr.period; nperiod = ahr.nperiod)
+function hrtrunc(ahr::HarmonicArray, n::Int = ahr.nperiod*(size(ahr.values,3)-1)) 
+   #return HarmonicArray(ahr.values[:,:,1:max(1,min(n+1,size(ahr.values,3)))], ahr.period; nperiod = ahr.nperiod)
+   return HarmonicArray(ahr.values[:,:,1:max(1,min(div(n,ahr.nperiod)+1,size(ahr.values,3)))], ahr.period; nperiod = ahr.nperiod)
 end
 
 """

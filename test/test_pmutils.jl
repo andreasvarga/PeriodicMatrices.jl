@@ -376,7 +376,8 @@ cmf = pseig(Gf,1000; reltol = 1.e-14) # characteristic multipliers
 Gsw = PeriodicSwitchingMatrix([G(ti) for ti in ts1[1:end-1]],ts1[1:end-1],pi)
 cmsw = pseig(Gsw)
 
-tt = rand(10)*pi
+#tt = rand(10)*pi
+tt = [3.13428  1.89222  1.59015  2.85605  3.03965  0.966887  2.68571  0.364279  0.73611  1.1536][:]
 @test tvmeval(Gsw,tt)  ≈ tvmeval(Gsw,tt.+2pi) ≈ tvmeval(Gf,tt)
 
 # Floquet analysis for Hill equation with a negative slope sawtooth waveform coefficient of Example Fig 3.3

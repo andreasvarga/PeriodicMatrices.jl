@@ -1735,7 +1735,6 @@ function pmderiv(A::PeriodicFunctionMatrix{:c,T};  h::Union{Missing,Real} = miss
     end
     # first-order differences 
     ismissing(h) && (h = tsub*sqrt(eps(float(T))))
-    @show h
     if discont 
        if h > 0
           return PeriodicFunctionMatrix{:c,T}(t -> t+h >= tsub ? (tpmeval(A,t)-tpmeval(A,t-h))/h : (tpmeval(A,t+h)-tpmeval(A,t))/h, A.period, A.dims, A.nperiod, false)
