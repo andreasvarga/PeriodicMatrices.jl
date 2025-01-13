@@ -79,7 +79,15 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicSymbolic
    period = A.period 
    nperiod = A.nperiod
    println(io, "Period:  $period   #Subperiods: $nperiod")
-   show(io, mime, A.F)
+   if PeriodicMatrices.isconstant(A) 
+      println("\nConstant matrix = ")
+      Base.print_matrix(IOContext(io, :limit => true), A(0))
+   else
+      println("\nPeriodic time-varying matrix = ")
+      Base.print_matrix(IOContext(io, :limit => true), A.F)
+      #show(io, mime, A.f)
+   end
+   #show(io, mime, A.F)
 end
 
 function Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, A::PeriodicSymbolicMatrix) where T

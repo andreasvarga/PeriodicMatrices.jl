@@ -303,7 +303,8 @@ t = rand();
 # PeriodicSymbolicMatrix
 @show "symbolic operations"
 
-tm = pmrand(PeriodicSymbolicMatrix,2,2)
+tm = pmrand(PeriodicSymbolicMatrix,2,2);
+display(tm)
 
 @variables t
 A11 = [0  1; -10*cos(t)-1 -24-19*sin(t)]
