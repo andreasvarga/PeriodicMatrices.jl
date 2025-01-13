@@ -305,6 +305,7 @@ t = rand();
 
 tm = pmrand(PeriodicSymbolicMatrix,2,2);
 display(tm)
+display(PeriodicSymbolicMatrix(rand(2,2),10))
 
 @variables t
 A11 = [0  1; -10*cos(t)-1 -24-19*sin(t)]
