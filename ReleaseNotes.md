@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 0.1.8
+
+Adding tests for `show`. 
+
 ## Version 0.1.7
 
 Implement `show` and `print` for all periodic matrix types and 

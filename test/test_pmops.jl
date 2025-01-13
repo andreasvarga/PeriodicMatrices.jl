@@ -31,6 +31,7 @@ b(t) = [cos(t)]
 @show "periodic function matrix operations"
 tm = pmrand(PeriodicFunctionMatrix,2,2)
 At = PeriodicFunctionMatrix(A,2*pi)
+display(At)
 Ct = PeriodicFunctionMatrix(C,2*pi)
 At1 = pmcopy(At)
 Cdt = PeriodicFunctionMatrix(Cd,2*pi)
@@ -76,6 +77,7 @@ ap = rand(2,2); Ap = PeriodicFunctionMatrix(ap,pi)
 
 
 aa = rand(2,2); Ac = PeriodicFunctionMatrix(aa,2)
+display(Ac)
 bb = rand(2,2); Bc = PeriodicFunctionMatrix(bb,2)
 aat = (bb+bb')/2; AAtc = PeriodicFunctionMatrix(aat,2)
 @test Ac+Bc ≈ PeriodicFunctionMatrix(aa+bb,2)
@@ -166,10 +168,11 @@ D = rand(2,2)
 # HarmonicArray
 @show "Harmonic array operations"
 tm = pmrand(HarmonicArray,2,2)
+display(tm)
 tm1 = pmrand(2,2)
 
 A0 = rand(2,2); Acos = [rand(2,2)]; Asin = [rand(2,2),rand(2,2)]
-HarmonicArray(A0,Acos,Asin,pi)
+display(HarmonicArray(A0,Acos,Asin,pi))
 @test iszero(imag(HarmonicArray(A0,Acos,pi).values))
 @test iszero(real(HarmonicArray(zeros(2,2),nothing,Asin,pi).values))
 @test HarmonicArray(A0,pi) == HarmonicArray(A0,nothing,nothing,pi) == HarmonicArray{:c,Float64}(A0,pi)
@@ -399,7 +402,8 @@ t = rand();
 # FourierFunctionMatrix
 @show "Fourier series operations"
 
-tm = pmrand(FourierFunctionMatrix,2,2)
+tm = pmrand(FourierFunctionMatrix,2,2);
+display(tm)
 
 @time Af = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A,2*pi));
 @time Af1 = convert(FourierFunctionMatrix,PeriodicFunctionMatrix(A1,2*pi));
@@ -516,8 +520,11 @@ t = rand();
 @test blockdiag(Af,Cf)(t) ≈ bldiag(Af(t),Cf(t))
 
 # PeriodicTimeSeriesMatrix
-tm = pmrand(PeriodicTimeSeriesMatrix,2,2)
-tm = pmrand(PeriodicTimeSeriesMatrix{:c,Float32},2,2)
+tm = pmrand(PeriodicTimeSeriesMatrix,2,2; ns = 5);
+display(tm)
+tm = pmrand(PeriodicTimeSeriesMatrix{:c,Float32},2,2);
+display(tm)
+
 
 t1 = -rand(Float32,2,2); t2 = rand(Float32,2,2); Ats1 = PeriodicTimeSeriesMatrix{:c,Float64}([t1,t2],2)
 @test Ats1.ts == [0.,1.]
@@ -658,7 +665,8 @@ t = rand();
 
 
 # PeriodicSwitchingMatrix
-tm = pmrand(PeriodicSwitchingMatrix{:c,Float32},2,2,5.,ts=[0.,2.5])
+tm = pmrand(PeriodicSwitchingMatrix{:c,Float32},2,2,5.,ts=[0.,2.5]);
+display(tm)
 tm = pmrand(PeriodicSwitchingMatrix,2,2,5.,ts=[0.,2.5])
 td = pmderiv(tm)
 tm1 = pmcopy(tm)
@@ -765,6 +773,7 @@ Att = pmrand(PeriodicFunctionMatrix,2,2,2.)
 # PeriodicArray
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*pmrand(PeriodicArray,n,n,pa,ns=pa);
+display(Ad)
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[:,:,1]
 #@test getpm(Ad,Ad.dperiod+1) == getpm(Ad,1)
@@ -870,6 +879,7 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; pmsymadd!(Qdr1,0.5)
 # PeriodicMatrix
 n = 5; pa = 3; px = 6;   
 Ad = 0.5*pmrand(PeriodicMatrix,n,n,pa,ns=pa);
+display(Ad)
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[1]
 #@test getpm(Ad,Ad.dperiod+1) == getpm(Ad,1)
@@ -981,6 +991,7 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; pmsymadd!(Qdr1,0.5)
 # time-varying dimensions
 na = [5, 3, 3, 4, 1]; ma = [3, 3, 4, 1, 5]; pa = 5; px = 5;    
 Ad = pmrand(ma,na,pa);
+display(Ad)
 # x = [rand(na[i],na[i]) for i in 1:px]
 # Xd = PeriodicMatrix([ x[i]+x[i]' for i in 1:px],px);
 Xd = pmrand(PeriodicMatrix,na,na,px); pmsymadd!(Xd)
@@ -1024,7 +1035,8 @@ Qdr1 = -Ad1'*pmshift(Xd1)*Ad1+Xd1; pmsymadd!(Qdr1,0.5)
 
 # SwitchingPeriodicMatrix
 n = 2; pa = 3; px = 6; T = 10; 
-Ad = 0.5*pmrand(SwitchingPeriodicMatrix,n,n,T, ns = [10,15,20])
+Ad = 0.5*pmrand(SwitchingPeriodicMatrix,n,n,T, ns = [10,15,20]);
+display(Ad)
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[1]
 #@test getpm(Ad,Ad.dperiod+1) == getpm(Ad,1)
@@ -1097,9 +1109,14 @@ D = rand(n,n)
 @test blockdiag(Ad,Xd)[10] ≈ bldiag(Ad[10],Xd[10])   
 @test blockdiag(Ad,Bd)[10] ≈ bldiag(Ad[10],Bd[10])   
 
+na = [5, 3, 3, 4, 1]; ma = [3, 3, 4, 1, 5]; pa = 5;    
+Ad = SwitchingPeriodicMatrix(pmrand(ma,na,pa).M,[2,4,5,7,10],10);
+display(Ad)
+
 # SwitchingPeriodicArray
 n = 2; pa = 3; px = 6; T = 10; 
-Ad = 0.5*pmrand(SwitchingPeriodicArray,n,n,T,ns = [10,15,20])
+Ad = 0.5*pmrand(SwitchingPeriodicArray,n,n,T,ns = [10,15,20]);
+display(Ad)
 Ad1 = pmcopy(Ad)
 @test Ad(0) == Ad.M[:,:,1]
 #@test getpm(Ad,Ad.dperiod+1) == getpm(Ad,1)
