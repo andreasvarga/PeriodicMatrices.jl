@@ -301,7 +301,7 @@ function PeriodicMatrices.ffm2hr(A::FourierFunctionMatrix{:c,T}; atol::Real = 0,
    ncur = n
    AHR = zeros(complex(T), n1, n2, n+1)
    tol = iszero(atol) ? (iszero(rtol) ? 10*n*eps(maximum(norm.(coefficients.(Matrix(A.M)),Inf))) : rtol*maximum(norm.(coefficients.(Matrix(A.M)),Inf)) ) : atol
-   for i = 1:n1
+  for i = 1:n1
        for j = 1:n2
            tt = coefficients(A.M[i,j])
            tt[abs.(tt) .<= tol] .= zero(T)
@@ -316,6 +316,10 @@ function PeriodicMatrices.ffm2hr(A::FourierFunctionMatrix{:c,T}; atol::Real = 0,
               isodd(lentt) || (AHR[i,j,k+1] = im*tt[end])
            end
        end
+   end
+   for i = n:-1:1
+       !iszero(view(AHR,:,:,i+1)) && break
+       ncur -= 1
    end
    nperiod = A.nperiod
    if ncur > 2 && squeeze

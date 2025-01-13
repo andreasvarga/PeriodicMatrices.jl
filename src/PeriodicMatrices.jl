@@ -19,7 +19,7 @@ using .SLICOTtools: mb03vd!, mb03vy!, mb03bd!, mb03wd!, mb03vw!, mb03kd!
 
 import LinearAlgebra: BlasInt, BlasFloat, BlasReal, BlasComplex, copy_oftype, transpose, adjoint, opnorm, normalize, rdiv!, issymmetric, norm, tr
 import Base: +, -, *, /, \, (==), (!=), ^, isapprox, iszero, isequal, convert, promote_op, size, length, ndims, reverse, 
-             hcat, vcat, hvcat, inv, show, lastindex, require_one_based_indexing, print, show, one, zero, eltype
+             hcat, vcat, hvcat, inv, lastindex, require_one_based_indexing, print, show, one, zero, eltype
 
 export PeriodicMatrix, pschur, pschur!, pschur1, pschur2, pgschur, pgschur!, phess, phess!, phess1, psreduc_reg, psreduc_fast, check_psim, mshift,  
        tvmeval, tpmeval, hreval, tvstm, psordschur!, psordschur1!, pgordschur!, ws_pschur

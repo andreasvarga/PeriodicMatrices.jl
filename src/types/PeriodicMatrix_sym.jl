@@ -71,6 +71,17 @@ function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicSymbolicMatrix
 end
 
 
+Base.print(io::IO, A::PeriodicSymbolicMatrix) = show(io, A)
+Base.show(io::IO, A::PeriodicSymbolicMatrix) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicSymbolicMatrix)
+   m, n = size(A) 
+   println(io, "$m×$n "*summary(A))
+   period = A.period 
+   nperiod = A.nperiod
+   println(io, "Period:  $period   #Subperiods: $nperiod")
+   show(io, mime, A.F)
+end
+
 function Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, A::PeriodicSymbolicMatrix) where T
    @variables t
    f = eval(build_function(A.F, t, expression=Val{false}, nanmath=false)[1])

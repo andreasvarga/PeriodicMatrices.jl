@@ -95,6 +95,40 @@ function Base.lastindex(A::PM, dim::Int) where PM <: FourierFunctionMatrix
    size(A.M,dim)
 end
 
+Base.print(io::IO, A::FourierFunctionMatrix) = show(io, A)
+Base.show(io::IO, A::FourierFunctionMatrix) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, Af::FourierFunctionMatrix)
+   A = PeriodicMatrices.ffm2hr(Af,squeeze = false)
+   m, n = size(A) 
+   println(io, "$m×$n "*summary(Af))
+   period = A.period 
+   nperiod = A.nperiod
+   nvalues = size(A.values,3)-1
+   nharmonics = nperiod*nvalues
+   println(io, "Period:  $period   #Subperiods: $nperiod   #Harmonics: $nharmonics")
+   if m > 0 && n > 0
+      ts = 2*pi*A.nperiod/period
+      if nharmonics >= 0
+         println("\nConstant term =") 
+         Base.print_matrix(IOContext(io, :limit => true), real(A.values[:,:,1]))
+      end
+      i1 = max(min(4,nvalues)+1,nvalues-2)
+      for i in [1:min(4,nvalues); i1:nvalues]
+         ii = i*nperiod
+         if !iszero(real(A.values[:,:,i+1]))
+            println("\nHarmonic #$ii: cos($(i*ts)t) term =")
+            Base.print_matrix(IOContext(io, :limit => true), real(A.values[:,:,i+1]))
+         end
+         if !iszero(imag(A.values[:,:,i+1]))
+            println("\nHarmonic #$ii: sin($(i*ts)t) term =")
+            Base.print_matrix(IOContext(io, :limit => true), imag(A.values[:,:,i+1]))
+         end
+         i == 4 && i1 > 5 && println("\n;;; …  ")
+      end
+   end
+end
+
+
 # conversion to periodic function matrix
 function Base.convert(::Type{PeriodicFunctionMatrix{:c,T}}, A::FourierFunctionMatrix) where T
    return PeriodicFunctionMatrix{:c,T}(x -> T.(A.M(T(x))), A.period, size(A), A.nperiod, PeriodicMatrices.isconstant(A))

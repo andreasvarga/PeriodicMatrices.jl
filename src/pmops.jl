@@ -1847,8 +1847,15 @@ function *(A::PeriodicFunctionMatrix, B::PeriodicFunctionMatrix)
 end
 *(A::PeriodicFunctionMatrix, C::AbstractMatrix) = *(A, PeriodicFunctionMatrix(C, A.period))
 *(A::AbstractMatrix, C::PeriodicFunctionMatrix) = *(PeriodicFunctionMatrix(A, C.period), C)
-*(A::PeriodicFunctionMatrix, C::Real) = PeriodicFunctionMatrix{:c,eltype(A)}(t -> C.*tpmeval(A,t), A.period, A.dims, A.nperiod,A._isconstant)
-*(A::Real, C::PeriodicFunctionMatrix) = PeriodicFunctionMatrix{:c,eltype(A)}(t -> A.*tpmeval(C,t), C.period, C.dims, C.nperiod,C._isconstant)
+function *(A::PeriodicFunctionMatrix, C::Real)
+    if iszero(C)
+       T = eltype(A)
+       PeriodicFunctionMatrix{:c,T}(t -> zeros(T,A.dims...), A.period, A.dims, A.nperiod,true) 
+    else
+       PeriodicFunctionMatrix{:c,eltype(A)}(t -> C.*tpmeval(A,t), A.period, A.dims, A.nperiod,A._isconstant)
+    end
+end
+*(A::Real, C::PeriodicFunctionMatrix) = *(C,A)
 /(A::PeriodicFunctionMatrix, C::Real) = *(A, 1/C)
 *(J::UniformScaling{<:Real}, A::PeriodicFunctionMatrix) = J.λ*A
 *(A::PeriodicFunctionMatrix, J::UniformScaling{<:Real}) = A*J.λ

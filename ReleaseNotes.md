@@ -1,5 +1,10 @@
 # Release Notes
 
+## Version 0.1.7
+
+Implement `show` and `print` for all periodic matrix types and 
+perform minor enhancements of two functions. 
+
 ## Version 0.1.6
 
 Correct `hrtrunc` to accomodate several subperiods. 

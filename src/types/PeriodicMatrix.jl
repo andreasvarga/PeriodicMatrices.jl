@@ -216,6 +216,33 @@ function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicMatrix
 end
 
 
+Base.print(io::IO, A::PeriodicMatrix) = show(io, A)
+Base.show(io::IO, A::PeriodicMatrix) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicMatrix)
+   m, n = size(A) 
+   period = A.period 
+   dperiod, nperiod = length(A), A.nperiod
+   cdim = maximum(m) == minimum(m) && maximum(n) == minimum(n)
+   if cdim
+      println(io, "$(m[1])×$(n[1]) "*summary(A))
+   else
+      dperiod <= 5 ? println(io, "$m×$n "*summary(A)) : println(io, summary(A))
+   end
+   Ts = period/nperiod/dperiod
+   println(io, "Period:  $period   #Subperiods: $nperiod   Sampling time: $Ts")   
+   i1 = max(min(4,dperiod)+1,dperiod-2)
+   for i in [1:min(4,dperiod); i1:dperiod]
+      if cdim
+         println("\n[$i] = ")
+      else
+         println("\n[$i] = $(m[i])×$(n[i]) Matrix")
+      end
+      Base.print_matrix(IOContext(io, :limit => true), A.M[i])
+      i == 4 && i1 > 5 && println("\n;;; …  ")
+   end
+end
+
+
 """
     SwitchingPeriodicMatrix(M, ns, T; nperiod = k) -> A::SwitchingPeriodicMatrix
 
@@ -326,6 +353,37 @@ end
 function Base.lastindex(A::PM, dim::Int) where PM <: SwitchingPeriodicMatrix
    return length(A) > 0 ? lastindex.(A.M,dim) : [0]
 end
+
+Base.print(io::IO, A::SwitchingPeriodicMatrix) = show(io, A)
+Base.show(io::IO, A::SwitchingPeriodicMatrix) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::SwitchingPeriodicMatrix)
+   m, n = size(A) 
+   period = A.period 
+   nvalues = length(A.ns)
+   dperiod, nperiod = A.dperiod, A.nperiod
+   cdim = maximum(m) == minimum(m) && maximum(n) == minimum(n)
+   if cdim
+      println(io, "$(m[1])×$(n[1]) "*summary(A))
+   else
+      nvalues <= 5 ? println(io, "$m×$n "*summary(A)) : println(io, summary(A))
+   end
+   Ts = period/nperiod/dperiod
+   println(io, "Period: $period   #Subperiods: $nperiod   Sampling time: $Ts")  
+   ne = nvalues == 1 ? [0] : [0;A.ns[1:end-1]]
+   println(io, "Discrete switching moments: "*repr(ne.+1))
+   println(io, "Switching times: "*repr(ne*Ts))
+   i1 = max(min(4,nvalues)+1,nvalues-2)
+   for i in [1:min(4,nvalues); i1:nvalues]
+      if cdim
+         println("\n[$i] = ")
+      else
+         println("\n[$i] = $(m[i])×$(n[i]) Matrix")
+      end
+      Base.print_matrix(IOContext(io, :limit => true), A.M[i])
+      i == 4 && i1 > 5 && println("\n;;; …  ")
+   end
+end
+
 
 
 """
@@ -464,6 +522,24 @@ isdiscrete(A::AbstractPeriodicArray) = !iscontinuous(A)
 #iscontinuous(A::Type) = A.parameters[1] == :c 
 
 
+Base.print(io::IO, A::PeriodicArray) = show(io, A)
+Base.show(io::IO, A::PeriodicArray) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicArray)
+   m, n = size(A) 
+   period = A.period 
+   dperiod, nperiod = length(A), A.nperiod
+   println(io, "$m×$n "*summary(A))
+   Ts = period/nperiod/dperiod
+   println(io, "Period:  $period   #Subperiods: $nperiod   Sampling time: $Ts")   
+   i1 = max(min(4,dperiod)+1,dperiod-2)
+   for i in [1:min(4,dperiod); i1:dperiod]
+      println("\n[:,:,$i] = ")
+      Base.print_matrix(IOContext(io, :limit => true), A.M[:,:,i])
+      i == 4 && i1 > 5 && println("\n;;; …  ")
+   end
+end
+
+
 """
     SwitchingPeriodicArray(M, ns, T; nperiod = k) -> A::SwitchingPeriodicArray
 
@@ -557,6 +633,27 @@ function Base.getindex(A::PM, inds...) where PM <: SwitchingPeriodicArray
 end
 function Base.lastindex(A::PM, dim::Int) where PM <: SwitchingPeriodicArray
    return lastindex(A.M,dim) 
+end
+
+Base.print(io::IO, A::SwitchingPeriodicArray) = show(io, A)
+Base.show(io::IO, A::SwitchingPeriodicArray) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::SwitchingPeriodicArray)
+   m, n = size(A) 
+   period = A.period 
+   nvalues = length(A.ns)
+   dperiod, nperiod = A.dperiod, A.nperiod
+   println(io, "$m×$n "*summary(A)) 
+   Ts = period/nperiod/dperiod
+   println(io, "Period: $period   #Subperiods: $nperiod   Sampling time: $Ts")  
+   ne = nvalues == 1 ? [0] : [0;A.ns[1:end-1]]
+   println(io, "Discrete switching moments: "*repr(ne.+1))
+   println(io, "Switching times: "*repr(ne*Ts))
+   i1 = max(min(4,nvalues)+1,nvalues-2)
+   for i in [1:min(4,nvalues); i1:nvalues]
+      println("\n[:,:,$i] = ")
+      Base.print_matrix(IOContext(io, :limit => true), A.M[:,:,i])
+      i == 4 && i1 > 5 && println("\n;;; …  ")
+   end
 end
 
 
@@ -715,7 +812,7 @@ Return the last index along dimension `dim` of the continuous-time periodic matr
 where `PM` is one of the types `PeriodicFunctionMatrix`, `HarmonicArray`, `PeriodicTimeSeriesMatrix`, `PeriodicSwitchingMatrix`, 
 `PeriodicSymbolicMatrix` or `PeriodicFunctionMatrix`.   
 """
-function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicFunctionMatrix
+function Base.lastindex(A::PM, dim::Int) where {PM <: PeriodicFunctionMatrix}
    lastindex(A.f(0),dim)
 end
 
@@ -724,6 +821,21 @@ index2range(ind::T) where {T<:Number} = ind:ind
 index2range(ind::T) where {T<:AbstractArray} = ind
 index2range(ind::Colon) = ind
 
+Base.print(io::IO, A::PeriodicFunctionMatrix) = show(io, A)
+Base.show(io::IO, A::PeriodicFunctionMatrix) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicFunctionMatrix)
+   m, n = size(A) 
+   println(io, "$m×$n "*summary(A))
+   period = A.period 
+   nperiod = A.nperiod
+   println(io, "Period:  $period   #Subperiods: $nperiod")
+   if PeriodicMatrices.isconstant(A) 
+      println("\nConstant matrix = ")
+      Base.print_matrix(IOContext(io, :limit => true), A.f(0))
+   else
+      show(io, mime, A.f)
+   end
+end
 
 struct HarmonicArray{Domain,T} <: AbstractPeriodicArray{Domain,T} 
    values::Array{Complex{T},3}
@@ -819,6 +931,15 @@ HarmonicArray{:c,Float64}(A::VecOrMat{T}, period::Real; nperiod::Int = 1) where 
 
 
 # properties
+function Base.getproperty(A::HarmonicArray, d::Symbol)  
+   if d === :nh
+      return A.nperiod*(size(A.values,3)-1)
+   else
+      getfield(A, d)
+   end
+end
+Base.propertynames(A::HarmonicArray) = (:nh, fieldnames(typeof(A))...)
+
 isconstant(A::HarmonicArray) = size(A.values,3) <= 1 || iszero(view(A.values,:,:,2:size(A.values,3)))
 #isperiodic(A::HarmonicArray) = true
 Base.size(A::HarmonicArray) = (size(A.values,1),size(A.values,2))
@@ -834,6 +955,39 @@ end
 function Base.lastindex(A::PM, dim::Int) where PM <: HarmonicArray
    lastindex(A.values,dim)
 end
+
+Base.print(io::IO, A::HarmonicArray) = show(io, A)
+Base.show(io::IO, A::HarmonicArray) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::HarmonicArray)
+   m, n = size(A) 
+   println(io, "$m×$n "*summary(A))
+   period = A.period 
+   nperiod = A.nperiod
+   nvalues = size(A.values,3)-1
+   nharmonics = nperiod*nvalues
+   println(io, "Period:  $period   #Subperiods: $nperiod   #Harmonics: $nharmonics")
+   if m > 0 && n > 0
+      ts = 2*pi*A.nperiod/period
+      if nharmonics >= 0
+         println("\nConstant term =") 
+         Base.print_matrix(IOContext(io, :limit => true), real(A.values[:,:,1]))
+      end
+      i1 = max(min(4,nvalues)+1,nvalues-2)
+      for i in [1:min(4,nvalues); i1:nvalues]
+         ii = i*nperiod
+         if !iszero(real(A.values[:,:,i+1]))
+            println("\nHarmonic #$ii: cos($(i*ts)t) term =")
+            Base.print_matrix(IOContext(io, :limit => true), real(A.values[:,:,i+1]))
+         end
+         if !iszero(imag(A.values[:,:,i+1]))
+            println("\nHarmonic #$ii: sin($(i*ts)t) term =")
+            Base.print_matrix(IOContext(io, :limit => true), imag(A.values[:,:,i+1]))
+         end
+         i == 4 && i1 > 5 && println("\n;;; …  ")
+      end
+   end
+end
+
 """
     PeriodicSwitchingMatrix(At, ts, T; nperiod = k) -> A::PeriodicSwitchingMatrix
 
@@ -910,8 +1064,7 @@ end
 
 
 # properties
-isconstant(At::PeriodicSwitchingMatrix) = length(At.values) <= 1
-#isperiodic(At::PeriodicSwitchingMatrix) = true
+isconstant(At::PeriodicSwitchingMatrix) = (length(At.values) <= 1) || all([At.values[1] == At.values[i] for i in 2:length(At.values)])
 Base.length(At::PeriodicSwitchingMatrix) = length(At.ts) 
 Base.size(At::PeriodicSwitchingMatrix) = length(At) > 0 ? size(At.values[1]) : (0,0)
 Base.size(At::PeriodicSwitchingMatrix, d::Integer) = length(At) > 0 ? size(At.values[1],d) : 0
@@ -927,6 +1080,22 @@ function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicSwitchingMatrix
    return length(A) > 0 ? lastindex(A.values[1],dim) : 0
 end
 
+Base.print(io::IO, A::PeriodicSwitchingMatrix) = show(io, A)
+Base.show(io::IO, A::PeriodicSwitchingMatrix) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicSwitchingMatrix)
+   m, n = size(A) 
+   println(io, "$m×$n "*summary(A))
+   period = A.period 
+   nvalues, nperiod = length(A.ts), A.nperiod
+   println(io, "Period:  $period   #Subperiods: $nperiod")   
+   println(io, "Switching times: "*repr(A.ts))
+   i1 = max(min(4,nvalues)+1,nvalues-2)
+   for i in [1:min(4,nvalues); i1:nvalues]
+      println("\n[$i] = ")
+      Base.print_matrix(IOContext(io, :limit => true), A.values[i])
+      i == 4 && i1 > 5 && println("\n;;; …  ")
+   end
+end
 
 """
     PeriodicTimeSeriesMatrix(At, T; nperiod = k) -> A::PeriodicTimeSeriesMatrix
@@ -984,7 +1153,7 @@ end
 set_period(A::PeriodicTimeSeriesMatrix, period::Real) = PeriodicTimeSeriesMatrix{:c,eltype(A)}(A,period)
 
 # properties
-isconstant(At::PeriodicTimeSeriesMatrix) = length(At.values) <= 1
+isconstant(At::PeriodicTimeSeriesMatrix) = (length(At.values) <= 1) || all([At.values[1] == At.values[i] for i in 2:length(At.values)])
 Base.length(At::PeriodicTimeSeriesMatrix) = length(At.values) 
 Base.size(At::PeriodicTimeSeriesMatrix) = length(At) > 0 ? size(At.values[1]) : (0,0)
 Base.size(At::PeriodicTimeSeriesMatrix, d::Integer) = length(At) > 0 ? size(At.values[1],d) : 0
@@ -1014,6 +1183,23 @@ function Base.getindex(A::PM, inds...) where PM <: PeriodicTimeSeriesMatrix
 end
 function Base.lastindex(A::PM, dim::Int) where PM <: PeriodicTimeSeriesMatrix
    return length(A) > 0 ? lastindex(A.values[1],dim) : 0
+end
+
+Base.print(io::IO, A::PeriodicTimeSeriesMatrix) = show(io, A)
+Base.show(io::IO, A::PeriodicTimeSeriesMatrix) = show(io, MIME("text/plain"), A)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicTimeSeriesMatrix)
+   m, n = size(A) 
+   println(io, "$m×$n "*summary(A))
+   period = A.period 
+   nvalues, nperiod = length(A), A.nperiod
+   Ts = period/nperiod/nvalues
+   println(io, "Period:  $period   #Subperiods: $nperiod   Sampling time: $Ts")   
+   i1 = max(min(4,nvalues)+1,nvalues-2)
+   for i in [1:min(4,nvalues); i1:nvalues]
+       println("\n[$i] = ")
+       Base.print_matrix(IOContext(io, :limit => true), A.values[i])
+       i == 4 && i1 > 5 && println("\n;;; …  ")
+   end
 end
 
 
