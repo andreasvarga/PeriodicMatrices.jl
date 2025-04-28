@@ -68,7 +68,7 @@ function PeriodicMatrices.tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", relt
       function update_func!(A,u,p,t)
          A .= p(t)
       end
-      DEop = DiffEqArrayOperator(ones(T,n,n),update_func=update_func!)     
+      DEop = OrdinaryDiffEq.DiffEqArrayOperator(ones(T,n,n),update_func=update_func!)     
       #prob = ODEProblem(DEop, u0, tspan, A.f)
       prob = ODEProblem(DEop, u0, tspan, t-> PeriodicMatrices.tpmeval(A,t))
       sol = solve(prob,MagnusGL6(), dt = dt, save_everystep = false)
