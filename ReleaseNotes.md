@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 0.1.9
+
+Update `CI.yml`, `show` and `pfm2hr`. 
+
 ## Version 0.1.8
 
 Adding tests for `show`. 

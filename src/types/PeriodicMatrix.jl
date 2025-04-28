@@ -222,7 +222,8 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicMatrix)
    m, n = size(A) 
    period = A.period 
    dperiod, nperiod = length(A), A.nperiod
-   cdim = maximum(m) == minimum(m) && maximum(n) == minimum(n)
+   mmax = maximum(m); nmax = maximum(n)
+   cdim = mmax == minimum(m) && nmax == minimum(n)
    if cdim
       println(io, "$(m[1])×$(n[1]) "*summary(A))
    else
@@ -230,6 +231,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicMatrix)
    end
    Ts = period/nperiod/dperiod
    println(io, "Period:  $period   #Subperiods: $nperiod   Sampling time: $Ts")   
+   (mmax == 0 || nmax == 0) && return
    i1 = max(min(4,dperiod)+1,dperiod-2)
    for i in [1:min(4,dperiod); i1:dperiod]
       if cdim
@@ -361,7 +363,8 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::SwitchingPeriodi
    period = A.period 
    nvalues = length(A.ns)
    dperiod, nperiod = A.dperiod, A.nperiod
-   cdim = maximum(m) == minimum(m) && maximum(n) == minimum(n)
+   mmax = maximum(m); nmax = maximum(n)
+   cdim = mmax == minimum(m) && nmax == minimum(n)
    if cdim
       println(io, "$(m[1])×$(n[1]) "*summary(A))
    else
@@ -372,6 +375,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::SwitchingPeriodi
    ne = nvalues == 1 ? [0] : [0;A.ns[1:end-1]]
    println(io, "Discrete switching moments: "*repr(ne.+1))
    println(io, "Switching times: "*repr(ne*Ts))
+   (mmax == 0 || nmax == 0) && return
    i1 = max(min(4,nvalues)+1,nvalues-2)
    for i in [1:min(4,nvalues); i1:nvalues]
       if cdim
@@ -531,6 +535,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicArray)
    println(io, "$m×$n "*summary(A))
    Ts = period/nperiod/dperiod
    println(io, "Period:  $period   #Subperiods: $nperiod   Sampling time: $Ts")   
+   (m == 0 || n == 0) && return
    i1 = max(min(4,dperiod)+1,dperiod-2)
    for i in [1:min(4,dperiod); i1:dperiod]
       println("\n[:,:,$i] = ")
@@ -648,6 +653,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::SwitchingPeriodi
    ne = nvalues == 1 ? [0] : [0;A.ns[1:end-1]]
    println(io, "Discrete switching moments: "*repr(ne.+1))
    println(io, "Switching times: "*repr(ne*Ts))
+   (m == 0 || n == 0) && return
    i1 = max(min(4,nvalues)+1,nvalues-2)
    for i in [1:min(4,nvalues); i1:nvalues]
       println("\n[:,:,$i] = ")
@@ -1089,6 +1095,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicSwitchin
    nvalues, nperiod = length(A.ts), A.nperiod
    println(io, "Period:  $period   #Subperiods: $nperiod")   
    println(io, "Switching times: "*repr(A.ts))
+   (m == 0 || n == 0) && return
    i1 = max(min(4,nvalues)+1,nvalues-2)
    for i in [1:min(4,nvalues); i1:nvalues]
       println("\n[$i] = ")
@@ -1194,6 +1201,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, A::PeriodicTimeSeri
    nvalues, nperiod = length(A), A.nperiod
    Ts = period/nperiod/nvalues
    println(io, "Period:  $period   #Subperiods: $nperiod   Sampling time: $Ts")   
+   (m == 0 || n == 0) && return
    i1 = max(min(4,nvalues)+1,nvalues-2)
    for i in [1:min(4,nvalues); i1:nvalues]
        println("\n[$i] = ")

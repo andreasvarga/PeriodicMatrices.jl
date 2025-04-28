@@ -600,7 +600,7 @@ where `Δ = T/k` is the sampling period and `k` is the number of samples specifi
 `nsample = k` (default: `k = 128`). If the Nyquist frequency `f` is specified via the keyword argument
 `NyquistFreq = f`, then `k` is chosen `k = 2*f*T` to avoid signal aliasing.     
 """
-function pfm2hr(A::PeriodicFunctionMatrix; nsample::Int = 128, NyquistFreq::Union{Real,Missing} = missing)   
+function pfm2hr(A::PeriodicFunctionMatrix; nsample::Int = 256, NyquistFreq::Union{Real,Missing} = missing)   
    isconstant(A) && (return HarmonicArray(A.f(0),A.period; nperiod = A.nperiod))
    nsample > 0 || ArgumentError("nsample must be positive, got $nsaple")
    ns = ismissing(NyquistFreq) ? nsample : Int(floor(2*abs(NyquistFreq)*A.period/A.nperiod))+1
