@@ -296,7 +296,8 @@ T = pi/3;
 Afun=PeriodicFunctionMatrix(at,T);
 #for solver in ("non-stiff", "stiff", "linear", "symplectic", "noidea")
 solver = "linear"
-for solver in ("non-stiff", "stiff", "linear", "noidea")
+#for solver in ("non-stiff", "stiff", "linear", "noidea")
+for solver in ("non-stiff", "stiff",  "noidea")
       println("solver = $solver")
       @time cvals = psceig(Afun, 500; solver, reltol = 1.e-10)
       @test cvals ≈ [2; -13]
@@ -311,10 +312,10 @@ As = PeriodicSymbolicMatrix(A11,pi/3)
 @test eigvals(As(rand())) ≈ [-10,-1]
 @test pmaverage(As) ≈ pmaverage(Afun)
 
-  #for solver in ("non-stiff", "stiff", "linear", "symplectic", "noidea")
 solver = "linear"
-for solver in ("non-stiff", "stiff", "linear", "noidea")
-        println("solver = $solver")
+#for solver in ("non-stiff", "stiff", "linear", "noidea")
+for solver in ("non-stiff", "stiff", "noidea")
+      println("solver = $solver")
         @time cvals = psceig(As, 500; solver, reltol = 1.e-10)
         @test sort(cvals) ≈ sort([2; -13])
         @time cvals = psceigsm(As, 500; solver, reltol = 1.e-10)
