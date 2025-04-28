@@ -312,7 +312,7 @@ As = PeriodicSymbolicMatrix(A11,pi/3)
 @test eigvals(As(rand())) ≈ [-10,-1]
 @test pmaverage(As) ≈ pmaverage(Afun)
 
-solver = "linear"
+solver = "non-stiff"
 #for solver in ("non-stiff", "stiff", "linear", "noidea")
 for solver in ("non-stiff", "stiff", "noidea")
       println("solver = $solver")
