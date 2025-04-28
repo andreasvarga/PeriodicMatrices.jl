@@ -20,11 +20,11 @@ the [PeriodicSystems](https://github.com/andreasvarga/PeriodicSystems.jl) packag
 A continuous-time periodic matrix can be specified in the following forms:
 
 - periodic matrix function
-- harmonic matrix series
+- Fourier matrix series in cosine-sine form
 - periodic matrix time series with uniform time grid 
 - periodic matrix time series with non-uniform time grid (also known as periodic switching matrix)
 - periodic symbolic matrix
-- Fourier matrix series approximation   
+- matrix of Fourier series approximations in sine-cosine form   
 
 A discrete-time periodic matrix can be specified in the following forms:
 
@@ -59,7 +59,7 @@ The following categories of functions are currently implemented:
 * **[`PeriodicSymbolicMatrix`](@ref)**   Continuous-time periodic symbolic matrix representation.
 * **[`PeriodicTimeSeriesMatrix`](@ref)**   Continuous-time periodic time series matrix representation.
 * **[`HarmonicArray`](@ref)**   Continuous-time harmonic array representation.
-* **[`FourierFunctionMatrix`](@ref)**   Continuous-time Fourier functin matrix representation.
+* **[`FourierFunctionMatrix`](@ref)**   Continuous-time Fourier function matrix representation.
 * **[`PeriodicSwitchingMatrix`](@ref)** Continuous-time switching periodic matrix representation.
 
 **Periodic matrix conversions**

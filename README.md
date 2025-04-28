@@ -34,7 +34,7 @@ A continuous-time periodic matrix can be specified in one of the following forms
 
 - _periodic symbolic matrix_, with `A(t)` a symbolic matrix as defined in the [`Symbolics.jl`](https://github.com/JuliaSymbolics/Symbolics.jl) package depending on the (symbolic) real variable `t ∈ [0, T)`;
 
-- _harmonic matrix series_, with `A(t)` defined as 
+- _Fourier series in cosine-sine form_, with `A(t)` defined as 
 
                          p
            A(t) = A_0 +  ∑ ( Ac_i*cos(iωt)+As_i*sin(iωt) ) ,
@@ -46,7 +46,7 @@ A continuous-time periodic matrix can be specified in one of the following forms
 
 - _periodic matrix time series with constant dimensions on a non-uniform time grid_;
 
-- _Fourier matrix series approximation_, with `A(t)` a Fourier series representation (similar to the harmonic matrix series representation) as defined in the [`ApproxFun.jl`](https://github.com/JuliaApproximation/ApproxFun.jl) package.    
+- _matrix of Fourier series approximations in sine-cosine form_, with the elements of `A(t)` defined in the [`ApproxFun.jl`](https://github.com/JuliaApproximation/ApproxFun.jl) package.    
 
 A discrete-time periodic matrix can be specified in the following forms:
 
