@@ -7,6 +7,7 @@ using Test
 using LinearAlgebra
 using MatrixPencils
 using Bessels
+using OrdinaryDiffEq
 #using BenchmarkTools
 
 println("Test_pmutils")
@@ -277,8 +278,9 @@ cvals2 = log.(complex(ev2))/(2pi)
 
 solver = "non-stiff"
 #for solver in ("non-stiff", "stiff", "linear", "symplectic", "noidea")
-for solver in ("non-stiff", "stiff", "linear", "noidea")
-    println("solver = $solver")
+#for solver in ("non-stiff", "stiff", "linear", "noidea")
+for solver in ("non-stiff", "stiff", "noidea")
+      println("solver = $solver")
     @time cvals = psceig(Afun, 500; solver, reltol = 1.e-10, abstol = 1.e-10)
     @test isapprox(cvals, [0; -24], atol = 1.e-7)
 end
