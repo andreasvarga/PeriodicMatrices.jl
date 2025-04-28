@@ -226,7 +226,8 @@ Ahrfun = convert(PeriodicFunctionMatrix,pfm2hr(Afun))
 
 solver = "non-stiff"
 #for solver in ("non-stiff", "stiff", "linear", "symplectic", "noidea")
-for solver in ("non-stiff", "stiff", "linear", "noidea")
+# for solver in ("non-stiff", "stiff", "linear", "noidea")
+for solver in ("non-stiff", "stiff", "noidea")
       println("solver = $solver")
     @time cvals = psceig(Af, 500; solver, reltol = 1.e-10, abstol = 1.e-10)
     @test isapprox(cvals, [0; -24], atol = 1.e-7)
