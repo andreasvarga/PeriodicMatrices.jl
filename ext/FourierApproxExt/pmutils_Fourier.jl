@@ -66,11 +66,11 @@ function PeriodicMatrices.tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", relt
       end
    elseif solver == "linear" 
       function update_func!(A,u,p,t)
-         A .= p(t)
+         A .= PeriodicMatrices.tpmeval(p,t)
       end
-      DEop = OrdinaryDiffEq.DiffEqArrayOperator(ones(T,n,n),update_func=update_func!)     
-      #prob = ODEProblem(DEop, u0, tspan, A.f)
-      prob = ODEProblem(DEop, u0, tspan, t-> PeriodicMatrices.tpmeval(A,t))
+      #DEop = DiffEqArrayOperator(ones(T,n,n),update_func=update_func!)     
+      DEop = MatrixOperator(ones(T,n,n);update_func!)     
+      prob = ODEProblem(DEop, u0, tspan, A)
       sol = solve(prob,MagnusGL6(), dt = dt, save_everystep = false)
    elseif solver == "symplectic" 
       # high accuracy symplectic
