@@ -33,11 +33,10 @@ function tvstm(A::PM, tf::Real, t0::Real = 0; solver = "", reltol = 1e-3, abstol
       end
    elseif solver == "linear" 
       function update_func!(A,u,p,t)
-         A .= p(t)
+         A .= PeriodicMatrices.tpmeval(p,t)
       end
-      DEop = DiffEqArrayOperator(ones(T,n,n),update_func=update_func!)     
-      #prob = ODEProblem(DEop, u0, tspan, A.f)
-      prob = ODEProblem(DEop, u0, tspan, t-> tpmeval(A,t))
+      DEop = MatrixOperator(ones(T,n,n);update_func!)     
+      prob = ODEProblem(DEop, u0, tspan, A)
       sol = solve(prob,MagnusGL6(), dt = dt, save_everystep = false)
    elseif solver == "symplectic" 
       # high accuracy symplectic

@@ -2,7 +2,7 @@
 
 ## Version 0.1.9
 
-Update `CI.yml`, `show` and `pfm2hr`. 
+Update `CI.yml`, `show` and `pfm2hr`.  Addressing [#2690](https://github.com/SciML/OrdinaryDiffEq.jl/issues/2690#issuecomment-2836078112). 
 
 ## Version 0.1.8
 
