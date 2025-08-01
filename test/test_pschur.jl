@@ -6,6 +6,7 @@ using Test
 using LinearAlgebra
 using LinearAlgebra: BlasInt
 using MatrixPencils
+using PeriodicSchurDecompositions
 #using BenchmarkTools
 
 println("Test_psfutils")
@@ -112,37 +113,37 @@ A1 = copy(A);
 @test H[1] == H1[1] && H[2] == H1[2] 
 
 ev = eigvals(A[:,:,1]*A[:,:,2])
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = false);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.PeriodicMatrices.pschur(A; rev = false);
 @test check_psim(A,Z,S; rev = false) && istriu(S[:,:,ischur],-1) && ischur == 1
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       sort(imag(eigs)) ≈ sort(imag(ev))
 
 A1 = copy(A);
-@time S, Z, eigs, ischur, = pschur!(A1; rev = false);
+@time S, Z, eigs, ischur, = PeriodicMatrices.pschur!(A1; rev = false);
 @test check_psim(A, Z, S; rev = false) && istriu(A1[:,:,ischur],-1) && ischur == 1
 
 
-@time S1, Z1, eigs1, ischur1, α1, γ1 = pschur(A; rev = false, withZ = false);
+@time S1, Z1, eigs1, ischur1, α1, γ1 = PeriodicMatrices.PeriodicMatrices.pschur(A; rev = false, withZ = false);
 @test S[1] == S1[1] && S[2] == S1[2] && eigs == eigs1
 
 
-@time S, Z, eigs, ischur, α, γ = pschur(A, sind = 2, rev = false); 
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A, sind = 2, rev = false); 
 @test check_psim(A,Z,S; rev = false) && istriu(S[:,:,ischur],-1) && ischur == 2
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       sort(imag(eigs)) ≈ sort(imag(ev))
 
 ev = eigvals(A[:,:,2]*A[:,:,1])
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = true); 
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = true); 
 @test check_psim(A,Z,S; rev = true) && istriu(S[:,:,ischur],-1) && ischur == 1
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       sort(imag(eigs)) ≈ sort(imag(ev))
 
 A1 = copy(A);
-@time S, Z, eigs, ischur, = pschur!(A1; rev = true);
+@time S, Z, eigs, ischur, = PeriodicMatrices.pschur!(A1; rev = true);
 @test check_psim(A, Z, S; rev = true) && istriu(A1[:,:,ischur],-1) && ischur == 1
 
 
-@time S, Z, eigs, ischur, α, γ = pschur(A; sind = 2, rev = true); 
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; sind = 2, rev = true); 
 @test check_psim(A,Z,S; rev = true) && istriu(S[:,:,ischur],-1) && ischur == 2
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       sort(imag(eigs)) ≈ sort(imag(ev))
@@ -162,7 +163,7 @@ A = reshape(hcat([rand()*A1 for i in 1:K]...), n, n, K);
 @time H, Z, ihess = phess1(A; hind = 1, rev = false);
 @test check_psim(A,Z,H; rev = false) && istriu(H[:,:,ihess],-1) && ihess == 1
 
-@time S, Z, eigs, ischur, = pschur(A; sind = hind, rev);
+@time S, Z, eigs, ischur, = PeriodicMatrices.pschur(A; sind = hind, rev);
 @test check_psim(A,Z,S; rev)
 
 @time S, Z, eigs, ischur, = pschur1(A; sind = hind, rev);
@@ -179,19 +180,19 @@ A = reshape(hcat([rand()*A1 for i in 1:K]...), n, n, K);
 
 
 As = copy(A); Z = copy(A)
-@time eigs, ischur, = pschur!(As,Z; rev = false, sind = hind)
+@time eigs, ischur, = PeriodicMatrices.pschur!(As,Z; rev = false, sind = hind)
 @test check_psim(A,Z,As; rev = false) 
 
 As = copy(A); Z = copy(A)
-@time eigs, ischur, = pschur!(As,Z; rev = true, sind = hind)
+@time eigs, ischur, = PeriodicMatrices.pschur!(As,Z; rev = true, sind = hind)
 @test check_psim(A,Z,As; rev = true) 
 
 As = copy(A); Z = copy(A); wspace = PeriodicMatrices.ws_pschur(As)
-@time eigs, ischur, = pschur!(wspace, As,Z; rev = false, sind = hind)
+@time eigs, ischur, = PeriodicMatrices.pschur!(wspace, As,Z; rev = false, sind = hind)
 @test check_psim(A,Z,As; rev = false) 
 
 As = copy(A); Z = copy(A)
-@time eigs, ischur, = pschur!(wspace, As,Z; rev = true, sind = hind)
+@time eigs, ischur, = PeriodicMatrices.pschur!(wspace, As,Z; rev = true, sind = hind)
 @test check_psim(A,Z,As; rev = true) 
 
 
@@ -216,7 +217,7 @@ hind = 14; rev = true;
 @time H, Z, ihess = phess1(A; hind, rev);
 @test check_psim(A,Z,H; rev) && istriu(H[:,:,ihess],-1) && ihess == hind
 
-@time S, Z, eigs, ischur, = pschur(A; sind = hind, rev);
+@time S, Z, eigs, ischur, = PeriodicMatrices.pschur(A; sind = hind, rev);
 @test check_psim(A,Z,S; rev)
 
 @time S, Z, eigs, ischur, = pschur1(A; sind = hind, rev);
@@ -264,11 +265,11 @@ Ai=[A1,A2];
 A = [Ai[j] for j = 1:2,  i in 1:9][:]
 
 rev = false; 
-@time S, Z, eigs, ischur, = pschur(A; rev);
+@time S, Z, eigs, ischur, = PeriodicMatrices.pschur(A; rev);
 @test check_psim(A,Z,S; rev)
 
 rev = true; 
-@time S, Z, eigs, ischur, = pschur(A; rev);
+@time S, Z, eigs, ischur, = PeriodicMatrices.pschur(A; rev);
 @test check_psim(A,Z,S; rev)
 
 
@@ -285,10 +286,42 @@ A1 = [1.5 -.7 3.5 -.7; 1.  0.  2.  3.; 1.5 -.7 2.5 -.3; 1.  0.  2.  1.];
 A2 = [1.5 -.7 3.5 -.7; 1.  0.  2.  3.; 1.5 -.7 2.5 -.3; 1.  0.  2.  1.] .+ 1;
 A3 = [1.5 -.7 3.5 -.7; 1.  0.  2.  3.; 1.5 -.7 2.5 -.3; 1.  0.  2.  1.] .- 1;
 
+Ab = [BigFloat.(A1),BigFloat.(A2),BigFloat.(A3)]
+@time vecs, vals = peigvecs(Ab; allvecs = false, PSD_SLICOT = false)
+@test prod(reverse(Ab))*vecs[1] ≈ vecs[1]*Diagonal(vals)
+@time vecs, vals = peigvecs(Ab; allvecs = true, PSD_SLICOT = false)
+μ =  vals.^(1/BigFloat(3))
+@test Ab[1]*vecs[1] ≈ vecs[2]*Diagonal(μ) && Ab[2]*vecs[2] ≈ vecs[3]*Diagonal(μ) && Ab[3]*vecs[3] ≈ vecs[1]*Diagonal(μ)
+
+@time vecs, vals = peigvecs(Ab; allvecs = false, rev = false, PSD_SLICOT = false)
+@test prod(Ab)*vecs[1] ≈ vecs[1]*Diagonal(vals)
+@time vecs, vals = peigvecs(Ab; allvecs = true, rev = false, PSD_SLICOT = false)
+μ =  vals.^(1/BigFloat(3))
+t1=diag(inv(vecs[1])*Ab[1]*vecs[2]); t2=diag(inv(vecs[2])*Ab[2]*vecs[3]);  t3=diag(inv(vecs[3])*Ab[3]*vecs[1])
+# no normalization 
+# @test Ab[1]*vecs[2] ≈ vecs[1]*Diagonal(μ) && Ab[2]*vecs[3] ≈ vecs[2]*Diagonal(μ) && Ab[3]*vecs[1] ≈ vecs[3]*Diagonal(μ)
+@test t1 .* t2 .* t3 ≈ vals
+
+@time vecs, vals = peigvecs(Ab; allvecs = false, PSD_SLICOT = true)
+@test prod(reverse(Ab))*vecs[1] ≈ vecs[1]*Diagonal(vals)
+@time vecs, vals = peigvecs(Ab; allvecs = true, PSD_SLICOT = true)
+μ =  vals.^(1/3.)
+@test Ab[1]*vecs[1] ≈ vecs[2]*Diagonal(μ) && Ab[2]*vecs[2] ≈ vecs[3]*Diagonal(μ) && Ab[3]*vecs[3] ≈ vecs[1]*Diagonal(μ)
+
+@time vecs, vals = peigvecs(Ab; allvecs = false, rev = false, PSD_SLICOT = true)
+@test prod(Ab)*vecs[1] ≈ vecs[1]*Diagonal(vals)
+@time vecs, vals = peigvecs(Ab; allvecs = true, rev = false, PSD_SLICOT = true)
+μ =  vals.^(1/3.)
+t1=diag(inv(vecs[1])*Ab[1]*vecs[2]); t2=diag(inv(vecs[2])*Ab[2]*vecs[3]);  t3=diag(inv(vecs[3])*Ab[3]*vecs[1])
+# no normalization 
+# @test Ab[1]*vecs[2] ≈ vecs[1]*Diagonal(μ) && Ab[2]*vecs[3] ≈ vecs[2]*Diagonal(μ) && Ab[3]*vecs[1] ≈ vecs[3]*Diagonal(μ)
+@test t1 .* t2 .* t3 ≈ vals
+
+
 n = 4; K = 3; sind = 2;
 A = reshape([A1 A2 A3], n, n, K);
 #AH, Z = phess(A; h);
-@time S, Z, eigs, ischur = pschur(A; sind);
+@time S, Z, eigs, ischur = PeriodicMatrices.pschur(A; sind);
 @test check_psim(A, Z, S) && istriu(S[:,:,ischur],-1)
 
 ev = eigvals(A[:,:,1]*A[:,:,2]*A[:,:,3])
@@ -339,23 +372,23 @@ MA = PeriodicMatrix([A1,A2,A3],K);
 @test check_psim(A,Z,AH; rev = true) && istriu(AH[:,:,ihess],-1) && ihess == 2
 
 ev = eigvals(A[:,:,1]*A[:,:,2]*A[:,:,3])
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = false);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = false);
 @test check_psim(A,Z,S; rev = false) && istriu(S[:,:,ischur],-1) && ischur == 1
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       sort(imag(eigs)) ≈ sort(imag(ev))
 
-@time S, Z, eigs, ischur, α, γ = pschur(A, sind = 2, rev = false); 
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A, sind = 2, rev = false); 
 @test check_psim(A,Z,S; rev = false) && istriu(S[:,:,ischur],-1) && ischur == 2
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       sort(imag(eigs)) ≈ sort(imag(ev))
 
 ev = eigvals(A[:,:,3]*A[:,:,2]*A[:,:,1])
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = true); 
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = true); 
 @test check_psim(A,Z,S; rev = true) && istriu(S[:,:,ischur],-1) && ischur == 1
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       sort(imag(eigs)) ≈ sort(imag(ev))
 
-@time S, Z, eigs, ischur, α, γ = pschur(A; sind = 2, rev = true); 
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; sind = 2, rev = true); 
 @test check_psim(A,Z,S; rev = true) && istriu(S[:,:,ischur],-1) && ischur == 2
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       sort(imag(eigs)) ≈ sort(imag(ev))
@@ -366,33 +399,33 @@ ev = eigvals(A[:,:,3]*A[:,:,2]*A[:,:,1])
 #       sort(imag(eigs)) ≈ sort(imag(ev))
 
 AA = [A[:,:,3], A[:,:,2], A[:,:,1]];
-@time S, Z, eigs, ischur, α, γ = pschur(AA; rev = false);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(AA; rev = false);
 select =  real(eigs) .< 0
 @time psordschur!(S, Z, select; schurindex = ischur, rev = false)  
 @test check_psim(AA, Z, S; rev = false)  
 MatrixPencils.ordeigvals(S[1]*S[2]*S[3]) 
 
 AA = [A[:,:,1], A[:,:,2], A[:,:,3]];
-@time S, Z, eigs, ischur, α, γ = pschur(AA; rev = true);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(AA; rev = true);
 select =  real(eigs) .< 0
 @time psordschur!(S, Z, select; schurindex=ischur, rev = true)  
 @test check_psim(AA,Z,S; rev = true)  
 MatrixPencils.ordeigvals(S[3]*S[2]*S[1])  
 
 AA = [A[:,:,3], A[:,:,2], A[:,:,1]];
-@time S, Z, eigs, ischur, α, γ = pschur(AA; rev = false);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(AA; rev = false);
 select =  real(eigs) .< 0
 @time psordschur!(S, Z, select; schurindex = ischur, rev = false)  
 @test check_psim(AA, Z, S; rev = false)  
 MatrixPencils.ordeigvals(S[1]*S[2]*S[3]) 
 
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = true);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = true);
 select =  real(eigs) .< 0
 @time psordschur!(S, Z, select; schurindex=ischur, rev = true)  
 @test check_psim(A,Z,S; rev = true)  
 MatrixPencils.ordeigvals(S[:,:,3]*S[:,:,2]*S[:,:,1])  
 
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = false);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = false);
 select =  real(eigs) .< 0
 @time psordschur!(S, Z, select; schurindex = ischur, rev = false)  
 @test check_psim(A, Z, S; rev = false)  
@@ -427,7 +460,7 @@ A = PeriodicMatrix([A1, A2, A3],K);
 
 
 ev = eigvals(prod(A.M[K:-1:1])); nmin = minimum(size.(A.M,1))
-@time S, Z, eigs, ischur, α, γ = pschur(A.M; rev = true);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A.M; rev = true);
 @test check_psim(A.M,Z,S; rev = true) && istriu(S[ischur][1:nmin,1:nmin],-1) && eigs == α.*γ
 @test isapprox(sort(real(eigs)),sort(real(ev)), atol = 1.e-7) && 
       isapprox(sort(imag(eigs)),sort(imag(ev)), atol = 1.e-7)
@@ -435,13 +468,13 @@ ev = eigvals(prod(A.M[K:-1:1])); nmin = minimum(size.(A.M,1))
 A = [A3, A2, A1];
 ev = eigvals(prod(A)); nmin = minimum(size.(A,1))
 
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = false);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = false);
 @test check_psim(A,Z,S; rev = false) && istriu(S[ischur][1:nmin,1:nmin],-1) && eigs == α.*γ
 @test sort(real(eigs)) ≈ sort(real(ev)) && 
       isapprox(sort(imag(eigs)),sort(imag(ev)), atol = 1.e-7)
 
 A = [A3, A2, A1];
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = false);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = false);
 select =  (real(eigs) .< 0)[1:3]
 @time psordschur!(S, Z, select; schurindex = ischur, rev = false)  
 @test check_psim(A, Z, S; rev = false)  
@@ -452,13 +485,13 @@ A2 = [-2 -1 2 5 0; -1 -2 2 0 1; -1 -5 0 5 -1; 0 -1 2 -2 1; 0 -2 2 0 5];
 A3 = [-4 3 5 2 2; 2 -5 -2 0 2; -1 -2 5 3 0; 0 1 -3 -5 0; 0 0 4 -4 3];
 
 A = [A1, A2, A3];
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = true);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = true);
 select =  (real(eigs) .< 0)
 @time psordschur!(S,Z,select; schurindex=ischur, rev = true)  
 @test check_psim(A,Z,S; rev = true)  
 ev=MatrixPencils.ordeigvals(S[3]*S[2]*S[1])  
 
-@time S, Z, eigs, ischur, α, γ = pschur(A; rev = true);
+@time S, Z, eigs, ischur, α, γ = PeriodicMatrices.pschur(A; rev = true);
 select =  (real(eigs) .< 0)
 @time psordschur1!(S,Z,select; schurindex=ischur, rev = true)  
 @test check_psim(A,Z,S; rev = true)  
@@ -475,14 +508,14 @@ A3 = [-4 3 5 2 2; 2 -5 -2 0 2; -1 -2 5 3 0; 0 1 -3 -5 0; 0 0 4 -4 3];
 E3 = [-3 3 3 -4 2; -5 -4 -4 -3 3; -3 -1 5 1 2; 5 1 -2 2 1; -3 -3 -3 3 -5];
 
 ev = eigvals(inv(E3)*A3*inv(E2)*A2*inv(E1)*A1);
-As, Es, Q, Z, evp, sind, α, γ = PeriodicMatrices.pschur([A1, A2, A3], [E1, E2, E3]; rev=true); evp
+As, Es, Q, Z, evp, sind, α, γ = PeriodicMatrices.PeriodicMatrices.pschur([A1, A2, A3], [E1, E2, E3]; rev=true); evp
 @test sort(real(ev)) ≈ sort(real(evp)) && sort(imag(ev)) ≈ sort(imag(evp))
 @test Q[1]'*A1*Z[1] ≈ As[1] && Q[2]'*A2*Z[2] ≈ As[2] && Q[3]'*A3*Z[3] ≈ As[3] &&
       Q[1]'*E1*Z[2] ≈ Es[1] && Q[2]'*E2*Z[3] ≈ Es[2] && Q[3]'*E3*Z[1] ≈ Es[3]
 
 
 ev1 = eigvals(A1*inv(E1)*A2*inv(E2)*A3*inv(E3))
-As, Es, Q1, Z1, evp1, sind1, α1, γ1 = PeriodicMatrices.pschur([A1, A2, A3], [E1, E2, E3]; rev=false); evp1
+As, Es, Q1, Z1, evp1, sind1, α1, γ1 = PeriodicMatrices.PeriodicMatrices.pschur([A1, A2, A3], [E1, E2, E3]; rev=false); evp1
 @test sort(real(ev1)) ≈ sort(real(evp1)) && sort(imag(ev1)) ≈ sort(imag(evp1))
 @test Q1[1]'*A1*Z1[1] ≈ As[1] && Q1[2]'*A2*Z1[2] ≈ As[2] && Q1[3]'*A3*Z1[3] ≈ As[3] &&
       Q1[2]'*E1*Z1[1] ≈ Es[1] && Q1[3]'*E2*Z1[2] ≈ Es[2] && Q1[1]'*E3*Z1[3] ≈ Es[3]
@@ -496,7 +529,7 @@ A3 = [-4 3 ; 2 -5 ; -1 -2 ; 0 1 ; -4 3];
 E3 = [-3 3 3 -4 2; -5 -4 -4 -3 3; -3 -1 5 1 2; 5 1 -2 2 1; -3 -3 -3 3 -5];
 
 ev = eigvals(inv(E3)*A3*inv(E2)*A2*inv(E1)*A1)
-As, Es, Q, Z, evp, sind, α, γ = PeriodicMatrices.pschur([A1, A2, A3], [E1, E2, E3]; rev=true); evp
+As, Es, Q, Z, evp, sind, α, γ = PeriodicMatrices.PeriodicMatrices.pschur([A1, A2, A3], [E1, E2, E3]; rev=true); evp
 @test sort(real(ev)) ≈ sort(real(evp)) && norm(sort(imag(ev)) - sort(imag(evp))) < 1.e-7
 @test Q[1]'*A1*Z[1] ≈ As[1] && Q[2]'*A2*Z[2] ≈ As[2] && Q[3]'*A3*Z[3] ≈ As[3] &&
       Q[1]'*E1*Z[2] ≈ Es[1] && Q[2]'*E2*Z[3] ≈ Es[2] && Q[3]'*E3*Z[1] ≈ Es[3]
@@ -511,7 +544,7 @@ E3 = [-3 3 3 -4 2; -5 -4 -4 -3 3; -3 -1 5 1 2; 5 1 -2 2 1; -3 -3 -3 3 -5];
 
 ev = eigvals(A1*inv(E1)*A2*inv(E2)*A3*inv(E3))
 
-As, Es, Q, Z, evp, sind, α, γ = PeriodicMatrices.pschur([A1, A2, A3], [E1, E2, E3]; rev=false); evp
+As, Es, Q, Z, evp, sind, α, γ = PeriodicMatrices.PeriodicMatrices.pschur([A1, A2, A3], [E1, E2, E3]; rev=false); evp
 @test sort(real(ev)) ≈ sort(real(evp)) && norm(sort(imag(ev)) - sort(imag(evp))) < 1.e-7
 @test Q[1]'*A1*Z[1] ≈ As[1] && Q[2]'*A2*Z[2] ≈ As[2] && Q[3]'*A3*Z[3] ≈ As[3] &&
       Q[2]'*E1*Z[1] ≈ Es[1] && Q[3]'*E2*Z[2] ≈ Es[2] && Q[1]'*E3*Z[3] ≈ Es[3]
@@ -526,14 +559,14 @@ A = reshape([A1 A2 A3],5,5,3); E = reshape([E1 E2 E3],5,5,3);
 
 
 ev = eigvals(inv(E3)*A3*inv(E2)*A2*inv(E1)*A1);
-As, Es, Q, Z, evp, sind, α, γ = PeriodicMatrices.pschur(A, E; rev=true); evp
+As, Es, Q, Z, evp, sind, α, γ = PeriodicMatrices.PeriodicMatrices.pschur(A, E; rev=true); evp
 @test sort(real(ev)) ≈ sort(real(evp)) && sort(imag(ev)) ≈ sort(imag(evp))
 @test Q[:,:,1]'*A1*Z[:,:,1] ≈ As[:,:,1] && Q[:,:,2]'*A2*Z[:,:,2] ≈ As[:,:,2] && Q[:,:,3]'*A3*Z[:,:,3] ≈ As[:,:,3] &&
       Q[:,:,1]'*E1*Z[:,:,2] ≈ Es[:,:,1] && Q[:,:,2]'*E2*Z[:,:,3] ≈ Es[:,:,2] && Q[:,:,3]'*E3*Z[:,:,1] ≈ Es[:,:,3]
 
 
 ev1 = eigvals(A1*inv(E1)*A2*inv(E2)*A3*inv(E3))
-As, Es, Q1, Z1, evp1, sind1, α1, γ1 = PeriodicMatrices.pschur(A, E; rev=false); evp1
+As, Es, Q1, Z1, evp1, sind1, α1, γ1 = PeriodicMatrices.PeriodicMatrices.pschur(A, E; rev=false); evp1
 @test sort(real(ev1)) ≈ sort(real(evp1)) && sort(imag(ev1)) ≈ sort(imag(evp1))
 @test Q1[:,:,1]'*A1*Z1[:,:,1] ≈ As[:,:,1] && Q1[:,:,2]'*A2*Z1[:,:,2] ≈ As[:,:,2] && Q1[:,:,3]'*A3*Z1[:,:,3] ≈ As[:,:,3] &&
       Q1[:,:,2]'*E1*Z1[:,:,1] ≈ Es[:,:,1] && Q1[:,:,3]'*E2*Z1[:,:,2] ≈ Es[:,:,2] && Q1[:,:,1]'*E3*Z1[:,:,3] ≈ Es[:,:,3]

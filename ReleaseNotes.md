@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 0.1.10
+
+Implement the funtion `peigvecs` to compute the eigenvectors of a cyclic product of matrices. 
+
 ## Version 0.1.9
 
 Update `CI.yml`, `show` and `pfm2hr`.  Addressing [#2690](https://github.com/SciML/OrdinaryDiffEq.jl/issues/2690#issuecomment-2836078112). 

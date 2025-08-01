@@ -82,7 +82,7 @@ _References_
     Systems and Control Letters, 50:371-381, 2003.
 
 """
-function peigvals(A::Vector{Matrix{T}}, k::Int = 1; rev::Bool = true, fast::Bool = false) where T
+function peigvals(A::Vector{Matrix{T}}, k::Int = 1; rev::Bool = true, fast::Bool = false, PSD_SLICOT::Bool = true) where T
    p = length(A)
    istart = mod(k-1,p)+1
    nev = rev ? size(A[istart],2) : size(A[istart],1)
@@ -107,18 +107,73 @@ function peigvals(A::Vector{Matrix{T}}, k::Int = 1; rev::Bool = true, fast::Bool
       ind = sortperm(ev; by = abs, rev = true) # select the core eigenvalues
       return [ev[ind[1:ncore]]; zeros(eltype(ev),nev-ncore)]  # pad with the necessary zeros
    else
-      if istart == 1 
-         ev = pschur(A; rev, withZ = false)[3]
+      if PSD_SLICOT
+         if istart == 1 
+            ev = pschur(A; rev, withZ = false)[3]
+         else
+            # avoid repeated reindexing
+            imap = mod.(istart-1:istart+p-2,p).+1
+            rev && reverse!(imap)        
+            ev = pschur(view(A,imap); rev = false, withZ = false)[3]
+         end
       else
-         # avoid repeated reindexing
-         imap = mod.(istart-1:istart+p-2,p).+1
-         rev && reverse!(imap)        
-         ev = pschur(view(A,imap); rev = false, withZ = false)[3]
+         if istart == 1 
+            ev = PeriodicSchurDecompositions.pschur(A, rev ? (:L) : (:R); wantZ = false, wantT = false).values
+         else
+            # avoid repeated reindexing
+            imap = mod.(istart-1:istart+p-2,p).+1
+            rev && reverse!(imap)        
+            ev = PeriodicSchurDecompositions.pschur(view(A,imap), :L ; wantZ = false, wantT = false).values
+         end
       end
       isreal(ev) && (ev = real(ev))
       return ev[1:nev]
    end
 end
+
+"""
+    peigvecs(A::Vector{Matrix}; rev = true, select_fun = f(x), allvecs::Bool) => (V::Vector{Matrix}, ev::Vector)
+
+Compute eigenvalues `ev` and the corresponding right eigenvectors `V` of a cyclic product of `p` `n×n` real matrices 
+`A(p)*...*A(2)*A(1) =: Ψ`, if `rev = true` (default) or 
+`A(1)*A(2)*...*A(p) =: Ψ` if `rev = false`, without evaluating the product. 
+The vectors are returned as columns of the elements of the vector `V` of matrices.    
+The resulting vectors satisfy `A[k]*V[k] = V[k+1]*Diagonal(μ)` if `rev = true`, where 
+`μ[i]^p = ev[i]`, for `i = 1,...,n`.  If `allvecs = false`, then `V` is a vector with a single component which satisfies
+`Ψ*V[1] = V[1]*Diagonal(ev)`. 
+
+A selection of eigenvectors can be computed corresponding to eigenvalues which satisfy `f(x) = true`, where `x` is an eigenvalue and `f(x)` is
+a function of scalar parameter `x` (default: `f(x) = true`, thus all eigenvectors are computed).    
+
+The eigenvalues are computed using an approach based on the periodic Schur decomposition [1], for which purpose SLICOT based
+wrappers are used if `PSD_SLICOT = true` (default), or the generic software from the [`PeriodicSchurDecomposition.jl`](https://github.com/RalphAS/PeriodicSchurDecompositions.jl) package is employed, 
+if `PSD_SLICOT = false`.
+The eigenvectors are computed using the [`eigvecs`](https://github.com/RalphAS/PeriodicSchurDecompositions.jl/blob/676582eb0c0f1e9d9260f1852b841a3e090aff65/src/vectors.jl#L2) 
+function available in the [`PeriodicSchurDecomposition.jl`](https://github.com/RalphAS/PeriodicSchurDecompositions.jl) package.    
+
+_References_
+
+[1] A. Bojanczyk, G. Golub, and P. Van Dooren, 
+    The periodic Schur decomposition. Algorithms and applications, Proc. SPIE 1996.
+"""
+function peigvecs(A::Vector{Matrix{T}}, k::Int = 1; rev::Bool = true, PSD_SLICOT::Bool = true, select_fun = x->true, allvecs = true) where {T <: Real}
+   mp, np = size.(A,1), size.(A,2) 
+   n = maximum(np); m = maximum(mp)
+   (n == minimum(np) && m == minimum(mp)) || throw(ArgumentError("only constant dimensions are supported"))
+   n == m || throw(ArgumentError("all component matrices must be square"))
+   if PSD_SLICOT
+      S, Z, ev, ischur,  = pschur(A; rev, withZ = true)
+      PSF = PeriodicSchur(S[ischur],S[[1:ischur-1;ischur+1:length(S)]], Z, ev, rev ? 'L' : 'R', ischur)
+   else
+      PSF = PeriodicSchurDecompositions.pschur(A, rev ? (:L) : (:R))
+   end
+   select = select_fun.(PSF.values)
+   vecs = PeriodicSchurDecompositions.eigvecs(PSF,select; shifted = allvecs)
+   return vecs, PSF.values
+end
+
+
+
 
 function sorteigvals!(ev)
    # an approximately complex conjugated set is assumed 

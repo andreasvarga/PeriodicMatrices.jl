@@ -14,8 +14,8 @@
 ```@docs
 phess
 phess!
-pschur
-pschur!
+PeriodicMatrices.pschur
+PeriodicMatrices.pschur!
 PeriodicMatrices.ws_pschur
 psordschur!
 psordschur1!
