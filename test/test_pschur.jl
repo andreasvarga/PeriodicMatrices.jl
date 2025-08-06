@@ -287,35 +287,34 @@ A2 = [1.5 -.7 3.5 -.7; 1.  0.  2.  3.; 1.5 -.7 2.5 -.3; 1.  0.  2.  1.] .+ 1;
 A3 = [1.5 -.7 3.5 -.7; 1.  0.  2.  3.; 1.5 -.7 2.5 -.3; 1.  0.  2.  1.] .- 1;
 
 Ab = [BigFloat.(A1),BigFloat.(A2),BigFloat.(A3)]
-@time vecs, vals = peigvecs(Ab; allvecs = false, PSD_SLICOT = false)
+@time vecs, vals = peigvecs(Ab; allvecs = false, PSD_SLICOT = false,select_fun = x-> real(x) < 0)
 @test prod(reverse(Ab))*vecs[1] ≈ vecs[1]*Diagonal(vals)
 @time vecs, vals = peigvecs(Ab; allvecs = true, PSD_SLICOT = false)
-μ =  vals.^(1/BigFloat(3))
-@test Ab[1]*vecs[1] ≈ vecs[2]*Diagonal(μ) && Ab[2]*vecs[2] ≈ vecs[3]*Diagonal(μ) && Ab[3]*vecs[3] ≈ vecs[1]*Diagonal(μ)
+@test diag(inv(vecs[2])*Ab[1]*vecs[1]) .* diag(inv(vecs[3])*Ab[2]*vecs[2]) .* diag(inv(vecs[1])*Ab[3]*vecs[3]) ≈ vals
 
 @time vecs, vals = peigvecs(Ab; allvecs = false, rev = false, PSD_SLICOT = false)
 @test prod(Ab)*vecs[1] ≈ vecs[1]*Diagonal(vals)
 @time vecs, vals = peigvecs(Ab; allvecs = true, rev = false, PSD_SLICOT = false)
-μ =  vals.^(1/BigFloat(3))
 t1=diag(inv(vecs[1])*Ab[1]*vecs[2]); t2=diag(inv(vecs[2])*Ab[2]*vecs[3]);  t3=diag(inv(vecs[3])*Ab[3]*vecs[1])
-# no normalization 
-# @test Ab[1]*vecs[2] ≈ vecs[1]*Diagonal(μ) && Ab[2]*vecs[3] ≈ vecs[2]*Diagonal(μ) && Ab[3]*vecs[1] ≈ vecs[3]*Diagonal(μ)
 @test t1 .* t2 .* t3 ≈ vals
 
 @time vecs, vals = peigvecs(Ab; allvecs = false, PSD_SLICOT = true)
 @test prod(reverse(Ab))*vecs[1] ≈ vecs[1]*Diagonal(vals)
 @time vecs, vals = peigvecs(Ab; allvecs = true, PSD_SLICOT = true)
-μ =  vals.^(1/3.)
-@test Ab[1]*vecs[1] ≈ vecs[2]*Diagonal(μ) && Ab[2]*vecs[2] ≈ vecs[3]*Diagonal(μ) && Ab[3]*vecs[3] ≈ vecs[1]*Diagonal(μ)
+@test diag(inv(vecs[2])*Ab[1]*vecs[1]) .* diag(inv(vecs[3])*Ab[2]*vecs[2]) .* diag(inv(vecs[1])*Ab[3]*vecs[3]) ≈ vals
 
 @time vecs, vals = peigvecs(Ab; allvecs = false, rev = false, PSD_SLICOT = true)
 @test prod(Ab)*vecs[1] ≈ vecs[1]*Diagonal(vals)
 @time vecs, vals = peigvecs(Ab; allvecs = true, rev = false, PSD_SLICOT = true)
-μ =  vals.^(1/3.)
 t1=diag(inv(vecs[1])*Ab[1]*vecs[2]); t2=diag(inv(vecs[2])*Ab[2]*vecs[3]);  t3=diag(inv(vecs[3])*Ab[3]*vecs[1])
-# no normalization 
-# @test Ab[1]*vecs[2] ≈ vecs[1]*Diagonal(μ) && Ab[2]*vecs[3] ≈ vecs[2]*Diagonal(μ) && Ab[3]*vecs[1] ≈ vecs[3]*Diagonal(μ)
 @test t1 .* t2 .* t3 ≈ vals
+
+Ab1 = [-1. 0 0;2. 1 -1; 3 1 1]; Ab2 = [2. 0. 0;3 2 0; 1 0 1];
+Ab = [Ab1, Ab2];
+@time vecs, vals = peigvecs(Ab; allvecs = false, PSD_SLICOT = false,select_fun = x-> real(x) > 0)
+@test prod(reverse(Ab))*vecs[1] ≈ vecs[1]*Diagonal(vals)
+@time vecs, vals = peigvecs(Ab; allvecs = true, PSD_SLICOT = false)
+@test diag(inv(vecs[2])*Ab[1]*vecs[1]) .* diag(inv(vecs[1])*Ab[2]*vecs[2]) ≈ vals
 
 
 n = 4; K = 3; sind = 2;

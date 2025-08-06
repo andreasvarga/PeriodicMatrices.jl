@@ -132,14 +132,15 @@ function peigvals(A::Vector{Matrix{T}}, k::Int = 1; rev::Bool = true, fast::Bool
 end
 
 """
-    peigvecs(A::Vector{Matrix}; rev = true, select_fun = f(x), allvecs::Bool) => (V::Vector{Matrix}, ev::Vector)
+    peigvecs(A::Vector{Matrix}; rev = true, select_fun = f(x), allvecs::Bool) => (V::Vector{Matrix}, ev::Vector{Complex})
 
 Compute eigenvalues `ev` and the corresponding right eigenvectors `V` of a cyclic product of `p` `n×n` real matrices 
 `A(p)*...*A(2)*A(1) =: Ψ`, if `rev = true` (default) or 
 `A(1)*A(2)*...*A(p) =: Ψ` if `rev = false`, without evaluating the product. 
 The vectors are returned as columns of the elements of the vector `V` of matrices.    
-The resulting vectors satisfy `A[k]*V[k] = V[k+1]*Diagonal(μ)` if `rev = true`, where 
-`μ[i]^p = ev[i]`, for `i = 1,...,n`.  If `allvecs = false`, then `V` is a vector with a single component which satisfies
+The resulting vectors satisfy `A[k]*V[k] = V[k+1]*Γ[k]` if `rev = true`, or 
+`A[k]*V[k+1] = V[k]*Γ[k]` if `rev = false`, where `Γ[k]` are diagonal matrices and satisfy `Γ[1]*Γ[2]...Γ[p] = Diagonal(ev)`
+If `allvecs = false`, then `V` is a vector with a single component which satisfies
 `Ψ*V[1] = V[1]*Diagonal(ev)`. 
 
 A selection of eigenvectors can be computed corresponding to eigenvalues which satisfy `f(x) = true`, where `x` is an eigenvalue and `f(x)` is
@@ -168,8 +169,8 @@ function peigvecs(A::Vector{Matrix{T}}, k::Int = 1; rev::Bool = true, PSD_SLICOT
       PSF = PeriodicSchurDecompositions.pschur(A, rev ? (:L) : (:R))
    end
    select = select_fun.(PSF.values)
-   vecs = PeriodicSchurDecompositions.eigvecs(PSF,select; shifted = allvecs)
-   return vecs, PSF.values
+   vecs = _eigvecs(PSF, select; shifted = allvecs)
+   return vecs, PSF.values[select]
 end
 
 
@@ -181,6 +182,148 @@ function sorteigvals!(ev)
    tc = ev[imag.(ev) .> 0]
    ev[:] = [ev[imag.(ev) .== 0]; sort([tc; conj.(tc)],by = real)]
    return ev
+end
+
+"""
+    _eigvecs(ps::PeriodicSchur, select::Vector{Bool}; shifted::Bool) => V::Vector{Matrix}
+
+Compute selected right eigenvectors of a product of matrices in a periodic Schur form.
+This is a modified version of the `eigvecs` function from the 
+[`PeriodicSchurDecompositions.jl`](https://github.com/RalphAS/PeriodicSchurDecompositions.jl) package.    
+
+For the `n×n` matrices `Aⱼ, j ∈ 1:p`, whose periodic Schur decomposition
+is in `ps`, this function computes vectors `v` such that
+`Aₚ*...*A₂*A₁*v = λₖ v`  (or `A₁*A₂*...*Aₚ*v = λₖ v`) for left (right)
+oriented `ps`. The returned vectors `V` correspond to the 
+selected eigenvalues from `ps.values` via the `true` entries of `select`.
+
+If keyword `shifted` is true (the default), eigenvectors for circularly shifted
+permutations of the `A` matrices are also returned.
+The vectors are returned as columns of the elements of the vector `V`
+of matrices. (*Note:* A vector of length one is returned if `shifted` is false.)
+The vectors are satisfy `Aⱼvⱼ = μⱼvⱼ₊₁`, for a left oriened product, or `Aⱼvⱼ₊₁ = μⱼvⱼ`
+for a right oriented product, where `μ₁μ₂...μₚ = λₖ`.
+
+If the element type of `ps` is real, `select` may be updated to include
+conjugate pairs. `ps` itself is not modified.
+
+The algorithm may fail if some selected eigenvalues are associated
+with an invariant subspace that cannot be untangled.
+"""
+function _eigvecs(ps0::PeriodicSchur{T}, select::AbstractVector{Bool};
+                 shifted=true, verbosity=1) where {T}
+    RT = real(T)
+    CT = complex(T)
+    ps = deepcopy(ps0)
+    if (length(ps.Z) == 0) || (size(ps.Z[1], 1) == 0)
+        throw(ArgumentError("eigvecs requires Schur vectors in the PSD"))
+    end
+    n,m = size(ps.Z[1])
+    if length(select) != m
+        throw(ArgumentError("length of `select` must correspond to rank of Schur (sub-)space"))
+    end
+    p = ps.period
+    left = ps.orientation == 'L'
+    if !all(select)
+        if T <: Real
+            inpair = false
+            for j in 1:m
+                if inpair
+                    if select[j - 1]
+                        if verbosity > 0 && !select[j]
+                            @info "adding $j to select for conjugacy"
+                        end
+                        select[j] = true
+                    elseif select[j]
+                        if verbosity > 0 && !select[j - 1]
+                            @info "adding $(j-1) to select for conjugacy"
+                        end
+                        select[j - 1] = true
+                    end
+                    inpair = false
+                    continue
+                end
+                inpair = !isreal(ps.values[j])
+            end
+        end
+        ordschur!(ps, select)
+    end
+    nvec = count(select)
+    sel = falses(m)
+    sel[1:nvec] .= true
+    nmat = shifted ? p : 1
+    Vs = [Matrix{CT}(undef, n, nvec) for _ in 1:nmat]
+    iλ = 1
+    while iλ <= nvec
+        if T <: Real && !isreal(ps.values[1])
+            # I have a hammer so this must be a nail.
+            # set up and solve the 2x2 cyclic problem
+            μ = (ps.values[1] + 0im) ^ (1/RT(p))
+            Zd = [-μ * Matrix{CT}(I, 2, 2) for _ in 1:p]
+            Zl = [Matrix{CT}(undef, 2, 2) for _ in 1:p]
+            il = 0
+            for l in 1:p
+                lx = left ? l : (p + 1 - l)
+                if l == ps.schurindex
+                    Tl = ps.T1[1:2,1:2]
+                else
+                    il += 1
+                    Tl = ps.T[il][1:2,1:2]
+                end
+                Zl[lx] .= Tl
+            end
+            nsolve = 2
+            rowx = 1
+            colx = 1:nsolve
+            y = zeros(CT, nsolve * p)
+            # replace a row
+            y[rowx] = 1
+            Zd[1][rowx, :] .= 0
+            Zl[p][rowx, :] .= 0
+            Zd[1][rowx, colx] .= 1
+            R, Zu, Zr, _ = PeriodicSchurDecompositions._babd_qr!(Zd, Zl, y)
+            x = PeriodicSchurDecompositions._babd_solve!(R, Zu, Zr, y)
+            t = 1 / norm(view(x, 1:nsolve))
+            for l in 1:nmat
+                if left
+                    i0 = (l - 1) * nsolve
+                else
+                    i0 = l == 1 ? 0 : (p + 1 - l) * nsolve
+                end
+                vl = Vs[l]
+                mul!(view(vl,:,iλ),
+                     view(ps.Z[l],:,1:nsolve),
+                     view(x, i0+1:i0+nsolve),
+                     t, false)
+                vl[:,iλ+1] .= conj.(vl[:,iλ])
+            end
+            nλ = 2
+        else
+            # A₁x₁ = T₁[1,1]*Z₂[:,1] = μ x₂, etc.
+            il = 0
+            fac = one(T)
+            μ = (ps.values[1] + 0im) ^ (1/RT(p))
+            μ = abs(μ)
+            for l in 1:nmat
+                if l == ps.schurindex
+                    Tl1 = ps.T1[1,1]
+                else
+                    il += 1
+                    Tl1 = ps.T[il][1,1]
+                end
+                Vs[l][:,iλ] .= fac .* ps.Z[l][:,1]
+                μ == 0 || (fac *= (Tl1 / μ))
+            end
+            nλ = 1
+        end
+
+        sel[1:nλ] .= false
+        # should we try to recover if this fails?
+        ordschur!(ps, sel)
+        iλ += nλ
+        circshift!(sel, -nλ)
+    end
+    return Vs
 end
 
 

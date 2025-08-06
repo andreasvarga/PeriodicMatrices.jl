@@ -1,8 +1,12 @@
 # Release Notes
 
+## Version 0.1.11
+
+Minor changes in the function `peigvecs`; adding `_eigvecs` to compute the eigenvectors of a cyclic product of matrices. 
+
 ## Version 0.1.10
 
-Implement the funtion `peigvecs` to compute the eigenvectors of a cyclic product of matrices. 
+Implement the function `peigvecs` to compute the eigenvectors of a cyclic product of matrices. 
 
 ## Version 0.1.9
 
