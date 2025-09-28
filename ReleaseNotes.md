@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 0.1.12
+
+Enhance the `PeriodicMatrix` constructor.
+
 ## Version 0.1.11
 
 Minor changes in the function `peigvecs`; adding `_eigvecs` to compute the eigenvectors of a cyclic product of matrices. 

@@ -62,7 +62,7 @@ struct  PeriodicMatrix{Domain,T} <: AbstractPeriodicArray{Domain,T}
     nperiod::Int
 end 
 # additional constructors
-function  PeriodicMatrix(M::Vector{MT}, period::Real; nperiod::Int = 1) where {MT <: Array} 
+function  PeriodicMatrix(M::Vector{MT}, period::Real; nperiod::Int = 1) where {MT <: AbstractArray} 
    period > 0 || error("period must be positive") 
    nperiod > 0 || error("number of subperiods must be positive") 
    any(ndims.(M) .> 2) && error("only vectors with vector or matrix elements supported")
