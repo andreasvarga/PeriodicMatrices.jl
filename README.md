@@ -3,8 +3,10 @@
 <!-- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4568159.svg)](https://doi.org/10.5281/zenodo.4568159) -->
 [![codecov.io](https://codecov.io/gh/andreasvarga/PeriodicMatrices.jl/coverage.svg?branch=main)](https://codecov.io/gh/andreasvarga/PeriodicMatrices.jl?branch=main)
 [![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://andreasvarga.github.io/PeriodicMatrices.jl/dev/)
-[![The MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](https://github.com/andreasvarga/PeriodicMatrices.jl/blob/main/LICENSE.md)
 [![CI](https://github.com/andreasvarga/PeriodicMatrices/actions/workflows/CI.yml/badge.svg)](https://github.com/andreasvarga/PeriodicMatrices/actions/workflows/CI.yml)
+[![LinkedIn Badge](https://img.shields.io/badge/LinkedIn-Article-informational?style=flat&logo=linkedin&logoColor=white&color=0D76A8)](https://www.linkedin.com/pulse/periodicmatrices-julia-package-handling-periodic-matrices-varga-dc4ae/?trackingId=NNGNTQ09QyiPk5G2ULCXXQ%3D%3D)
+[![The MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](https://github.com/andreasvarga/PeriodicMatrices.jl/blob/main/LICENSE.md)
+
 
 ## Handling of periodic time-varying matrices
 
